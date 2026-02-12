@@ -85,6 +85,7 @@ export function ObjectivesList({ cycleId }: ObjectivesListProps) {
         onOpenChange={setFormOpen}
         onSubmit={handleCreate}
         isPending={createObjective.isPending}
+        objectives={objectives}
       />
     </div>
   );
