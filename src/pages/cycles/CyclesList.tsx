@@ -23,6 +23,7 @@ const statusBadge = (status: string) => {
     case "draft": return "badge-info";
     case "closed": return "badge-warning";
     case "archived": return "badge-destructive";
+    case "pending_approval": return "badge-warning";
     default: return "badge-info";
   }
 };
@@ -32,6 +33,7 @@ const statusLabel: Record<string, string> = {
   active: "Ativo",
   closed: "Encerrado",
   archived: "Arquivado",
+  pending_approval: "Aguardando Aprovação",
 };
 
 export default function CyclesList() {

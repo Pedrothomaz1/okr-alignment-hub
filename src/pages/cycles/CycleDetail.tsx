@@ -1,17 +1,19 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useCycles } from "@/hooks/useCycles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ObjectivesList } from "@/pages/objectives/ObjectivesList";
+import { CycleApprovalCard } from "@/components/cycles/CycleApprovalCard";
 
 const statusLabel: Record<string, string> = {
   draft: "Rascunho",
   active: "Ativo",
   closed: "Encerrado",
   archived: "Arquivado",
+  pending_approval: "Aguardando Aprovação",
 };
 
 const statusBadge = (status: string) => {
@@ -20,6 +22,7 @@ const statusBadge = (status: string) => {
     case "draft": return "badge-info";
     case "closed": return "badge-warning";
     case "archived": return "badge-destructive";
+    case "pending_approval": return "badge-warning";
     default: return "badge-info";
   }
 };
@@ -47,8 +50,16 @@ export default function CycleDetail() {
       <div className="flex items-center gap-4">
         <Link to="/cycles"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button></Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{cycle.name}</h1>
-          <span className={statusBadge(cycle.status)}>{statusLabel[cycle.status] || cycle.status}</span>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight">{cycle.name}</h1>
+            {cycle.locked && <Lock className="h-5 w-5 text-muted-foreground" />}
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={statusBadge(cycle.status)}>{statusLabel[cycle.status] || cycle.status}</span>
+            {cycle.locked && (
+              <span className="text-xs text-muted-foreground">Ciclo travado</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -64,13 +75,15 @@ export default function CycleDetail() {
           </CardContent>
         </Card>
 
-        <Card className="card-elevated">
-          <CardHeader><CardTitle className="text-base">OKRs Vinculados</CardTitle></CardHeader>
-          <CardContent>
-            <ObjectivesList cycleId={cycle.id} />
-          </CardContent>
-        </Card>
+        <CycleApprovalCard cycleId={cycle.id} cycleStatus={cycle.status} />
       </div>
+
+      <Card className="card-elevated">
+        <CardHeader><CardTitle className="text-base">OKRs Vinculados</CardTitle></CardHeader>
+        <CardContent>
+          <ObjectivesList cycleId={cycle.id} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

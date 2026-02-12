@@ -16,6 +16,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const cycleSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -23,6 +25,7 @@ const cycleSchema = z.object({
   start_date: z.string().min(1, "Data de início é obrigatória"),
   end_date: z.string().min(1, "Data de fim é obrigatória"),
   status: z.string().default("draft"),
+  lock_after_start: z.boolean().default(false),
 }).refine((d) => d.end_date > d.start_date, {
   message: "Data de fim deve ser posterior à de início",
   path: ["end_date"],
@@ -40,33 +43,39 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
   const { cycles, createCycle, updateCycle } = useCycles();
   const { toast } = useToast();
   const editing = cycleId ? cycles.find((c) => c.id === cycleId) : null;
+  const isLocked = editing?.locked ?? false;
 
   const form = useForm<CycleFormValues>({
     resolver: zodResolver(cycleSchema),
-    defaultValues: { name: "", description: "", start_date: "", end_date: "", status: "draft" },
+    defaultValues: { name: "", description: "", start_date: "", end_date: "", status: "draft", lock_after_start: false },
   });
 
   useEffect(() => {
     if (editing) {
+      const meta = editing.metadata as Record<string, unknown> | null;
       form.reset({
         name: editing.name,
         description: editing.description || "",
         start_date: editing.start_date,
         end_date: editing.end_date,
         status: editing.status,
+        lock_after_start: !!(meta?.lock_after_start),
       });
     } else {
-      form.reset({ name: "", description: "", start_date: "", end_date: "", status: "draft" });
+      form.reset({ name: "", description: "", start_date: "", end_date: "", status: "draft", lock_after_start: false });
     }
   }, [editing, open]);
 
   const onSubmit = async (values: CycleFormValues) => {
     try {
+      const { lock_after_start, ...rest } = values;
+      const metadata = { lock_after_start };
+
       if (editing) {
-        await updateCycle.mutateAsync({ id: editing.id, ...values });
+        await updateCycle.mutateAsync({ id: editing.id, ...rest, metadata });
         toast({ title: "Ciclo atualizado" });
       } else {
-        await createCycle.mutateAsync({ name: values.name, description: values.description, start_date: values.start_date, end_date: values.end_date, status: values.status });
+        await createCycle.mutateAsync({ name: rest.name, start_date: rest.start_date, end_date: rest.end_date, description: rest.description, status: rest.status, metadata });
         toast({ title: "Ciclo criado" });
       }
       onOpenChange(false);
@@ -81,19 +90,24 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
         <DialogHeader>
           <DialogTitle>{editing ? "Editar Ciclo" : "Novo Ciclo"}</DialogTitle>
         </DialogHeader>
+        {isLocked && (
+          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-400">
+            Este ciclo está travado. Edições não são permitidas.
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem>
                 <FormLabel>Nome</FormLabel>
-                <FormControl><Input placeholder="Q1 2026" {...field} /></FormControl>
+                <FormControl><Input placeholder="Q1 2026" {...field} disabled={isLocked} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem>
                 <FormLabel>Descrição</FormLabel>
-                <FormControl><Textarea placeholder="Descrição do ciclo..." {...field} /></FormControl>
+                <FormControl><Textarea placeholder="Descrição do ciclo..." {...field} disabled={isLocked} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -101,14 +115,14 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
               <FormField control={form.control} name="start_date" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Início</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
+                  <FormControl><Input type="date" {...field} disabled={isLocked} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="end_date" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Fim</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
+                  <FormControl><Input type="date" {...field} disabled={isLocked} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -116,7 +130,7 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
             <FormField control={form.control} name="status" render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLocked}>
                   <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                   <SelectContent>
                     <SelectItem value="draft">Rascunho</SelectItem>
@@ -128,9 +142,23 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
                 <FormMessage />
               </FormItem>
             )} />
+            <FormField control={form.control} name="lock_after_start" render={({ field }) => (
+              <FormItem className="flex items-center gap-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLocked}
+                  />
+                </FormControl>
+                <Label className="text-sm font-normal cursor-pointer">
+                  Travar edições após ativação
+                </Label>
+              </FormItem>
+            )} />
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" disabled={createCycle.isPending || updateCycle.isPending}>
+              <Button type="submit" disabled={isLocked || createCycle.isPending || updateCycle.isPending}>
                 {editing ? "Salvar" : "Criar"}
               </Button>
             </div>

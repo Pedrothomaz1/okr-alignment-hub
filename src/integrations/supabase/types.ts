@@ -50,6 +50,82 @@ export type Database = {
         }
         Relationships: []
       }
+      cycle_requests: {
+        Row: {
+          approver_id: string | null
+          comment: string | null
+          created_at: string
+          cycle_id: string
+          decision_at: string | null
+          decision_by: string | null
+          id: string
+          requested_by: string
+          status: string
+        }
+        Insert: {
+          approver_id?: string | null
+          comment?: string | null
+          created_at?: string
+          cycle_id: string
+          decision_at?: string | null
+          decision_by?: string | null
+          id?: string
+          requested_by: string
+          status?: string
+        }
+        Update: {
+          approver_id?: string | null
+          comment?: string | null
+          created_at?: string
+          cycle_id?: string
+          decision_at?: string | null
+          decision_by?: string | null
+          id?: string
+          requested_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycle_requests_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cycle_rules_history: {
+        Row: {
+          changed_by: string
+          created_at: string
+          cycle_id: string
+          id: string
+          rule_changes: Json
+        }
+        Insert: {
+          changed_by: string
+          created_at?: string
+          cycle_id: string
+          id?: string
+          rule_changes?: Json
+        }
+        Update: {
+          changed_by?: string
+          created_at?: string
+          cycle_id?: string
+          id?: string
+          rule_changes?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycle_rules_history_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cycles: {
         Row: {
           created_at: string
@@ -57,6 +133,7 @@ export type Database = {
           description: string | null
           end_date: string
           id: string
+          locked: boolean
           metadata: Json | null
           name: string
           start_date: string
@@ -69,6 +146,7 @@ export type Database = {
           description?: string | null
           end_date: string
           id?: string
+          locked?: boolean
           metadata?: Json | null
           name: string
           start_date: string
@@ -81,6 +159,7 @@ export type Database = {
           description?: string | null
           end_date?: string
           id?: string
+          locked?: boolean
           metadata?: Json | null
           name?: string
           start_date?: string
@@ -374,6 +453,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decide_cycle_request: {
+        Args: {
+          _approver_id?: string
+          _comment?: string
+          _decision: string
+          _request_id: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
