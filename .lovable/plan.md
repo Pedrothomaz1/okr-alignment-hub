@@ -1,147 +1,112 @@
 
 
-## Fase 9: OKR Cascading -- Links, Colaboradores e Tree View
+## Fase 10: Change Requests para Ciclos Travados
 
-Implementar hierarquia de objetivos (parent/child), links entre OKRs, colaboradores e visualizacao em arvore conforme o PRD.
+Permitir que usuarios solicitem alteracoes em ciclos travados (locked), com fluxo de aprovacao por admins antes da edicao ser aplicada.
+
+---
+
+### Contexto
+
+Hoje, quando um ciclo esta travado (`locked = true`), a UI impede qualquer edicao em objetivos e KRs vinculados. Esta fase adiciona um mecanismo formal para que usuarios solicitem excecoes (change requests), que precisam ser aprovadas por um admin antes de serem efetivadas.
 
 ---
 
 ### O que sera construido
 
-1. **Coluna `parent_objective_id`** na tabela `objectives` para hierarquia pai-filho
-2. **Tabela `okr_links`** para cross-links entre OKRs (dependencias)
-3. **Tabela `okr_collaborators`** para editores/visualizadores em OKRs
-4. **Funcao `get_objective_ancestors`** para breadcrumb de alinhamento
-5. **Trigger de validacao** para impedir referencia circular em parent_objective_id
-6. **RLS** para as novas tabelas
-7. **Hooks** `useOKRTree`, `useOKRLinks`, `useOKRCollaborators`
-8. **Componente OKRTreeView** para visualizacao em arvore (collapsible)
-9. **Breadcrumb de alinhamento** no ObjectiveDetail
-10. **Seletor de pai e colaboradores** no ObjectiveForm
-11. **Nova pagina `/alignment`** com visao geral da arvore de OKRs
+1. **Tabela `change_requests`** para registrar pedidos de alteracao em ciclos travados
+2. **RLS** para a nova tabela
+3. **Funcao `decide_change_request`** para aprovar/rejeitar pedidos
+4. **Hook `useChangeRequests`** para gerenciar pedidos
+5. **Componente `ChangeRequestCard`** para exibir e gerenciar pedidos
+6. **Integracao no ObjectiveDetail** -- botao "Solicitar Alteracao" quando ciclo esta locked
+7. **Pagina de Change Requests** acessivel pelo admin (listagem geral)
+8. **Desbloqueio temporario** -- quando aprovado, permite edicao do objetivo/KR por tempo limitado
 
 ---
 
 ### Etapa 1 -- Migracao de banco de dados
 
-**Coluna nova em `objectives`:**
-- `parent_objective_id` UUID nullable FK -> objectives.id (auto-referencia)
+**Tabela `change_requests`:**
+- `id` UUID PK default gen_random_uuid()
+- `cycle_id` UUID FK -> cycles.id
+- `objective_id` UUID FK -> objectives.id (nullable)
+- `requested_by` UUID (quem pediu)
+- `request_type` TEXT (`edit_objective`, `edit_kr`, `add_kr`, `delete_kr`)
+- `description` TEXT (justificativa do pedido)
+- `status` TEXT default 'pending' (`pending`, `approved`, `rejected`, `expired`)
+- `decision_by` UUID (nullable)
+- `decision_comment` TEXT (nullable)
+- `decision_at` timestamptz (nullable)
+- `expires_at` timestamptz (nullable) -- janela de edicao apos aprovacao
+- `created_at` timestamptz default now()
 
-**Tabela `okr_links`:**
-- `id` UUID PK
-- `from_id` UUID (objetivo ou KR de origem)
-- `to_id` UUID (objetivo ou KR de destino)
-- `link_type` TEXT (`child`, `dependency`, `related`)
-- `created_by` UUID
-- `created_at` timestamptz
-- Constraint UNIQUE(from_id, to_id)
+**RLS para `change_requests`:**
+- SELECT: requester, admin ou okr_master
+- INSERT: qualquer usuario autenticado (desde que o ciclo esteja locked)
+- UPDATE: apenas admins (para decisao)
+- DELETE: apenas admins
 
-**Tabela `okr_collaborators`:**
-- `id` UUID PK
-- `objective_id` UUID FK -> objectives.id
-- `user_id` UUID
-- `role` TEXT (`editor`, `viewer`)
-- `created_at` timestamptz
-- Constraint UNIQUE(objective_id, user_id)
+**Funcao `decide_change_request(_request_id UUID, _decision TEXT, _comment TEXT)`:**
+- Atualiza status, decision_by, decision_comment, decision_at
+- Se aprovado, define expires_at = now() + interval '24 hours'
+- Insere registro em audit_logs
+- Usa SECURITY DEFINER para garantir permissoes
 
-**RLS para `okr_links`:**
-- SELECT: qualquer usuario autenticado
-- INSERT: admin, okr_master ou dono dos OKRs envolvidos
-- DELETE: admin ou criador do link
-
-**RLS para `okr_collaborators`:**
-- SELECT: qualquer usuario autenticado
-- INSERT/UPDATE/DELETE: admin, okr_master ou dono do objetivo
-
-**Funcao `get_objective_ancestors(objective_id UUID)`:**
-- Retorna a cadeia de pais ate a raiz usando CTE recursiva
-- Usada para breadcrumb de alinhamento
-
-**Trigger `prevent_circular_parent`:**
-- BEFORE INSERT/UPDATE em objectives
-- Verifica se parent_objective_id nao cria referencia circular percorrendo a cadeia de pais
-- Raise exception se detectar ciclo
-
-**Triggers de auditoria** reutilizando `audit_trigger_fn` existente nas novas tabelas
+**Trigger de auditoria** na tabela change_requests reutilizando `audit_trigger_fn`
 
 ---
 
-### Etapa 2 -- Hooks de dados
+### Etapa 2 -- Hook `useChangeRequests`
 
-**`src/hooks/useOKRTree.ts`**
-- Query que busca todos os objetivos de um ciclo com parent_objective_id
-- Funcao helper para montar estrutura de arvore (nesting) no cliente
-- Query para buscar ancestrais de um objetivo (chama `get_objective_ancestors` via RPC)
+**Novo arquivo: `src/hooks/useChangeRequests.ts`**
 
-**`src/hooks/useOKRLinks.ts`**
-- Query para listar links de um objetivo/KR
-- Mutations para criar e remover links
-- Invalida queries relacionadas no sucesso
-
-**`src/hooks/useOKRCollaborators.ts`**
-- Query para listar colaboradores de um objetivo
-- Mutations para adicionar, alterar role e remover colaboradores
-- Invalida queries relacionadas
+- Query para listar change requests de um objetivo ou ciclo
+- Query para listar todos os change requests (para visao admin)
+- Mutation `createChangeRequest` -- insere pedido com status "pending"
+- Mutation `decideChangeRequest` -- chama `decide_change_request` via RPC
+- Funcao helper `hasActiveApproval(objectiveId)` -- verifica se existe change request aprovado e nao expirado para o objetivo
 
 ---
 
-### Etapa 3 -- Atualizar ObjectiveForm
+### Etapa 3 -- Componente ChangeRequestCard
 
-**Arquivo: `src/pages/objectives/ObjectiveForm.tsx`**
+**Novo arquivo: `src/components/cycles/ChangeRequestCard.tsx`**
 
-- Adicionar campo "Objetivo Pai" (select com lista de objetivos do mesmo ciclo, excluindo o proprio e seus filhos)
-- Adicionar secao "Colaboradores" com campo de busca de usuarios e seletor de role (editor/viewer)
-- Salvar parent_objective_id no insert/update de objectives
-- Salvar colaboradores via hook useOKRCollaborators
-
----
-
-### Etapa 4 -- Atualizar useObjectives
-
-**Arquivo: `src/hooks/useObjectives.ts`**
-
-- Incluir `parent_objective_id` na interface Objective
-- Incluir no select e nas mutations de create/update
+- Recebe objective_id ou cycle_id
+- Renderiza lista de change requests com status (pendente/aprovado/rejeitado/expirado)
+- Para admins: botoes "Aprovar" e "Rejeitar" com modal de comentario
+- Para usuarios: botao "Solicitar Alteracao" com campo de justificativa e tipo de request
+- Indicador de tempo restante para requests aprovados (countdown ate expires_at)
 
 ---
 
-### Etapa 5 -- Breadcrumb de alinhamento no ObjectiveDetail
+### Etapa 4 -- Atualizar ObjectiveDetail
 
 **Arquivo: `src/pages/objectives/ObjectiveDetail.tsx`**
 
-- Buscar ancestrais via `get_objective_ancestors` RPC
-- Renderizar breadcrumb clicavel acima do titulo (ex: "Estrategia > Crescimento > Objetivo atual")
-- Mostrar lista de colaboradores com badge de role
-- Mostrar secao "Links" com dependencias e objetivos relacionados
-- Botao "Adicionar Link" para vincular a outros OKRs
+Logica atual: quando ciclo esta locked, esconde botao "Novo KR" e mostra alerta.
+
+Nova logica:
+- Verificar se existe change request aprovado e nao expirado para o objetivo
+- Se sim: permitir edicao normalmente + mostrar banner "Edicao temporaria aprovada (expira em X horas)"
+- Se nao: manter botao "Solicitar Alteracao" no lugar do alerta atual
+- Adicionar secao com lista de change requests do objetivo (usando ChangeRequestCard)
 
 ---
 
-### Etapa 6 -- Componente OKRTreeView
+### Etapa 5 -- Pagina admin de Change Requests
 
-**Novo arquivo: `src/components/okr/OKRTreeView.tsx`**
+**Novo arquivo: `src/pages/admin/ChangeRequests.tsx`**
 
-- Componente recursivo que renderiza arvore de objetivos usando collapsible (Radix Collapsible ja instalado)
-- Cada no mostra: titulo, progresso, status badge, owner, contagem de KRs
-- Clique no titulo navega para ObjectiveDetail
-- Indicador visual de nivel (indentacao com linhas de conexao via CSS)
-- Sem dependencia externa pesada (sem react-d3-tree) -- usar componente leve com Collapsible + recursao
-
----
-
-### Etapa 7 -- Nova pagina Alignment
-
-**Novo arquivo: `src/pages/alignment/AlignmentView.tsx`**
-
-- Pagina acessivel via sidebar `/alignment`
-- Seletor de ciclo no topo
-- Renderiza OKRTreeView com todos os objetivos do ciclo selecionado
-- Filtros: por owner, por status
-- Expandir/colapsar todos
+- Listagem de todos os change requests do sistema
+- Filtros: por status, por ciclo
+- Acoes rapidas de aprovar/rejeitar em lote
+- Link para o objetivo/ciclo relacionado
 
 **Atualizacoes:**
-- `src/App.tsx`: adicionar rota `/alignment`
-- `src/components/layout/AppSidebar.tsx`: adicionar item "Alinhamento" no menu principal
+- `src/App.tsx`: rota `/admin/change-requests`
+- `src/components/layout/AppSidebar.tsx`: item "Change Requests" no grupo Administracao
 
 ---
 
@@ -149,60 +114,53 @@ Implementar hierarquia de objetivos (parent/child), links entre OKRs, colaborado
 
 | Acao | Arquivo |
 |------|---------|
-| Migracao SQL | parent_objective_id, okr_links, okr_collaborators, RLS, funcoes, trigger |
-| Criado | `src/hooks/useOKRTree.ts` |
-| Criado | `src/hooks/useOKRLinks.ts` |
-| Criado | `src/hooks/useOKRCollaborators.ts` |
-| Criado | `src/components/okr/OKRTreeView.tsx` |
-| Criado | `src/pages/alignment/AlignmentView.tsx` |
-| Modificado | `src/hooks/useObjectives.ts` (parent_objective_id) |
-| Modificado | `src/pages/objectives/ObjectiveForm.tsx` (seletor de pai + colaboradores) |
-| Modificado | `src/pages/objectives/ObjectiveDetail.tsx` (breadcrumb + links + colaboradores) |
-| Modificado | `src/App.tsx` (rota /alignment) |
-| Modificado | `src/components/layout/AppSidebar.tsx` (menu Alinhamento) |
+| Migracao SQL | change_requests, RLS, funcao decide_change_request, trigger auditoria |
+| Criado | `src/hooks/useChangeRequests.ts` |
+| Criado | `src/components/cycles/ChangeRequestCard.tsx` |
+| Criado | `src/pages/admin/ChangeRequests.tsx` |
+| Modificado | `src/pages/objectives/ObjectiveDetail.tsx` (desbloqueio temporario + UI de change request) |
+| Modificado | `src/App.tsx` (rota /admin/change-requests) |
+| Modificado | `src/components/layout/AppSidebar.tsx` (menu Change Requests) |
 
 ---
 
 ### Ordem de execucao
 
-1. Migracao SQL (coluna, tabelas, RLS, funcoes, triggers)
-2. Atualizar useObjectives com parent_objective_id
-3. Criar hooks useOKRTree, useOKRLinks, useOKRCollaborators
-4. Atualizar ObjectiveForm com seletor de pai e colaboradores
-5. Atualizar ObjectiveDetail com breadcrumb, links e colaboradores
-6. Criar componente OKRTreeView
-7. Criar pagina AlignmentView
-8. Atualizar App.tsx e AppSidebar com nova rota
+1. Migracao SQL (tabela, RLS, funcao, trigger)
+2. Criar hook useChangeRequests
+3. Criar componente ChangeRequestCard
+4. Atualizar ObjectiveDetail com logica de desbloqueio temporario
+5. Criar pagina admin ChangeRequests
+6. Atualizar App.tsx e AppSidebar com nova rota
 
 ---
 
 ### Detalhes tecnicos
 
-**Estrutura de arvore no cliente:**
+**Logica de desbloqueio temporario no ObjectiveDetail:**
 ```text
-buildTree(objectives[]) -> TreeNode[]
-  TreeNode = { objective, children: TreeNode[] }
-  - Filtra objetivos raiz (parent_objective_id = null)
-  - Recursivamente agrupa filhos
+const hasActiveApproval = changeRequests.some(
+  cr => cr.status === 'approved'
+    && cr.objective_id === objectiveId
+    && cr.expires_at
+    && new Date(cr.expires_at) > new Date()
+);
+
+// Se hasActiveApproval: mostrar botoes de edicao normalmente
+// Se nao e ciclo locked: mostrar botao "Solicitar Alteracao"
 ```
 
-**CTE recursiva para ancestrais:**
+**Funcao decide_change_request:**
 ```text
-get_objective_ancestors(id):
-  WITH RECURSIVE ancestors AS (
-    SELECT * FROM objectives WHERE id = $1
-    UNION ALL
-    SELECT o.* FROM objectives o
-    JOIN ancestors a ON o.id = a.parent_objective_id
-  )
-  SELECT * FROM ancestors ORDER BY created_at
-```
-
-**Prevencao de ciclos:**
-```text
-prevent_circular_parent trigger:
-  IF NEW.parent_objective_id IS NULL THEN RETURN NEW
-  Percorre cadeia de pais via loop
-  Se encontrar NEW.id na cadeia -> RAISE EXCEPTION
+decide_change_request(_request_id, _decision, _comment):
+  UPDATE change_requests SET
+    status = _decision,
+    decision_by = auth.uid(),
+    decision_comment = _comment,
+    decision_at = now(),
+    expires_at = CASE WHEN _decision = 'approved'
+                 THEN now() + interval '24 hours'
+                 ELSE NULL END
+  WHERE id = _request_id AND status = 'pending'
 ```
 
