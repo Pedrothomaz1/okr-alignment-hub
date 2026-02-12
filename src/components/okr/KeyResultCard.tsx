@@ -2,8 +2,11 @@ import { useState } from "react";
 import { Pencil, History } from "lucide-react";
 import { ProgressBar } from "./ProgressBar";
 import { CheckinTimeline } from "./CheckinTimeline";
+import { CheckinChart } from "./CheckinChart";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCheckins } from "@/hooks/useCheckins";
 import type { KeyResult } from "@/hooks/useKeyResults";
 
 interface KeyResultCardProps {
@@ -21,6 +24,7 @@ function computeProgress(kr: KeyResult): number {
 export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
   const [open, setOpen] = useState(false);
   const progress = computeProgress(kr);
+  const { checkins, isLoading } = useCheckins(open ? kr.id : undefined);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -55,7 +59,23 @@ export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
         </div>
 
         <CollapsibleContent>
-          <CheckinTimeline keyResultId={kr.id} unit={kr.unit} />
+          <Tabs defaultValue="timeline" className="pt-2">
+            <TabsList className="h-8 w-full">
+              <TabsTrigger value="timeline" className="text-xs flex-1">Timeline</TabsTrigger>
+              <TabsTrigger value="chart" className="text-xs flex-1">Gráfico</TabsTrigger>
+            </TabsList>
+            <TabsContent value="timeline">
+              <CheckinTimeline keyResultId={kr.id} />
+            </TabsContent>
+            <TabsContent value="chart">
+              <CheckinChart
+                checkins={checkins}
+                startValue={kr.start_value}
+                targetValue={kr.target_value}
+                unit={kr.unit}
+              />
+            </TabsContent>
+          </Tabs>
         </CollapsibleContent>
       </div>
     </Collapsible>
