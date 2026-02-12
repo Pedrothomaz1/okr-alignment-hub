@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import MFASettings from "./pages/MFASettings";
 import UsersRoles from "./pages/admin/UsersRoles";
 import AuditLogs from "./pages/admin/AuditLogs";
+import ChangeRequestsPage from "./pages/admin/ChangeRequests";
 import CyclesList from "./pages/cycles/CyclesList";
 import CycleDetail from "./pages/cycles/CycleDetail";
 import ObjectiveDetail from "./pages/objectives/ObjectiveDetail";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/alignment" element={<AlignmentView />} />
             <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
+            <Route path="/admin/change-requests" element={<AdminRoute><ChangeRequestsPage /></AdminRoute>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
