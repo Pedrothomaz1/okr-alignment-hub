@@ -1,58 +1,48 @@
 
 
-## Phase 6: Check-ins de Key Results
+## Phase 7: Grafico de Evolucao nos Key Results
 
-Na metodologia OKR, registrar check-ins periodicos nos Key Results e fundamental para acompanhar a evolucao ao longo do tempo. Esta fase adiciona um historico de atualizacoes com notas, permitindo que a equipe veja como o progresso evoluiu.
+Adicionar um grafico de linha dentro de cada Key Result mostrando como o valor evoluiu ao longo do tempo, baseado nos check-ins registrados. Isso da visibilidade clara da tendencia de progresso.
 
 ---
 
 ### O que sera construido
 
-1. **Tabela `kr_checkins`** no banco de dados para armazenar o historico de cada atualizacao de valor em um Key Result, incluindo nota/comentario opcional e quem fez o check-in.
+1. **Grafico de linha** dentro do `KeyResultCard`, visivel ao expandir o historico:
+   - Eixo X: datas dos check-ins
+   - Eixo Y: valores registrados
+   - Linha de referencia (dashed) no target_value para visualizar a meta
+   - Linha de referencia no start_value
+   - Tooltip com valor, data e nota ao passar o mouse
 
-2. **Timeline de check-ins** na pagina de detalhe do Objetivo, dentro de cada `KeyResultCard`:
-   - Ao expandir um KR, o usuario ve a lista de check-ins anteriores (data, valor atualizado, nota, autor)
-   - Formulario inline para registrar novo check-in (valor + nota)
-
-3. **Atualizacao automatica do `current_value`** do KR ao criar um check-in (trigger no banco), eliminando a necessidade de atualizar manualmente.
+2. **Abas "Timeline" e "Grafico"** no conteudo expansivel do KeyResultCard para alternar entre a lista de check-ins e a visualizacao grafica
 
 ---
 
 ### Detalhes Tecnicos
 
-**Migracao de banco de dados (1 migracao):**
+**Novo arquivo (1):**
+- `src/components/okr/CheckinChart.tsx` -- Componente que recebe os check-ins, start_value, target_value e unit, e renderiza um `LineChart` do Recharts com:
+  - `Line` para os valores dos check-ins
+  - `ReferenceLine` no target_value (meta) e start_value
+  - `Tooltip` customizado mostrando valor, data formatada e nota
+  - Responsivo com `ResponsiveContainer`
+  - Cores alinhadas ao design system (usa CSS variables)
 
-- CREATE TABLE `kr_checkins`:
-  - `id` UUID PK DEFAULT gen_random_uuid()
-  - `key_result_id` UUID NOT NULL FK -> key_results.id ON DELETE CASCADE
-  - `author_id` UUID NOT NULL FK -> profiles.id
-  - `value` numeric NOT NULL (o valor registrado neste check-in)
-  - `note` text (comentario opcional)
-  - `created_at` timestamptz DEFAULT now()
-  - Index em `key_result_id`, `created_at`
+**Arquivo modificado (1):**
+- `src/components/okr/KeyResultCard.tsx` -- Adicionar `Tabs` (do Radix/shadcn) dentro do `CollapsibleContent` com duas abas:
+  - "Timeline" -> renderiza `CheckinTimeline` (comportamento atual)
+  - "Grafico" -> renderiza `CheckinChart` passando os dados do hook `useCheckins`
+  - O hook `useCheckins` sera chamado no `KeyResultCard` e os dados repassados para ambos os componentes
 
-- RLS policies:
-  - SELECT: todos autenticados
-  - INSERT: admin, okr_master, ou dono do KR (via subquery em key_results.owner_id)
-  - DELETE: admin apenas
+**Arquivo modificado (2):**
+- `src/hooks/useCheckins.ts` -- Sem mudancas estruturais; os dados retornados ja contem tudo necessario (value, created_at, note). Apenas garantir que a ordenacao por `created_at ASC` esta disponivel para o grafico (atualmente ordena DESC para a timeline; o componente do grafico fara o reverse).
 
-- Trigger function `sync_kr_value_on_checkin()`:
-  - AFTER INSERT em `kr_checkins`, atualiza `key_results.current_value` com o valor do check-in mais recente
-  - Isso ja dispara o trigger existente `update_objective_progress()` em cascata
+**Nenhuma mudanca de banco de dados.**
 
-- Audit trigger reutilizando `audit_trigger_fn`
-
-**Novos arquivos frontend (2):**
-- `src/hooks/useCheckins.ts` -- Hook com query `["checkins", krId]` para listar check-ins de um KR e mutation para criar novo check-in
-- `src/components/okr/CheckinTimeline.tsx` -- Componente que exibe a lista de check-ins em formato timeline e formulario inline para novo check-in (campo de valor + nota + botao salvar)
-
-**Arquivos modificados (1):**
-- `src/components/okr/KeyResultCard.tsx` -- Adicionar botao "Historico" que expande/colapsa o `CheckinTimeline` dentro do card. Remover a edicao inline de valor atual (substituida pelo check-in)
-
-**Nenhuma dependencia nova necessaria.**
+**Nenhuma dependencia nova** -- Recharts ja esta instalado.
 
 **Resumo de arquivos:**
-- Criados (2): `src/hooks/useCheckins.ts`, `src/components/okr/CheckinTimeline.tsx`
+- Criado (1): `src/components/okr/CheckinChart.tsx`
 - Modificados (1): `src/components/okr/KeyResultCard.tsx`
-- Migracao (1): nova tabela `kr_checkins` + trigger + RLS
 
