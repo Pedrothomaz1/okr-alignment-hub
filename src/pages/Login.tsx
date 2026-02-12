@@ -32,7 +32,6 @@ export default function Login() {
         toast({ variant: "destructive", title: "Login failed", description: error.message });
         return;
       }
-      // Check for MFA
       const { data: factors } = await listMFAFactors();
       const totpFactors = factors?.totp ?? [];
       const verifiedFactors = totpFactors.filter((f) => f.status === "verified");
@@ -52,10 +51,11 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+      <Card className="card-elevated w-full max-w-md animate-scale-in">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Sign In</CardTitle>
+          <div className="mx-auto mb-2 text-2xl font-bold text-gradient">OKR Platform</div>
+          <CardTitle className="text-xl font-semibold tracking-tight">Sign In</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,9 +75,9 @@ export default function Login() {
                   <FormMessage />
                 </FormItem>
               )} />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <button type="submit" className="btn-cta w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
+              </button>
             </form>
           </Form>
         </CardContent>

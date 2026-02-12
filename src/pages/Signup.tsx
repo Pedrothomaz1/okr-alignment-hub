@@ -37,8 +37,8 @@ export default function Signup() {
 
   if (emailSent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+        <Card className="card-elevated w-full max-w-md text-center animate-scale-in">
           <CardHeader>
             <CardTitle>Check your email</CardTitle>
             <CardDescription>We've sent a confirmation link to your email address. Please verify to continue.</CardDescription>
@@ -52,10 +52,11 @@ export default function Signup() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+      <Card className="card-elevated w-full max-w-md animate-scale-in">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Create Account</CardTitle>
+          <div className="mx-auto mb-2 text-2xl font-bold text-gradient">OKR Platform</div>
+          <CardTitle className="text-xl font-semibold tracking-tight">Create Account</CardTitle>
           <CardDescription>Sign up to get started</CardDescription>
         </CardHeader>
         <CardContent>
@@ -82,9 +83,9 @@ export default function Signup() {
                   <FormMessage />
                 </FormItem>
               )} />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <button type="submit" className="btn-cta w-full" disabled={isLoading}>
                 {isLoading ? "Creating account..." : "Sign Up"}
-              </Button>
+              </button>
             </form>
           </Form>
         </CardContent>
