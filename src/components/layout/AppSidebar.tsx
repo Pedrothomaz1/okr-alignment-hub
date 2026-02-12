@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +26,7 @@ const mainItems = [
 const adminItems = [
   { title: "Usuários & Papéis", url: "/admin/users", icon: Users },
   { title: "Logs de Auditoria", url: "/admin/audit", icon: FileText },
+  { title: "Change Requests", url: "/admin/change-requests", icon: FileQuestion },
 ];
 
 const settingsItems = [

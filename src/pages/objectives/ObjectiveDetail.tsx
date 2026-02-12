@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight } from "lucide-react";
+import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Clock, Unlock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useKeyResults } from "@/hooks/useKeyResults";
@@ -8,13 +8,17 @@ import { useCycles } from "@/hooks/useCycles";
 import { useObjectiveAncestors } from "@/hooks/useOKRTree";
 import { useOKRCollaborators } from "@/hooks/useOKRCollaborators";
 import { useOKRLinks } from "@/hooks/useOKRLinks";
+import { useChangeRequests } from "@/hooks/useChangeRequests";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { KeyResultCard } from "@/components/okr/KeyResultCard";
 import { KeyResultForm } from "@/components/okr/KeyResultForm";
+import { ChangeRequestCard } from "@/components/cycles/ChangeRequestCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import type { KeyResult } from "@/hooks/useKeyResults";
 
 const statusLabel: Record<string, string> = {
@@ -56,9 +60,17 @@ export default function ObjectiveDetail() {
   const { data: ancestors } = useObjectiveAncestors(id);
   const { collaborators } = useOKRCollaborators(id);
   const { links } = useOKRLinks(id);
+  const { changeRequests, hasActiveApproval } = useChangeRequests(id);
   const obj = objectiveQuery.data;
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
+  const activeApproval = hasActiveApproval(id);
+  const canEdit = !isCycleLocked || activeApproval;
+
+  // Find the active approval's expiry for banner
+  const activeApprovalCr = changeRequests.find(
+    (cr) => cr.status === "approved" && cr.expires_at && new Date(cr.expires_at) > new Date()
+  );
 
   if (objectiveQuery.isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
 
@@ -176,7 +188,14 @@ export default function ObjectiveDetail() {
         </Card>
       )}
 
-      {isCycleLocked && (
+      {isCycleLocked && activeApproval && activeApprovalCr && (
+        <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+          <Unlock className="h-4 w-4" />
+          Edição temporária aprovada — expira em {formatDistanceToNow(new Date(activeApprovalCr.expires_at!), { locale: ptBR })}.
+        </div>
+      )}
+
+      {isCycleLocked && !activeApproval && (
         <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
           <Lock className="h-4 w-4" />
           Ciclo travado — solicite um change request para alterações.
@@ -186,7 +205,7 @@ export default function ObjectiveDetail() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Key Results</h2>
-          {!isCycleLocked && (
+          {canEdit && (
             <Button size="sm" className="btn-cta h-8 px-3 text-xs" onClick={() => setKrFormOpen(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" /> Novo KR
             </Button>
@@ -213,6 +232,11 @@ export default function ObjectiveDetail() {
           </div>
         )}
       </div>
+
+      {/* Change Requests */}
+      {isCycleLocked && obj?.cycle_id && (
+        <ChangeRequestCard cycleId={obj.cycle_id} objectiveId={id} showCreateButton={!activeApproval} />
+      )}
 
       <KeyResultForm
         open={krFormOpen}

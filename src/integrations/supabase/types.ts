@@ -50,6 +50,66 @@ export type Database = {
         }
         Relationships: []
       }
+      change_requests: {
+        Row: {
+          created_at: string
+          cycle_id: string
+          decision_at: string | null
+          decision_by: string | null
+          decision_comment: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          objective_id: string | null
+          request_type: string
+          requested_by: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_id: string
+          decision_at?: string | null
+          decision_by?: string | null
+          decision_comment?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          objective_id?: string | null
+          request_type: string
+          requested_by: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_id?: string
+          decision_at?: string | null
+          decision_by?: string | null
+          decision_comment?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          objective_id?: string | null
+          request_type?: string
+          requested_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_requests_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cycle_requests: {
         Row: {
           approver_id: string | null
@@ -522,6 +582,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decide_change_request: {
+        Args: { _comment?: string; _decision: string; _request_id: string }
+        Returns: Json
+      }
       decide_cycle_request: {
         Args: {
           _approver_id?: string
