@@ -46,12 +46,17 @@ export function useObjectives(cycleId: string | undefined) {
   const createObjective = useMutation({
     mutationFn: async (obj: { title: string; description?: string; cycle_id: string; owner_id?: string; status?: string; parent_objective_id?: string | null }) => {
       if (!user) throw new Error("Not authenticated");
+      const payload = {
+        ...obj,
+        owner_id: obj.owner_id || user.id,
+        parent_objective_id: obj.parent_objective_id || null,
+      };
       const { data, error } = await supabase
         .from("objectives")
-        .insert({ ...obj, owner_id: obj.owner_id || user.id })
+        .insert(payload)
         .select()
         .single();
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["objectives", cycleId] }),
