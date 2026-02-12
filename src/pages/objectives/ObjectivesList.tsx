@@ -30,7 +30,7 @@ export function ObjectivesList({ cycleId }: ObjectivesListProps) {
   const [formOpen, setFormOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleCreate = (values: { title: string; description?: string; status?: string }) => {
+  const handleCreate = (values: { title: string; description?: string; status?: string; objective_type?: string; owner_id?: string; parent_objective_id?: string }) => {
     createObjective.mutate(
       { ...values, cycle_id: cycleId },
       {
