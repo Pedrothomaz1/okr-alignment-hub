@@ -3,9 +3,11 @@ import { ArrowLeft, Calendar, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useCycles } from "@/hooks/useCycles";
+import { useOKRTree } from "@/hooks/useOKRTree";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ObjectivesList } from "@/pages/objectives/ObjectivesList";
+import { OKROrgChart } from "@/components/okr/OKROrgChart";
 import { CycleApprovalCard } from "@/components/cycles/CycleApprovalCard";
 
 const statusLabel: Record<string, string> = {
@@ -31,6 +33,7 @@ export default function CycleDetail() {
   const { id } = useParams<{ id: string }>();
   const { cycles, isLoading } = useCycles();
   const cycle = cycles.find((c) => c.id === id);
+  const { data: tree, isLoading: treeLoading } = useOKRTree(id);
 
   if (isLoading) {
     return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
@@ -77,6 +80,18 @@ export default function CycleDetail() {
 
         <CycleApprovalCard cycleId={cycle.id} cycleStatus={cycle.status} />
       </div>
+
+      {/* Org chart tree view */}
+      <Card className="card-elevated">
+        <CardHeader><CardTitle className="text-base">Árvore de OKRs</CardTitle></CardHeader>
+        <CardContent>
+          {treeLoading ? (
+            <p className="text-sm text-muted-foreground">Carregando árvore...</p>
+          ) : (
+            <OKROrgChart tree={tree || []} />
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="card-elevated">
         <CardHeader><CardTitle className="text-base">OKRs Vinculados</CardTitle></CardHeader>
