@@ -13,6 +13,7 @@ const schema = z.object({
   title: z.string().min(1, "Título obrigatório"),
   description: z.string().optional(),
   status: z.string().default("on_track"),
+  objective_type: z.string().default("quarterly"),
   parent_objective_id: z.string().optional(),
 });
 
@@ -34,6 +35,12 @@ const statuses = [
   { value: "completed", label: "Concluído" },
 ];
 
+const objectiveTypes = [
+  { value: "annual", label: "Anual" },
+  { value: "quarterly", label: "Trimestral" },
+  { value: "monthly", label: "Mensal" },
+];
+
 export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isPending, objectives = [] }: ObjectiveFormProps) {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -41,6 +48,7 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
       title: defaultValues?.title || "",
       description: defaultValues?.description || "",
       status: defaultValues?.status || "on_track",
+      objective_type: defaultValues?.objective_type || "quarterly",
       parent_objective_id: defaultValues?.parent_objective_id || "",
     },
   });
@@ -70,6 +78,15 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent position="popper" className="z-[9999]">
                 {statuses.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Tipo</Label>
+            <Select value={watch("objective_type")} onValueChange={(v) => setValue("objective_type", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent position="popper" className="z-[9999]">
+                {objectiveTypes.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

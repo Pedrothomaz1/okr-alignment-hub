@@ -358,6 +358,7 @@ export type Database = {
           description: string | null
           id: string
           metadata: Json | null
+          objective_type: string
           owner_id: string
           parent_objective_id: string | null
           progress: number
@@ -371,6 +372,7 @@ export type Database = {
           description?: string | null
           id?: string
           metadata?: Json | null
+          objective_type?: string
           owner_id: string
           parent_objective_id?: string | null
           progress?: number
@@ -384,6 +386,7 @@ export type Database = {
           description?: string | null
           id?: string
           metadata?: Json | null
+          objective_type?: string
           owner_id?: string
           parent_objective_id?: string | null
           progress?: number
@@ -617,6 +620,7 @@ export type Database = {
           description: string | null
           id: string
           metadata: Json | null
+          objective_type: string
           owner_id: string
           parent_objective_id: string | null
           progress: number
