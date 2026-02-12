@@ -1,93 +1,108 @@
 
 
-## Phase 2: DashboardLayout with Sidebar + Cycles & Governance
+## Phase 3: Objectives & Key Results (OKRs)
 
-This phase adds two things: (1) a proper enterprise layout with a persistent dark-green sidebar navigation using the LexFlow design system, and (2) the Cycles & Governance database tables and UI.
+This phase adds the core OKR functionality -- Objectives linked to Cycles, and Key Results linked to Objectives -- completing the main business logic of the platform.
 
 ---
 
-### Part A: DashboardLayout with Sidebar
+### Part A: Database Tables
+
+**New tables via migration:**
+
+1. **`objectives`** table:
+   - `id` UUID PK (default `gen_random_uuid()`)
+   - `title` text NOT NULL
+   - `description` text
+   - `cycle_id` UUID NOT NULL (FK -> cycles.id ON DELETE CASCADE)
+   - `owner_id` UUID NOT NULL (FK -> profiles.id)
+   - `status` text NOT NULL DEFAULT 'on_track' (on_track, at_risk, behind, completed)
+   - `progress` integer NOT NULL DEFAULT 0 (0-100, computed from key results)
+   - `metadata` JSONB DEFAULT '{}'
+   - `created_at`, `updated_at` timestamps
+   - Indexes on cycle_id, owner_id, status
+
+2. **`key_results`** table:
+   - `id` UUID PK (default `gen_random_uuid()`)
+   - `title` text NOT NULL
+   - `description` text
+   - `objective_id` UUID NOT NULL (FK -> objectives.id ON DELETE CASCADE)
+   - `owner_id` UUID NOT NULL (FK -> profiles.id)
+   - `kr_type` text NOT NULL DEFAULT 'percentage' (percentage, number, currency, boolean)
+   - `start_value` numeric NOT NULL DEFAULT 0
+   - `target_value` numeric NOT NULL DEFAULT 100
+   - `current_value` numeric NOT NULL DEFAULT 0
+   - `unit` text (e.g. '%', 'R$', 'users')
+   - `status` text NOT NULL DEFAULT 'on_track'
+   - `metadata` JSONB DEFAULT '{}'
+   - `created_at`, `updated_at` timestamps
+   - Indexes on objective_id, owner_id
+
+3. **RLS policies:**
+   - SELECT on both tables: all authenticated users
+   - INSERT/UPDATE on objectives: admin, okr_master, or owner
+   - INSERT/UPDATE on key_results: admin, okr_master, or owner
+   - DELETE on both: admin only
+
+4. **Triggers:**
+   - Audit trigger on both tables (reuse `audit_trigger_fn`)
+   - Auto-update `objectives.progress` when key_results change (trigger function that calculates average progress)
+   - `updated_at` auto-update trigger on both tables
+
+5. **Enable realtime** on `key_results` for live progress updates
+
+---
+
+### Part B: Frontend -- Hooks
 
 **New files:**
-- `src/components/layout/AppSidebar.tsx` -- Dark-green sidebar with navigation items (Dashboard, Admin, 2FA Settings), user info footer, sign-out button. Uses the shadcn `Sidebar` component with LexFlow sidebar tokens.
-- `src/components/layout/DashboardLayout.tsx` -- Wraps `SidebarProvider` + `AppSidebar` + global header with `SidebarTrigger` + `<main>` content area with `p-6`. Uses `<Outlet>` for nested routes.
-
-**Modified files:**
-- `src/App.tsx` -- Restructure routes so all protected pages are nested under `DashboardLayout`. Admin pages nested further under `AdminRoute`. Routes become:
-  - `/` -> DashboardLayout -> Dashboard (home)
-  - `/settings/2fa` -> DashboardLayout -> MFASettings
-  - `/admin/users` -> DashboardLayout -> AdminRoute -> UsersRoles
-  - `/admin/audit` -> DashboardLayout -> AdminRoute -> AuditLogs
-  - `/cycles` -> DashboardLayout -> CyclesList (new)
-  - `/cycles/:id` -> DashboardLayout -> CycleDetail (new)
-- `src/pages/Dashboard.tsx` -- Remove inline header (now in layout), keep only the welcome card and stat cards content.
-- `src/pages/admin/AdminLayout.tsx` -- Remove standalone layout wrapper since sidebar is now global. Convert to a simple component or remove entirely (admin pages render directly inside DashboardLayout).
-
-**Sidebar navigation items:**
-- Dashboard (Home icon) -> `/`
-- Cycles (CalendarDays icon) -> `/cycles`
-- Admin group (visible only for admin role):
-  - Users & Roles (Users icon) -> `/admin/users`
-  - Audit Logs (FileText icon) -> `/admin/audit`
-- Settings group:
-  - 2FA Settings (Shield icon) -> `/settings/2fa`
-- Footer: User avatar/name + Sign Out button
+- `src/hooks/useObjectives.ts` -- CRUD hook for objectives filtered by cycle_id. Uses TanStack Query with queryKey `["objectives", cycleId]`.
+- `src/hooks/useKeyResults.ts` -- CRUD hook for key results filtered by objective_id. Includes a `updateProgress` mutation for quick value updates. QueryKey `["key-results", objectiveId]`.
 
 ---
 
-### Part B: Cycles & Governance Database
+### Part C: Frontend -- Pages and Components
 
-**New database tables (migration):**
+**New files:**
+- `src/pages/objectives/ObjectivesList.tsx` -- Lists objectives for a given cycle. Shows progress bar, status badge, owner avatar, and KR count. Accessed from CycleDetail page.
+- `src/pages/objectives/ObjectiveForm.tsx` -- Dialog form to create/edit an objective (title, description, owner selection, status).
+- `src/pages/objectives/ObjectiveDetail.tsx` -- Detail view showing objective info + list of Key Results with inline progress editing (slider or number input).
+- `src/components/okr/KeyResultCard.tsx` -- Card component for a single KR showing title, progress bar (colored by status), current/target values, and inline edit capability.
+- `src/components/okr/KeyResultForm.tsx` -- Dialog form to create/edit a key result (title, type, start/target/current values, unit).
+- `src/components/okr/ProgressBar.tsx` -- Reusable progress bar with color coding: green (on_track), yellow (at_risk), red (behind), blue (completed).
 
-1. `cycles` table:
-   - `id` UUID PK
-   - `name` text NOT NULL
-   - `description` text
-   - `start_date` date NOT NULL
-   - `end_date` date NOT NULL
-   - `status` text NOT NULL DEFAULT 'draft' (draft, active, closed, archived)
-   - `created_by` UUID NOT NULL (references profiles.id)
-   - `metadata` JSONB
-   - `created_at`, `updated_at` timestamps
-   - Indexes on status, dates, created_by
-
-2. RLS policies on `cycles`:
-   - SELECT: all authenticated users can read
-   - INSERT: users with `admin` or `okr_master` role
-   - UPDATE: users with `admin` or `okr_master` role
-   - DELETE: admin only
-
-3. Audit trigger on `cycles` table (reuses existing `audit_trigger_fn`)
-
-**New frontend files:**
-
-- `src/hooks/useCycles.ts` -- CRUD hook using TanStack Query for cycles (list, create, update, delete)
-- `src/pages/cycles/CyclesList.tsx` -- Table listing all cycles with status badges, date ranges, actions (create, edit, archive). Uses `.card-elevated`, `.table-row-hover`, `.btn-cta` for "New Cycle" button.
-- `src/pages/cycles/CycleForm.tsx` -- Dialog/modal form to create or edit a cycle (name, description, start/end dates, status). Uses React Hook Form + Zod validation.
-- `src/pages/cycles/CycleDetail.tsx` -- Detail view for a single cycle showing metadata, status, timeline. Placeholder sections for future OKR linking.
+**Modified files:**
+- `src/pages/cycles/CycleDetail.tsx` -- Replace the "Nenhum OKR vinculado" placeholder with the actual ObjectivesList component. Add "Novo Objetivo" button for authorized users.
+- `src/App.tsx` -- Add routes:
+  - `/objectives/:id` -> DashboardLayout -> ObjectiveDetail
+- `src/components/layout/AppSidebar.tsx` -- Add "Objetivos" nav item (Target icon) -> `/cycles` (objectives are accessed through cycles)
 
 ---
 
 ### Technical Details
 
-**Database migration SQL:**
-- CREATE TABLE `cycles` with all columns and indexes
-- Enable RLS, add 4 policies (select, insert, update, delete) using `has_role()` function
-- CREATE TRIGGER for audit logging on cycles
-- Validation trigger for `end_date > start_date`
+**Database migration SQL (single migration):**
+- CREATE TABLE `objectives` with columns, indexes, RLS (4 policies), audit trigger
+- CREATE TABLE `key_results` with columns, indexes, RLS (4 policies), audit trigger
+- CREATE FUNCTION `update_objective_progress()` -- recalculates objective progress as average of its KRs
+- CREATE TRIGGER on `key_results` AFTER INSERT/UPDATE/DELETE to call `update_objective_progress()`
+- CREATE TRIGGER for `updated_at` on both tables
+- ALTER PUBLICATION `supabase_realtime` ADD TABLE `key_results`
 
-**Files created (6):**
-- `src/components/layout/AppSidebar.tsx`
-- `src/components/layout/DashboardLayout.tsx`
-- `src/hooks/useCycles.ts`
-- `src/pages/cycles/CyclesList.tsx`
-- `src/pages/cycles/CycleForm.tsx`
-- `src/pages/cycles/CycleDetail.tsx`
+**Files created (8):**
+- `src/hooks/useObjectives.ts`
+- `src/hooks/useKeyResults.ts`
+- `src/pages/objectives/ObjectivesList.tsx`
+- `src/pages/objectives/ObjectiveForm.tsx`
+- `src/pages/objectives/ObjectiveDetail.tsx`
+- `src/components/okr/KeyResultCard.tsx`
+- `src/components/okr/KeyResultForm.tsx`
+- `src/components/okr/ProgressBar.tsx`
 
 **Files modified (3):**
-- `src/App.tsx` -- Route restructuring
-- `src/pages/Dashboard.tsx` -- Remove header, keep content only
-- `src/pages/admin/AdminLayout.tsx` -- Simplify or remove
+- `src/pages/cycles/CycleDetail.tsx` -- Integrate ObjectivesList
+- `src/App.tsx` -- Add objective detail route
+- `src/components/layout/AppSidebar.tsx` -- Minor nav update
 
-**No new dependencies needed.** All components use existing shadcn/ui + Lucide icons + TanStack Query.
+**No new dependencies needed.**
 
