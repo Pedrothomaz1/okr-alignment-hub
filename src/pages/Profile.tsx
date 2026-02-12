@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Save, User } from "lucide-react";
+import { Save, Camera, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
@@ -17,9 +17,11 @@ export default function Profile() {
   const { roles } = useRoles(user?.id);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const profileQuery = useQuery({
     queryKey: ["profile", user?.id],
@@ -42,6 +44,51 @@ export default function Profile() {
     }
   }, [profileQuery.data]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Selecione uma imagem válida", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Imagem deve ter no máximo 2MB", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+      setAvatarUrl(newUrl);
+
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: newUrl })
+        .eq("id", user.id);
+
+      queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      toast({ title: "Foto atualizada!" });
+    } catch (err) {
+      toast({ title: "Erro ao enviar foto", description: String(err), variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const mutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -52,6 +99,7 @@ export default function Profile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
       toast({ title: "Perfil atualizado com sucesso!" });
     },
     onError: () => {
@@ -80,15 +128,37 @@ export default function Profile() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
-              <AvatarFallback className="text-lg bg-primary/10 text-primary">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="h-20 w-20">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
+                <AvatarFallback className="text-xl bg-primary/10 text-primary">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {uploading ? (
+                  <Loader2 className="h-5 w-5 text-white animate-spin" />
+                ) : (
+                  <Camera className="h-5 w-5 text-white" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+            </div>
             <div>
               <CardTitle>{fullName || "Sem nome"}</CardTitle>
               <CardDescription>{user?.email}</CardDescription>
+              <p className="text-xs text-muted-foreground mt-1">Passe o mouse sobre a foto para alterar</p>
             </div>
           </div>
         </CardHeader>
@@ -105,16 +175,6 @@ export default function Profile() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Seu nome completo"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="avatarUrl">URL do Avatar</Label>
-            <Input
-              id="avatarUrl"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://exemplo.com/foto.jpg"
             />
           </div>
 
