@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Target } from "lucide-react";
+import { ArrowLeft, Plus, Target, Lock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useKeyResults } from "@/hooks/useKeyResults";
+import { useCycles } from "@/hooks/useCycles";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { KeyResultCard } from "@/components/okr/KeyResultCard";
 import { KeyResultForm } from "@/components/okr/KeyResultForm";
@@ -47,7 +48,10 @@ export default function ObjectiveDetail() {
   });
 
   const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress } = useKeyResults(id);
+  const { cycles } = useCycles();
   const obj = objectiveQuery.data;
+  const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
+  const isCycleLocked = parentCycle?.locked ?? false;
 
   if (objectiveQuery.isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
 
@@ -109,12 +113,21 @@ export default function ObjectiveDetail() {
         </CardContent>
       </Card>
 
+      {isCycleLocked && (
+        <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
+          <Lock className="h-4 w-4" />
+          Ciclo travado — solicite um change request para alterações.
+        </div>
+      )}
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Key Results</h2>
-          <Button size="sm" className="btn-cta h-8 px-3 text-xs" onClick={() => setKrFormOpen(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Novo KR
-          </Button>
+          {!isCycleLocked && (
+            <Button size="sm" className="btn-cta h-8 px-3 text-xs" onClick={() => setKrFormOpen(true)}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Novo KR
+            </Button>
+          )}
         </div>
 
         {krsLoading ? (

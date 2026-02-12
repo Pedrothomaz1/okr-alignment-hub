@@ -12,6 +12,7 @@ export interface Cycle {
   status: string;
   created_by: string;
   metadata: Json | null;
+  locked: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -33,11 +34,12 @@ export function useCycles() {
   });
 
   const createCycle = useMutation({
-    mutationFn: async (cycle: { name: string; description?: string; start_date: string; end_date: string; status?: string }) => {
+    mutationFn: async (cycle: { name: string; description?: string; start_date: string; end_date: string; status?: string; metadata?: Record<string, unknown> }) => {
       if (!user) throw new Error("Not authenticated");
+      const { metadata, ...rest } = cycle;
       const { data, error } = await supabase
         .from("cycles")
-        .insert({ ...cycle, created_by: user.id })
+        .insert({ ...rest, created_by: user.id, metadata: metadata as Json })
         .select()
         .single();
       if (error) throw error;
@@ -47,7 +49,8 @@ export function useCycles() {
   });
 
   const updateCycle = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; start_date?: string; end_date?: string; status?: string }) => {
+    mutationFn: async ({ id, metadata, ...rest }: { id: string; name?: string; description?: string; start_date?: string; end_date?: string; status?: string; metadata?: Record<string, unknown> }) => {
+      const updates = { ...rest, ...(metadata !== undefined ? { metadata: metadata as Json } : {}) };
       const { data, error } = await supabase
         .from("cycles")
         .update(updates)
