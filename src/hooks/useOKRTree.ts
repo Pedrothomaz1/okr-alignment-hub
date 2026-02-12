@@ -1,18 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Objective } from "./useObjectives";
+import type { KeyResult } from "./useKeyResults";
 
 export interface TreeNode {
   objective: Objective;
+  keyResults: KeyResult[];
   children: TreeNode[];
 }
 
-export function buildTree(objectives: Objective[]): TreeNode[] {
+export function buildTree(objectives: Objective[], keyResults?: KeyResult[]): TreeNode[] {
   const map = new Map<string, TreeNode>();
   const roots: TreeNode[] = [];
+  const krMap = new Map<string, KeyResult[]>();
+
+  if (keyResults) {
+    for (const kr of keyResults) {
+      if (!krMap.has(kr.objective_id)) krMap.set(kr.objective_id, []);
+      krMap.get(kr.objective_id)!.push(kr);
+    }
+  }
 
   for (const obj of objectives) {
-    map.set(obj.id, { objective: obj, children: [] });
+    map.set(obj.id, { objective: obj, keyResults: krMap.get(obj.id) || [], children: [] });
   }
 
   for (const obj of objectives) {
@@ -32,20 +42,35 @@ export function useOKRTree(cycleId: string | undefined) {
     queryKey: ["okr-tree", cycleId],
     queryFn: async () => {
       if (!cycleId) return [];
-      const { data, error } = await supabase
-        .from("objectives")
-        .select("*, profiles!objectives_owner_id_fkey(full_name), key_results(id)")
-        .eq("cycle_id", cycleId)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      const objectives = (data as any[]).map((o) => ({
+      const [objRes, krRes] = await Promise.all([
+        supabase
+          .from("objectives")
+          .select("*, profiles!objectives_owner_id_fkey(full_name), key_results(id)")
+          .eq("cycle_id", cycleId)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("key_results")
+          .select("*, objectives!inner(cycle_id)")
+          .eq("objectives.cycle_id", cycleId)
+          .order("created_at", { ascending: true }),
+      ]);
+      if (objRes.error) throw objRes.error;
+      if (krRes.error) throw krRes.error;
+
+      const objectives = (objRes.data as any[]).map((o) => ({
         ...o,
         owner_name: o.profiles?.full_name || "Sem dono",
         kr_count: o.key_results?.length ?? 0,
         profiles: undefined,
         key_results: undefined,
       })) as Objective[];
-      return buildTree(objectives);
+
+      const keyResults = (krRes.data as any[]).map((kr) => ({
+        ...kr,
+        objectives: undefined,
+      })) as KeyResult[];
+
+      return buildTree(objectives, keyResults);
     },
     enabled: !!cycleId,
   });
