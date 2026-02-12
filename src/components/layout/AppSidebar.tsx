@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,47 +73,41 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60 text-2xs uppercase tracking-widest">
-            Configurações
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="transition-smooth hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              {isAdmin && adminItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="transition-smooth hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="flex items-center gap-3 px-2 py-3">
+        <SidebarMenu>
+          {settingsItems.map((item) => (
+            <SidebarMenuItem key={item.url}>
+              <SidebarMenuButton asChild>
+                <NavLink
+                  to={item.url}
+                  className="transition-smooth hover:bg-sidebar-accent"
+                  activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+          {isAdmin && adminItems.map((item) => (
+            <SidebarMenuItem key={item.url}>
+              <SidebarMenuButton asChild>
+                <NavLink
+                  to={item.url}
+                  className="transition-smooth hover:bg-sidebar-accent"
+                  activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+
+        <div className="flex items-center gap-3 px-2 py-3 border-t border-sidebar-border mt-2">
           <Link to="/settings/profile">
             <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-sidebar-ring transition-all">
               <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs">
