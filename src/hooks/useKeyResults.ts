@@ -17,6 +17,8 @@ export interface KeyResult {
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  owner_name?: string;
+  owner_avatar?: string | null;
 }
 
 export function useKeyResults(objectiveId: string | undefined) {
@@ -29,11 +31,16 @@ export function useKeyResults(objectiveId: string | undefined) {
       if (!objectiveId) return [];
       const { data, error } = await supabase
         .from("key_results")
-        .select("*")
+        .select("*, profiles!key_results_owner_id_fkey(full_name, avatar_url)")
         .eq("objective_id", objectiveId)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data as KeyResult[];
+      return (data as any[]).map((kr) => ({
+        ...kr,
+        owner_name: kr.profiles?.full_name || "Sem dono",
+        owner_avatar: kr.profiles?.avatar_url || null,
+        profiles: undefined,
+      })) as KeyResult[];
     },
     enabled: !!objectiveId,
   });

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Target, Key } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import type { TreeNode } from "@/hooks/useOKRTree";
 
@@ -50,6 +51,10 @@ function OrgNode({ node }: { node: TreeNode }) {
           <Badge variant={statusVariant[obj.status] || "outline"} className="text-2xs">
             {statusLabel[obj.status] || obj.status}
           </Badge>
+          <Avatar className="h-5 w-5">
+            {obj.owner_avatar && <AvatarImage src={obj.owner_avatar} alt={obj.owner_name} />}
+            <AvatarFallback className="text-[9px]">{(obj.owner_name || "?").charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
           <span className="text-2xs text-muted-foreground truncate">{obj.owner_name}</span>
         </div>
         <ProgressBar value={obj.progress} status={obj.status} showLabel />

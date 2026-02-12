@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Pencil, History } from "lucide-react";
 import { ProgressBar } from "./ProgressBar";
 import { CheckinTimeline } from "./CheckinTimeline";
@@ -32,6 +33,13 @@ export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{kr.title}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Avatar className="h-5 w-5">
+                {kr.owner_avatar && <AvatarImage src={kr.owner_avatar} alt={kr.owner_name} />}
+                <AvatarFallback className="text-[10px]">{(kr.owner_name || "?").charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground">{kr.owner_name}</span>
+            </div>
             {kr.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{kr.description}</p>}
           </div>
           <div className="flex items-center gap-1 shrink-0">
