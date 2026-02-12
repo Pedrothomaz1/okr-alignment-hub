@@ -1,0 +1,159 @@
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ArrowLeft, Plus, Target } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useKeyResults } from "@/hooks/useKeyResults";
+import { ProgressBar } from "@/components/okr/ProgressBar";
+import { KeyResultCard } from "@/components/okr/KeyResultCard";
+import { KeyResultForm } from "@/components/okr/KeyResultForm";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import type { KeyResult } from "@/hooks/useKeyResults";
+
+const statusLabel: Record<string, string> = {
+  on_track: "No caminho",
+  at_risk: "Em risco",
+  behind: "Atrasado",
+  completed: "Concluído",
+};
+const statusBadge: Record<string, string> = {
+  on_track: "badge-success",
+  at_risk: "badge-warning",
+  behind: "badge-destructive",
+  completed: "badge-info",
+};
+
+export default function ObjectiveDetail() {
+  const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
+  const [krFormOpen, setKrFormOpen] = useState(false);
+  const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
+
+  const objectiveQuery = useQuery({
+    queryKey: ["objective", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from("objectives")
+        .select("*, profiles!objectives_owner_id_fkey(full_name), cycles(name)")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!id,
+  });
+
+  const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress } = useKeyResults(id);
+  const obj = objectiveQuery.data;
+
+  if (objectiveQuery.isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+
+  if (!obj) {
+    return (
+      <div className="space-y-4">
+        <Link to="/cycles"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button></Link>
+        <p className="text-muted-foreground">Objetivo não encontrado.</p>
+      </div>
+    );
+  }
+
+  const handleCreateKr = (values: any) => {
+    createKeyResult.mutate(
+      { ...values, objective_id: id! },
+      {
+        onSuccess: () => { setKrFormOpen(false); toast({ title: "Key Result criado" }); },
+        onError: (e) => toast({ title: "Erro", description: String(e), variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleUpdateKr = (values: any) => {
+    if (!editingKr) return;
+    updateKeyResult.mutate(
+      { id: editingKr.id, ...values },
+      {
+        onSuccess: () => { setEditingKr(null); toast({ title: "Key Result atualizado" }); },
+        onError: (e) => toast({ title: "Erro", description: String(e), variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleProgressUpdate = (krId: string, value: number) => {
+    updateProgress.mutate({ id: krId, current_value: value });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Link to={`/cycles/${obj.cycle_id}`}>
+          <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Voltar ao ciclo</Button>
+        </Link>
+        <div className="flex-1">
+          <p className="text-xs text-muted-foreground">{obj.cycles?.name}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{obj.title}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={statusBadge[obj.status] || "badge-info"}>{statusLabel[obj.status] || obj.status}</span>
+            <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
+          </div>
+        </div>
+      </div>
+
+      <Card className="card-elevated">
+        <CardHeader><CardTitle className="text-base">Progresso geral</CardTitle></CardHeader>
+        <CardContent>
+          {obj.description && <p className="text-sm text-muted-foreground mb-3">{obj.description}</p>}
+          <ProgressBar value={obj.progress} status={obj.status} showLabel />
+        </CardContent>
+      </Card>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Key Results</h2>
+          <Button size="sm" className="btn-cta h-8 px-3 text-xs" onClick={() => setKrFormOpen(true)}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Novo KR
+          </Button>
+        </div>
+
+        {krsLoading ? (
+          <p className="text-sm text-muted-foreground">Carregando...</p>
+        ) : keyResults.length === 0 ? (
+          <div className="card-elevated p-6 text-center">
+            <Target className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Nenhum Key Result cadastrado.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {keyResults.map((kr) => (
+              <KeyResultCard
+                key={kr.id}
+                kr={kr}
+                onUpdateProgress={handleProgressUpdate}
+                onEdit={(kr) => setEditingKr(kr)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <KeyResultForm
+        open={krFormOpen}
+        onOpenChange={setKrFormOpen}
+        onSubmit={handleCreateKr}
+        isPending={createKeyResult.isPending}
+      />
+
+      {editingKr && (
+        <KeyResultForm
+          open={!!editingKr}
+          onOpenChange={(open) => !open && setEditingKr(null)}
+          onSubmit={handleUpdateKr}
+          defaultValues={editingKr}
+          isPending={updateKeyResult.isPending}
+        />
+      )}
+    </div>
+  );
+}

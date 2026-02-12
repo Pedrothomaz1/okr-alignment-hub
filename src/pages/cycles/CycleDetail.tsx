@@ -5,6 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { useCycles } from "@/hooks/useCycles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ObjectivesList } from "@/pages/objectives/ObjectivesList";
 
 const statusLabel: Record<string, string> = {
   draft: "Rascunho",
@@ -66,7 +67,7 @@ export default function CycleDetail() {
         <Card className="card-elevated">
           <CardHeader><CardTitle className="text-base">OKRs Vinculados</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">Nenhum OKR vinculado a este ciclo ainda.</p>
+            <ObjectivesList cycleId={cycle.id} />
           </CardContent>
         </Card>
       </div>
