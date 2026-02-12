@@ -55,12 +55,12 @@ export default function AlignmentView() {
           </SelectContent>
         </Select>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Todos os status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="on_track">No caminho</SelectItem>
             <SelectItem value="at_risk">Em risco</SelectItem>
             <SelectItem value="behind">Atrasado</SelectItem>
