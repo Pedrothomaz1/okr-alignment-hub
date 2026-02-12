@@ -68,7 +68,7 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
             <Label>Status</Label>
             <Select value={watch("status")} onValueChange={(v) => setValue("status", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-[9999]">
                 {statuses.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -81,7 +81,7 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
                 onValueChange={(v) => setValue("parent_objective_id", v === "none" ? "" : v)}
               >
                 <SelectTrigger><SelectValue placeholder="Nenhum (raiz)" /></SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="z-[9999]">
                   <SelectItem value="none">Nenhum (raiz)</SelectItem>
                   {availableParents.map((o) => (
                     <SelectItem key={o.id} value={o.id}>{o.title}</SelectItem>
