@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useProfiles } from "@/hooks/useProfiles";
 import type { Objective } from "@/hooks/useObjectives";
 
 const schema = z.object({
@@ -14,6 +15,7 @@ const schema = z.object({
   description: z.string().optional(),
   status: z.string().default("on_track"),
   objective_type: z.string().default("quarterly"),
+  owner_id: z.string().optional(),
   parent_objective_id: z.string().optional(),
 });
 
@@ -42,6 +44,7 @@ const objectiveTypes = [
 ];
 
 export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isPending, objectives = [] }: ObjectiveFormProps) {
+  const { data: profiles = [] } = useProfiles();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -49,11 +52,11 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
       description: defaultValues?.description || "",
       status: defaultValues?.status || "on_track",
       objective_type: defaultValues?.objective_type || "quarterly",
+      owner_id: defaultValues?.owner_id || "",
       parent_objective_id: defaultValues?.parent_objective_id || "",
     },
   });
 
-  // Filter out self and descendants for parent selector
   const availableParents = objectives.filter((o) => o.id !== defaultValues?.id);
 
   return (
@@ -73,22 +76,36 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
             <Textarea id="obj-desc" rows={3} {...register("description")} />
           </div>
           <div>
-            <Label>Status</Label>
-            <Select value={watch("status")} onValueChange={(v) => setValue("status", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Label>Responsável</Label>
+            <Select value={watch("owner_id") || "auto"} onValueChange={(v) => setValue("owner_id", v === "auto" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="Eu mesmo" /></SelectTrigger>
               <SelectContent position="popper" className="z-[9999]">
-                {statuses.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                <SelectItem value="auto">Eu mesmo</SelectItem>
+                {profiles.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.full_name || p.email || "Sem nome"}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label>Tipo</Label>
-            <Select value={watch("objective_type")} onValueChange={(v) => setValue("objective_type", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent position="popper" className="z-[9999]">
-                {objectiveTypes.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Status</Label>
+              <Select value={watch("status")} onValueChange={(v) => setValue("status", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent position="popper" className="z-[9999]">
+                  {statuses.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Tipo</Label>
+              <Select value={watch("objective_type")} onValueChange={(v) => setValue("objective_type", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent position="popper" className="z-[9999]">
+                  {objectiveTypes.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {availableParents.length > 0 && (
             <div>
