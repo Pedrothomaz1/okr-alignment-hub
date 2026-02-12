@@ -3,16 +3,17 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import MFASettings from "./pages/MFASettings";
-import AdminLayout from "./pages/admin/AdminLayout";
 import UsersRoles from "./pages/admin/UsersRoles";
 import AuditLogs from "./pages/admin/AuditLogs";
+import CyclesList from "./pages/cycles/CyclesList";
+import CycleDetail from "./pages/cycles/CycleDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,11 +28,13 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/settings/2fa" element={<ProtectedRoute><MFASettings /></ProtectedRoute>} />
-          <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-            <Route path="users" element={<UsersRoles />} />
-            <Route path="audit" element={<AuditLogs />} />
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/settings/2fa" element={<MFASettings />} />
+            <Route path="/cycles" element={<CyclesList />} />
+            <Route path="/cycles/:id" element={<CycleDetail />} />
+            <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
+            <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
