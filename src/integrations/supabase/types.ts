@@ -163,6 +163,48 @@ export type Database = {
           },
         ]
       }
+      kr_checkins: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: string
+          key_result_id: string
+          note: string | null
+          value: number
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          id?: string
+          key_result_id: string
+          note?: string | null
+          value: number
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          key_result_id?: string
+          note?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kr_checkins_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kr_checkins_key_result_id_fkey"
+            columns: ["key_result_id"]
+            isOneToOne: false
+            referencedRelation: "key_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objectives: {
         Row: {
           created_at: string
