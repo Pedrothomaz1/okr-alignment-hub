@@ -18,6 +18,12 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
   completed: "outline",
 };
 
+const typeLabel: Record<string, string> = {
+  annual: "Anual",
+  quarterly: "Trimestral",
+  monthly: "Mensal",
+};
+
 function OrgNode({ node }: { node: TreeNode }) {
   const obj = node.objective;
   const hasChildren = node.children.length > 0;
@@ -29,10 +35,17 @@ function OrgNode({ node }: { node: TreeNode }) {
         to={`/objectives/${obj.id}`}
         className="block w-64 rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md hover:border-primary/40 transition-all"
       >
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-1">
           <Target className="h-4 w-4 text-primary shrink-0" />
           <span className="text-sm font-semibold truncate flex-1">{obj.title}</span>
         </div>
+        {obj.objective_type && (
+          <div className="mb-1">
+            <Badge variant="outline" className={`text-2xs ${obj.objective_type === 'annual' ? 'border-primary text-primary font-bold' : ''}`}>
+              {typeLabel[obj.objective_type] || obj.objective_type}
+            </Badge>
+          </div>
+        )}
         <div className="flex items-center gap-2 mb-2">
           <Badge variant={statusVariant[obj.status] || "outline"} className="text-2xs">
             {statusLabel[obj.status] || obj.status}
