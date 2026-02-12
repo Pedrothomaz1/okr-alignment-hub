@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +11,15 @@ import type { Enums } from "@/integrations/supabase/types";
 
 type AppRole = Enums<"app_role">;
 const ROLES = Constants.public.Enums.app_role;
+
+const roleBadgeClass = (role: string) => {
+  switch (role) {
+    case "admin": return "badge-critical";
+    case "okr_master": return "badge-info";
+    case "manager": return "badge-warning";
+    default: return "badge-success";
+  }
+};
 
 export default function UsersRoles() {
   const { toast } = useToast();
@@ -76,41 +84,43 @@ export default function UsersRoles() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Users & Roles</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Users & Roles</h1>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Roles</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {usersQuery.data?.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell className="font-medium">{user.full_name || "—"}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {getUserRoles(user.id).map((role) => (
-                    <Badge key={role} variant="secondary" className="cursor-pointer" onClick={() => removeRole.mutate({ userId: user.id, role })}>
-                      {role} ×
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Button size="sm" variant="outline" onClick={() => { setAssignDialog({ userId: user.id, email: user.email ?? "" }); setSelectedRole("member"); }}>
-                  Add Role
-                </Button>
-              </TableCell>
+      <div className="card-elevated overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Roles</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody className="table-row-hover">
+            {usersQuery.data?.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.full_name || "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {getUserRoles(user.id).map((role) => (
+                      <span key={role} className={`${roleBadgeClass(role)} cursor-pointer`} onClick={() => removeRole.mutate({ userId: user.id, role })}>
+                        {role} ×
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Button size="sm" variant="outline" onClick={() => { setAssignDialog({ userId: user.id, email: user.email ?? "" }); setSelectedRole("member"); }}>
+                    Add Role
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       <Dialog open={!!assignDialog} onOpenChange={() => setAssignDialog(null)}>
         <DialogContent>

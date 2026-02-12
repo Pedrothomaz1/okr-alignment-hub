@@ -37,10 +37,10 @@ export function MFAVerify({ factorId, onSuccess }: MFAVerifyProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md text-center">
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+      <Card className="card-elevated w-full max-w-md text-center animate-scale-in">
         <CardHeader>
-          <CardTitle>Two-Factor Authentication</CardTitle>
+          <CardTitle className="text-xl font-semibold tracking-tight">Two-Factor Authentication</CardTitle>
           <CardDescription>Enter the 6-digit code from your authenticator app</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
@@ -51,9 +51,9 @@ export function MFAVerify({ factorId, onSuccess }: MFAVerifyProps) {
               ))}
             </InputOTPGroup>
           </InputOTP>
-          <Button onClick={handleVerify} disabled={code.length !== 6 || isLoading} className="w-full">
+          <button onClick={handleVerify} disabled={code.length !== 6 || isLoading} className="btn-cta w-full">
             {isLoading ? "Verifying..." : "Verify"}
-          </Button>
+          </button>
         </CardContent>
       </Card>
     </div>

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
@@ -27,7 +26,7 @@ export default function AuditLogs() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">Audit Logs</h1>
 
       <div className="flex gap-3 flex-wrap">
         <Select value={entityType} onValueChange={setEntityType}>
@@ -46,32 +45,34 @@ export default function AuditLogs() {
         </Select>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Time</TableHead>
-            <TableHead>Entity</TableHead>
-            <TableHead>Action</TableHead>
-            <TableHead>Actor</TableHead>
-            <TableHead>Details</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.data.map((log) => (
-            <TableRow key={log.id}>
-              <TableCell className="text-sm text-muted-foreground">{format(new Date(log.created_at), "PPp")}</TableCell>
-              <TableCell>{log.entity_type}</TableCell>
-              <TableCell>{log.action}</TableCell>
-              <TableCell className="text-xs text-muted-foreground font-mono">{log.actor_id?.slice(0, 8) ?? "system"}</TableCell>
-              <TableCell>
-                <Button size="sm" variant="ghost" onClick={() => setDetail({ before: log.before_state, after: log.after_state })}>
-                  View
-                </Button>
-              </TableCell>
+      <div className="card-elevated overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Time</TableHead>
+              <TableHead>Entity</TableHead>
+              <TableHead>Action</TableHead>
+              <TableHead>Actor</TableHead>
+              <TableHead>Details</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody className="table-row-hover">
+            {data?.data.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell className="text-sm text-muted-foreground">{format(new Date(log.created_at), "PPp")}</TableCell>
+                <TableCell><span className="badge-info">{log.entity_type}</span></TableCell>
+                <TableCell><span className="badge-warning">{log.action}</span></TableCell>
+                <TableCell className="text-2xs text-muted-foreground font-mono">{log.actor_id?.slice(0, 8) ?? "system"}</TableCell>
+                <TableCell>
+                  <Button size="sm" variant="ghost" onClick={() => setDetail({ before: log.before_state, after: log.after_state })}>
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{data?.count ?? 0} total entries</p>
@@ -87,11 +88,11 @@ export default function AuditLogs() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Before</h3>
-              <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-60">{detail?.before ? JSON.stringify(detail.before, null, 2) : "—"}</pre>
+              <pre className="text-xs bg-primary-subtle p-3 rounded-md overflow-auto max-h-60 border border-border">{detail?.before ? JSON.stringify(detail.before, null, 2) : "—"}</pre>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">After</h3>
-              <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-60">{detail?.after ? JSON.stringify(detail.after, null, 2) : "—"}</pre>
+              <pre className="text-xs bg-primary-subtle p-3 rounded-md overflow-auto max-h-60 border border-border">{detail?.after ? JSON.stringify(detail.after, null, 2) : "—"}</pre>
             </div>
           </div>
         </DialogContent>

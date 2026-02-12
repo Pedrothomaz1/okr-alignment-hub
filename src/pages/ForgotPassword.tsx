@@ -37,8 +37,8 @@ export default function ForgotPassword() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+        <Card className="card-elevated w-full max-w-md text-center animate-scale-in">
           <CardHeader>
             <CardTitle>Check your email</CardTitle>
             <CardDescription>If an account exists, we've sent a password reset link.</CardDescription>
@@ -52,10 +52,10 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+      <Card className="card-elevated w-full max-w-md animate-scale-in">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardTitle className="text-xl font-semibold tracking-tight">Reset Password</CardTitle>
           <CardDescription>Enter your email to receive a reset link</CardDescription>
         </CardHeader>
         <CardContent>
@@ -68,9 +68,9 @@ export default function ForgotPassword() {
                   <FormMessage />
                 </FormItem>
               )} />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <button type="submit" className="btn-cta w-full" disabled={isLoading}>
                 {isLoading ? "Sending..." : "Send Reset Link"}
-              </Button>
+              </button>
             </form>
           </Form>
         </CardContent>

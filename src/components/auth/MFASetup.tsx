@@ -57,10 +57,10 @@ export function MFASetup({ onComplete, onSkip }: MFASetupProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
+      <Card className="card-elevated w-full max-w-md animate-scale-in">
         <CardHeader className="text-center">
-          <CardTitle>Set Up 2FA</CardTitle>
+          <CardTitle className="text-xl font-semibold tracking-tight">Set Up 2FA</CardTitle>
           <CardDescription>
             {step === "init"
               ? "Secure your account with two-factor authentication"
@@ -70,9 +70,9 @@ export function MFASetup({ onComplete, onSkip }: MFASetupProps) {
         <CardContent className="flex flex-col items-center gap-4">
           {step === "init" ? (
             <>
-              <Button onClick={handleEnroll} disabled={isLoading} className="w-full">
+              <button onClick={handleEnroll} disabled={isLoading} className="btn-cta w-full">
                 {isLoading ? "Setting up..." : "Enable 2FA"}
-              </Button>
+              </button>
               {onSkip && (
                 <Button variant="ghost" onClick={onSkip} className="w-full">
                   Skip for now
@@ -81,7 +81,7 @@ export function MFASetup({ onComplete, onSkip }: MFASetupProps) {
             </>
           ) : (
             <>
-              {qrCode && <img src={qrCode} alt="TOTP QR Code" className="w-48 h-48" />}
+              {qrCode && <img src={qrCode} alt="TOTP QR Code" className="w-48 h-48 rounded-lg border" />}
               <InputOTP maxLength={6} value={code} onChange={setCode}>
                 <InputOTPGroup>
                   {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -89,9 +89,9 @@ export function MFASetup({ onComplete, onSkip }: MFASetupProps) {
                   ))}
                 </InputOTPGroup>
               </InputOTP>
-              <Button onClick={handleVerify} disabled={code.length !== 6 || isLoading} className="w-full">
+              <button onClick={handleVerify} disabled={code.length !== 6 || isLoading} className="btn-cta w-full">
                 {isLoading ? "Verifying..." : "Verify & Enable"}
-              </Button>
+              </button>
             </>
           )}
         </CardContent>
