@@ -23,15 +23,15 @@ const mainItems = [
   { title: "Alinhamento", url: "/alignment", icon: GitBranch },
 ];
 
+const settingsItems = [
+  { title: "Meu Perfil", url: "/settings/profile", icon: User },
+  { title: "Autenticação 2FA", url: "/settings/2fa", icon: Shield },
+];
+
 const adminItems = [
   { title: "Usuários & Papéis", url: "/admin/users", icon: Users },
   { title: "Logs de Auditoria", url: "/admin/audit", icon: FileText },
   { title: "Change Requests", url: "/admin/change-requests", icon: FileQuestion },
-];
-
-const settingsItems = [
-  { title: "Meu Perfil", url: "/settings/profile", icon: User },
-  { title: "Autenticação 2FA", url: "/settings/2fa", icon: Shield },
 ];
 
 export function AppSidebar() {
@@ -73,32 +73,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-sidebar-foreground/60 text-2xs uppercase tracking-widest">
-              Administração
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className="transition-smooth hover:bg-sidebar-accent"
-                        activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/60 text-2xs uppercase tracking-widest">
             Configurações
@@ -106,6 +80,20 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {settingsItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="transition-smooth hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              {isAdmin && adminItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
