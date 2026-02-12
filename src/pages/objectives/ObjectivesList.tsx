@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Target } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useObjectives } from "@/hooks/useObjectives";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { ObjectiveForm } from "./ObjectiveForm";
@@ -67,7 +68,13 @@ export function ObjectivesList({ cycleId }: ObjectivesListProps) {
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{obj.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{obj.owner_name} · {obj.kr_count} KR{obj.kr_count !== 1 ? "s" : ""}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Avatar className="h-5 w-5">
+                        {obj.owner_avatar && <AvatarImage src={obj.owner_avatar} alt={obj.owner_name} />}
+                        <AvatarFallback className="text-[10px]">{(obj.owner_name || "?").charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">{obj.owner_name} · {obj.kr_count} KR{obj.kr_count !== 1 ? "s" : ""}</span>
+                    </div>
                   </div>
                   <span className={statusBadge[obj.status] || "badge-info"}>
                     {statusLabel[obj.status] || obj.status}

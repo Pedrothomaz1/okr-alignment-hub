@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Clock, Unlock } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useKeyResults } from "@/hooks/useKeyResults";
@@ -137,6 +138,10 @@ export default function ObjectiveDetail() {
           <h1 className="text-2xl font-semibold tracking-tight">{obj.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className={statusBadge[obj.status] || "badge-info"}>{statusLabel[obj.status] || obj.status}</span>
+            <Avatar className="h-6 w-6">
+              {obj.profiles?.avatar_url && <AvatarImage src={obj.profiles.avatar_url} alt={obj.profiles?.full_name} />}
+              <AvatarFallback className="text-[10px]">{(obj.profiles?.full_name || "?").charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
             <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
           </div>
         </div>

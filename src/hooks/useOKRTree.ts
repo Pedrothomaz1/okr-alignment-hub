@@ -45,7 +45,7 @@ export function useOKRTree(cycleId: string | undefined) {
       const [objRes, krRes] = await Promise.all([
         supabase
           .from("objectives")
-          .select("*, profiles!objectives_owner_id_fkey(full_name), key_results(id)")
+          .select("*, profiles!objectives_owner_id_fkey(full_name, avatar_url), key_results(id)")
           .eq("cycle_id", cycleId)
           .order("created_at", { ascending: true }),
         supabase
@@ -60,6 +60,7 @@ export function useOKRTree(cycleId: string | undefined) {
       const objectives = (objRes.data as any[]).map((o) => ({
         ...o,
         owner_name: o.profiles?.full_name || "Sem dono",
+        owner_avatar: o.profiles?.avatar_url || null,
         kr_count: o.key_results?.length ?? 0,
         profiles: undefined,
         key_results: undefined,

@@ -16,6 +16,7 @@ export interface Objective {
   created_at: string;
   updated_at: string;
   owner_name?: string;
+  owner_avatar?: string | null;
   kr_count?: number;
 }
 
@@ -29,13 +30,14 @@ export function useObjectives(cycleId: string | undefined) {
       if (!cycleId) return [];
       const { data, error } = await supabase
         .from("objectives")
-        .select("*, profiles!objectives_owner_id_fkey(full_name), key_results(id)")
+        .select("*, profiles!objectives_owner_id_fkey(full_name, avatar_url), key_results(id)")
         .eq("cycle_id", cycleId)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return (data as any[]).map((o) => ({
         ...o,
         owner_name: o.profiles?.full_name || "Sem dono",
+        owner_avatar: o.profiles?.avatar_url || null,
         kr_count: o.key_results?.length ?? 0,
         profiles: undefined,
         key_results: undefined,
