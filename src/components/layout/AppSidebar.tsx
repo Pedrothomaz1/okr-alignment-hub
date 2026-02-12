@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Ciclos", url: "/cycles", icon: CalendarDays },
+  { title: "Alinhamento", url: "/alignment", icon: GitBranch },
 ];
 
 const adminItems = [

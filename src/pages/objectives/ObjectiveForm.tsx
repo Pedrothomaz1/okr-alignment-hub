@@ -13,6 +13,7 @@ const schema = z.object({
   title: z.string().min(1, "Título obrigatório"),
   description: z.string().optional(),
   status: z.string().default("on_track"),
+  parent_objective_id: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -23,6 +24,7 @@ interface ObjectiveFormProps {
   onSubmit: (values: FormValues) => void;
   defaultValues?: Partial<Objective>;
   isPending?: boolean;
+  objectives?: Objective[];
 }
 
 const statuses = [
@@ -32,15 +34,19 @@ const statuses = [
   { value: "completed", label: "Concluído" },
 ];
 
-export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isPending }: ObjectiveFormProps) {
+export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isPending, objectives = [] }: ObjectiveFormProps) {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       title: defaultValues?.title || "",
       description: defaultValues?.description || "",
       status: defaultValues?.status || "on_track",
+      parent_objective_id: defaultValues?.parent_objective_id || "",
     },
   });
+
+  // Filter out self and descendants for parent selector
+  const availableParents = objectives.filter((o) => o.id !== defaultValues?.id);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,6 +73,23 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
               </SelectContent>
             </Select>
           </div>
+          {availableParents.length > 0 && (
+            <div>
+              <Label>Objetivo Pai</Label>
+              <Select
+                value={watch("parent_objective_id") || "none"}
+                onValueChange={(v) => setValue("parent_objective_id", v === "none" ? "" : v)}
+              >
+                <SelectTrigger><SelectValue placeholder="Nenhum (raiz)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (raiz)</SelectItem>
+                  {availableParents.map((o) => (
+                    <SelectItem key={o.id} value={o.id}>{o.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={isPending}>{defaultValues?.id ? "Salvar" : "Criar"}</Button>
