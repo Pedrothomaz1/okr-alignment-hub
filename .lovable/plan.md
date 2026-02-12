@@ -1,47 +1,46 @@
 
 
-## Phase 4: Dashboard Analitico com Metricas OKR
+## Phase 5: Perfil do Usuario e Tema Escuro
 
-O Dashboard atual exibe apenas uma mensagem de boas-vindas e os papeis do usuario. Esta fase transforma a pagina inicial em um painel analitico com dados reais dos ciclos, objetivos e Key Results.
+Com as funcionalidades de negocio completas (Ciclos, OKRs, Dashboard), esta fase foca na experiencia do usuario: gerenciamento de perfil e alternancia entre tema claro/escuro.
 
 ---
 
 ### O que sera construido
 
-1. **Cards de metricas (stat cards)** no topo do dashboard:
-   - Total de ciclos ativos
-   - Total de objetivos (nos ciclos ativos)
-   - Progresso medio geral (dos objetivos ativos)
-   - Key Results concluidos vs total
+1. **Pagina de Perfil** (`/settings/profile`):
+   - Formulario para editar nome completo e avatar (URL)
+   - Exibicao do email (somente leitura, vem do auth)
+   - Exibicao dos papeis do usuario
+   - Botao de salvar com feedback via toast
 
-2. **Grafico de progresso por objetivo** usando Recharts (ja instalado):
-   - Grafico de barras horizontais mostrando cada objetivo do ciclo ativo com seu percentual de progresso
-   - Cores baseadas no status (verde/amarelo/vermelho/azul)
+2. **Toggle de Tema Claro/Escuro**:
+   - Botao no header global (DashboardLayout) para alternar entre light/dark
+   - Usa `next-themes` (ja instalado) para persistir a preferencia
+   - Integra com as variaveis CSS `.dark` ja definidas no design system
 
-3. **Lista resumida dos ciclos ativos** com progresso agregado:
-   - Nome do ciclo, periodo, barra de progresso media, contagem de objetivos
-
-4. **Acoes rapidas**: botoes para ir direto a Ciclos ou criar novo objetivo
+3. **Link de Perfil na Sidebar**:
+   - Novo item "Meu Perfil" no grupo Configuracoes
+   - Clicar no avatar no footer da sidebar tambem leva ao perfil
 
 ---
 
 ### Detalhes Tecnicos
 
-**Novo hook:**
-- `src/hooks/useDashboardStats.ts` -- Query unica que busca ciclos ativos com objetivos e key results aninhados para calcular todas as metricas no frontend. Usa queryKey `["dashboard-stats"]`.
+**Novo arquivo:**
+- `src/pages/Profile.tsx` -- Pagina de perfil com formulario que atualiza a tabela `profiles` via Supabase. Usa `useAuth` para obter o userId e query `["profile", userId]` para carregar/salvar dados.
 
-**Arquivo modificado:**
-- `src/pages/Dashboard.tsx` -- Substitui o conteudo atual pelo dashboard analitico completo:
-  - 4 stat cards usando as classes `.stat-card-*` do design system
-  - Grafico de barras com Recharts (`BarChart`)
-  - Lista de ciclos ativos com `ProgressBar` reutilizado
-  - Botoes de acao rapida com `.btn-cta`
+**Arquivos modificados:**
+- `src/main.tsx` -- Adicionar `ThemeProvider` do `next-themes` envolvendo o App
+- `src/components/layout/DashboardLayout.tsx` -- Adicionar botao de toggle tema (Sun/Moon icon) no header
+- `src/components/layout/AppSidebar.tsx` -- Adicionar item "Meu Perfil" (User icon) no grupo Configuracoes; tornar avatar no footer clicavel
+- `src/App.tsx` -- Adicionar rota `/settings/profile` -> Profile
 
-**Nenhuma mudanca de banco de dados necessaria** -- todos os dados ja existem nas tabelas `cycles`, `objectives` e `key_results`.
+**Nenhuma mudanca de banco de dados necessaria** -- a tabela `profiles` ja existe com campos `full_name`, `avatar_url`, `email`.
 
-**Nenhuma dependencia nova** -- Recharts ja esta instalado.
+**Nenhuma dependencia nova** -- `next-themes` ja esta instalado.
 
-**Arquivos:**
-- Criado (1): `src/hooks/useDashboardStats.ts`
-- Modificado (1): `src/pages/Dashboard.tsx`
+**Resumo de arquivos:**
+- Criado (1): `src/pages/Profile.tsx`
+- Modificados (4): `src/main.tsx`, `src/components/layout/DashboardLayout.tsx`, `src/components/layout/AppSidebar.tsx`, `src/App.tsx`
 
