@@ -1,4 +1,5 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
@@ -27,6 +28,7 @@ const adminItems = [
 ];
 
 const settingsItems = [
+  { title: "Meu Perfil", url: "/settings/profile", icon: User },
   { title: "Autenticação 2FA", url: "/settings/2fa", icon: Shield },
 ];
 
@@ -122,11 +124,13 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <div className="flex items-center gap-3 px-2 py-3">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <Link to="/settings/profile">
+            <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-sidebar-ring transition-all">
+              <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="text-sm font-medium text-sidebar-foreground truncate">
               {user?.user_metadata?.full_name || "Usuário"}

@@ -15,6 +15,7 @@ import AuditLogs from "./pages/admin/AuditLogs";
 import CyclesList from "./pages/cycles/CyclesList";
 import CycleDetail from "./pages/cycles/CycleDetail";
 import ObjectiveDetail from "./pages/objectives/ObjectiveDetail";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/settings/profile" element={<Profile />} />
             <Route path="/settings/2fa" element={<MFASettings />} />
             <Route path="/cycles" element={<CyclesList />} />
             <Route path="/cycles/:id" element={<CycleDetail />} />
