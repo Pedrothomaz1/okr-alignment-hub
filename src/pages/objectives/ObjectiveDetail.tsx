@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Target, Lock } from "lucide-react";
+import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useKeyResults } from "@/hooks/useKeyResults";
 import { useCycles } from "@/hooks/useCycles";
+import { useObjectiveAncestors } from "@/hooks/useOKRTree";
+import { useOKRCollaborators } from "@/hooks/useOKRCollaborators";
+import { useOKRLinks } from "@/hooks/useOKRLinks";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { KeyResultCard } from "@/components/okr/KeyResultCard";
 import { KeyResultForm } from "@/components/okr/KeyResultForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { KeyResult } from "@/hooks/useKeyResults";
 
@@ -49,6 +53,9 @@ export default function ObjectiveDetail() {
 
   const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress } = useKeyResults(id);
   const { cycles } = useCycles();
+  const { data: ancestors } = useObjectiveAncestors(id);
+  const { collaborators } = useOKRCollaborators(id);
+  const { links } = useOKRLinks(id);
   const obj = objectiveQuery.data;
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
@@ -89,8 +96,26 @@ export default function ObjectiveDetail() {
     updateProgress.mutate({ id: krId, current_value: value });
   };
 
+  // Ancestors breadcrumb (exclude current)
+  const ancestorList = (ancestors || []).filter((a: any) => a.id !== id);
+
   return (
     <div className="space-y-6">
+      {/* Breadcrumb de alinhamento */}
+      {ancestorList.length > 0 && (
+        <nav className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
+          {ancestorList.map((a: any, i: number) => (
+            <span key={a.id} className="flex items-center gap-1">
+              <Link to={`/objectives/${a.id}`} className="hover:underline hover:text-foreground">
+                {a.title}
+              </Link>
+              <ChevronRight className="h-3 w-3" />
+            </span>
+          ))}
+          <span className="text-foreground font-medium">{obj.title}</span>
+        </nav>
+      )}
+
       <div className="flex items-center gap-4">
         <Link to={`/cycles/${obj.cycle_id}`}>
           <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Voltar ao ciclo</Button>
@@ -112,6 +137,44 @@ export default function ObjectiveDetail() {
           <ProgressBar value={obj.progress} status={obj.status} showLabel />
         </CardContent>
       </Card>
+
+      {/* Collaborators */}
+      {collaborators.length > 0 && (
+        <Card className="card-elevated">
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4" /> Colaboradores</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {collaborators.map((c) => (
+                <Badge key={c.id} variant="secondary" className="text-xs">
+                  {c.user_name} — {c.role === "editor" ? "Editor" : "Visualizador"}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Links */}
+      {links.length > 0 && (
+        <Card className="card-elevated">
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Links</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {links.map((l) => {
+                const linkedId = l.from_id === id ? l.to_id : l.from_id;
+                return (
+                  <div key={l.id} className="flex items-center gap-2 text-sm">
+                    <Badge variant="outline" className="text-2xs">{l.link_type}</Badge>
+                    <Link to={`/objectives/${linkedId}`} className="hover:underline text-primary">
+                      {linkedId}
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isCycleLocked && (
         <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">

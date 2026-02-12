@@ -15,6 +15,7 @@ import AuditLogs from "./pages/admin/AuditLogs";
 import CyclesList from "./pages/cycles/CyclesList";
 import CycleDetail from "./pages/cycles/CycleDetail";
 import ObjectiveDetail from "./pages/objectives/ObjectiveDetail";
+import AlignmentView from "./pages/alignment/AlignmentView";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/cycles" element={<CyclesList />} />
             <Route path="/cycles/:id" element={<CycleDetail />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
+            <Route path="/alignment" element={<AlignmentView />} />
             <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
           </Route>

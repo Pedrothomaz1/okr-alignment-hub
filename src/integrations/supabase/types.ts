@@ -292,6 +292,7 @@ export type Database = {
           id: string
           metadata: Json | null
           owner_id: string
+          parent_objective_id: string | null
           progress: number
           status: string
           title: string
@@ -304,6 +305,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           owner_id: string
+          parent_objective_id?: string | null
           progress?: number
           status?: string
           title: string
@@ -316,6 +318,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           owner_id?: string
+          parent_objective_id?: string | null
           progress?: number
           status?: string
           title?: string
@@ -336,7 +339,73 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "objectives_parent_objective_id_fkey"
+            columns: ["parent_objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      okr_collaborators: {
+        Row: {
+          created_at: string
+          id: string
+          objective_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          objective_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          objective_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_collaborators_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      okr_links: {
+        Row: {
+          created_at: string
+          created_by: string
+          from_id: string
+          id: string
+          link_type: string
+          to_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          from_id: string
+          id?: string
+          link_type?: string
+          to_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          from_id?: string
+          id?: string
+          link_type?: string
+          to_id?: string
+        }
+        Relationships: []
       }
       permissions: {
         Row: {
@@ -461,6 +530,28 @@ export type Database = {
           _request_id: string
         }
         Returns: Json
+      }
+      get_objective_ancestors: {
+        Args: { _objective_id: string }
+        Returns: {
+          created_at: string
+          cycle_id: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          owner_id: string
+          parent_objective_id: string | null
+          progress: number
+          status: string
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "objectives"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       has_role: {
         Args: {
