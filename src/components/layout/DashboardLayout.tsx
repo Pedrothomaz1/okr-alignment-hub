@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Button } from "@/components/ui/button";
+import veriLogo from "@/assets/veri-logo.jpg";
 
 export default function DashboardLayout() {
   const { theme, setTheme } = useTheme();
@@ -17,6 +18,7 @@ export default function DashboardLayout() {
           <div className="flex-1 flex flex-col">
             <header className="h-12 flex items-center border-b bg-background px-4">
               <SidebarTrigger className="mr-4" />
+              <img src={veriLogo} alt="Veri logo" className="h-8 w-auto rounded mr-2" />
               <h1 className="text-base font-semibold tracking-tight text-foreground">
                 OKR Platform
               </h1>
