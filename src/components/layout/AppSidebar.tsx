@@ -57,7 +57,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-4 py-5 flex items-center justify-center border-b border-sidebar-border/50">
-        <img src={veriLogo} alt="Veri logo" className="h-12 w-auto rounded-lg shadow-sm" />
+        <img src={veriLogo} alt="Veri logo" className="h-12 w-auto rounded-[var(--radius)] shadow-sm" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

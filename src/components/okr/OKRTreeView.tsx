@@ -41,7 +41,7 @@ function OKRTreeNode({ node, level, defaultExpanded = true }: OKRTreeNodeProps) 
       )}
       <div style={{ paddingLeft: `${level * 24}px` }}>
         <Collapsible open={open} onOpenChange={setOpen}>
-          <div className="flex items-center gap-2 py-2 px-3 rounded-md hover:bg-muted/50 transition-colors group">
+          <div className="flex items-center gap-2 py-2 px-3 rounded-[calc(var(--radius)-4px)] hover:bg-muted/50 transition-colors group">
             {hasChildren ? (
               <CollapsibleTrigger className="p-0.5 rounded hover:bg-muted">
                 {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}

@@ -91,7 +91,7 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
           <DialogTitle>{editing ? "Editar Ciclo" : "Novo Ciclo"}</DialogTitle>
         </DialogHeader>
         {isLocked && (
-          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-400">
+          <div className="rounded-[calc(var(--radius)-4px)] border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
             Este ciclo está travado. Edições não são permitidas.
           </div>
         )}
