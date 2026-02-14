@@ -32,7 +32,7 @@ export function useCheckins(keyResultId: string | undefined) {
   });
 
   const createCheckin = useMutation({
-    mutationFn: async (input: { key_result_id: string; value: number; note?: string }) => {
+    mutationFn: async (input: { key_result_id: string; value: number; note?: string; confidence?: string; difficulties?: string }) => {
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("kr_checkins")
