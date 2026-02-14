@@ -66,9 +66,9 @@ export default function CyclesList() {
           <p className="text-sm text-muted-foreground">Gerencie os ciclos de OKR da organização</p>
         </div>
         {canManage && (
-          <button className="btn-cta" onClick={() => { setEditCycle(null); setFormOpen(true); }}>
+          <Button variant="cta" onClick={() => { setEditCycle(null); setFormOpen(true); }}>
             <Plus className="h-4 w-4" /> Novo Ciclo
-          </button>
+          </Button>
         )}
       </div>
 

@@ -4,6 +4,7 @@ import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MyKeyResults } from "@/components/dashboard/MyKeyResults";
 import { MyTeam } from "@/components/dashboard/MyTeam";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
@@ -47,7 +48,7 @@ export default function Dashboard() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-lg" />
+            <Skeleton key={i} className="h-20" />
           ))}
         </div>
       ) : (
@@ -88,13 +89,13 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-2">
               {isLoading ? (
-                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16" />
               ) : stats?.cyclesSummary && stats.cyclesSummary.length > 0 ? (
                 stats.cyclesSummary.map((cycle) => (
                   <Link
                     key={cycle.id}
                     to={`/cycles/${cycle.id}`}
-                    className="block p-3 rounded-md border border-border hover:border-primary/30 transition-smooth"
+                    className="block card-interactive p-3"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-xs font-medium truncate">{cycle.name}</p>
@@ -127,11 +128,13 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="flex gap-3">
-        <Link to="/cycles" className="btn-cta">
-          <Calendar className="h-4 w-4" />
-          Ver Ciclos
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        <Button variant="cta" asChild>
+          <Link to="/cycles">
+            <Calendar className="h-4 w-4" />
+            Ver Ciclos
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </div>
     </div>
   );
