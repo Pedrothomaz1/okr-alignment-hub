@@ -19,9 +19,9 @@ interface CycleApprovalCardProps {
 }
 
 const statusConfig: Record<string, { icon: React.ElementType; label: string; className: string }> = {
-  pending: { icon: Clock, label: "Pendente", className: "text-yellow-500" },
-  approved: { icon: CheckCircle2, label: "Aprovado", className: "text-green-500" },
-  rejected: { icon: XCircle, label: "Rejeitado", className: "text-red-500" },
+  pending: { icon: Clock, label: "Pendente", className: "text-warning" },
+  approved: { icon: CheckCircle2, label: "Aprovado", className: "text-success" },
+  rejected: { icon: XCircle, label: "Rejeitado", className: "text-destructive" },
 };
 
 export function CycleApprovalCard({ cycleId, cycleStatus }: CycleApprovalCardProps) {

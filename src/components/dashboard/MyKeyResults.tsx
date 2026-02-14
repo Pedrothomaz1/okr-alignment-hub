@@ -32,7 +32,7 @@ export function MyKeyResults() {
               <Link
                 key={kr.id}
                 to={`/objectives`}
-                className="block p-3 rounded-md border border-border hover:border-primary/30 transition-smooth"
+                className="block card-interactive p-3"
               >
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs font-medium truncate flex-1">{kr.title}</p>

@@ -78,7 +78,7 @@ function CustomTooltip({ active, payload, unit }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="rounded-md border border-border bg-background px-3 py-2 text-xs shadow-lg space-y-1">
+    <div className="rounded-[calc(var(--radius)-4px)] border border-border bg-background px-3 py-2 text-xs shadow-lg space-y-1">
       <p className="font-medium">{unit ? `${d.value} ${unit}` : d.value}</p>
       <p className="text-muted-foreground">{d.fullDate}</p>
       {d.note && <p className="text-muted-foreground italic">{d.note}</p>}

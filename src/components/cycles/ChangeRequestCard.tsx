@@ -95,7 +95,7 @@ export function ChangeRequestCard({ cycleId, objectiveId, showCreateButton = tru
               const cfg = statusConfig[cr.status] || statusConfig.pending;
               const Icon = cfg.icon;
               return (
-                <div key={cr.id} className="border rounded-md p-3 space-y-2">
+                <div key={cr.id} className="border rounded-[calc(var(--radius)-4px)] p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Badge variant={cfg.variant} className="text-2xs"><Icon className="h-3 w-3 mr-1" />{cfg.label}</Badge>
