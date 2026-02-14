@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import MFASettings from "./pages/MFASettings";
 import UsersRoles from "./pages/admin/UsersRoles";
+import UserDetail from "./pages/admin/UserDetail";
 import AuditLogs from "./pages/admin/AuditLogs";
 import ChangeRequestsPage from "./pages/admin/ChangeRequests";
 import CyclesList from "./pages/cycles/CyclesList";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/alignment" element={<AlignmentView />} />
             <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
+            <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
             <Route path="/admin/change-requests" element={<AdminRoute><ChangeRequestsPage /></AdminRoute>} />
           </Route>
