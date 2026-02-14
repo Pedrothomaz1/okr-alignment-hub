@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Clock, Unlock } from "lucide-react";
+import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Clock, Unlock, Pencil } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ import { useChangeRequests } from "@/hooks/useChangeRequests";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { KeyResultCard } from "@/components/okr/KeyResultCard";
 import { KeyResultForm } from "@/components/okr/KeyResultForm";
+import { ObjectiveForm } from "@/pages/objectives/ObjectiveForm";
+import { useObjectives } from "@/hooks/useObjectives";
 import { ChangeRequestCard } from "@/components/cycles/ChangeRequestCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +42,7 @@ export default function ObjectiveDetail() {
   const { toast } = useToast();
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
+  const [editObjOpen, setEditObjOpen] = useState(false);
 
   const objectiveQuery = useQuery({
     queryKey: ["objective", id],
@@ -63,6 +66,7 @@ export default function ObjectiveDetail() {
   const { links } = useOKRLinks(id);
   const { changeRequests, hasActiveApproval } = useChangeRequests(id);
   const obj = objectiveQuery.data;
+  const { objectives: siblingObjectives, updateObjective } = useObjectives(obj?.cycle_id);
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
@@ -145,6 +149,11 @@ export default function ObjectiveDetail() {
             <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
           </div>
         </div>
+        {canEdit && (
+          <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
+            <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+          </Button>
+        )}
       </div>
 
       <Card className="card-elevated">
@@ -257,6 +266,29 @@ export default function ObjectiveDetail() {
           onSubmit={handleUpdateKr}
           defaultValues={editingKr}
           isPending={updateKeyResult.isPending}
+        />
+      )}
+
+      {editObjOpen && obj && (
+        <ObjectiveForm
+          open={editObjOpen}
+          onOpenChange={setEditObjOpen}
+          onSubmit={(values) => {
+            updateObjective.mutate(
+              { id: obj.id, ...values, parent_objective_id: values.parent_objective_id || null },
+              {
+                onSuccess: () => {
+                  setEditObjOpen(false);
+                  objectiveQuery.refetch();
+                  toast({ title: "Objetivo atualizado" });
+                },
+                onError: (e) => toast({ title: "Erro", description: String(e), variant: "destructive" }),
+              }
+            );
+          }}
+          defaultValues={obj}
+          isPending={updateObjective.isPending}
+          objectives={siblingObjectives}
         />
       )}
     </div>
