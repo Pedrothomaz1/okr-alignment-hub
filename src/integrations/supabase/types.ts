@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_comments: {
+        Row: {
+          audit_log_id: string
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          audit_log_id: string
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          audit_log_id?: string
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_comments_audit_log_id_fkey"
+            columns: ["audit_log_id"]
+            isOneToOne: false
+            referencedRelation: "audit_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -312,7 +344,9 @@ export type Database = {
       kr_checkins: {
         Row: {
           author_id: string
+          confidence: string | null
           created_at: string
+          difficulties: string | null
           id: string
           key_result_id: string
           note: string | null
@@ -320,7 +354,9 @@ export type Database = {
         }
         Insert: {
           author_id: string
+          confidence?: string | null
           created_at?: string
+          difficulties?: string | null
           id?: string
           key_result_id: string
           note?: string | null
@@ -328,7 +364,9 @@ export type Database = {
         }
         Update: {
           author_id?: string
+          confidence?: string | null
           created_at?: string
+          difficulties?: string | null
           id?: string
           key_result_id?: string
           note?: string | null

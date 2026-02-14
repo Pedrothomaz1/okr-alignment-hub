@@ -73,7 +73,7 @@ export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
               <TabsTrigger value="chart" className="text-xs flex-1">Gráfico</TabsTrigger>
             </TabsList>
             <TabsContent value="timeline">
-              <CheckinTimeline keyResultId={kr.id} />
+              <CheckinTimeline keyResultId={kr.id} unit={kr.unit} targetValue={kr.target_value} />
             </TabsContent>
             <TabsContent value="chart">
               <CheckinChart

@@ -1,28 +1,16 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProgressBar } from "@/components/okr/ProgressBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
-import { Target, TrendingUp, CheckCircle2, Calendar, ArrowRight } from "lucide-react";
-
-const STATUS_COLORS: Record<string, string> = {
-  on_track: "hsl(153, 45%, 42%)",
-  at_risk: "hsl(35, 58%, 61%)",
-  behind: "hsl(13, 69%, 55%)",
-  completed: "hsl(200, 65%, 50%)",
-};
+import { Calendar, ArrowRight } from "lucide-react";
+import { MyKeyResults } from "@/components/dashboard/MyKeyResults";
+import { MyTeam } from "@/components/dashboard/MyTeam";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProgressBar } from "@/components/okr/ProgressBar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -59,134 +47,82 @@ export default function Dashboard() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-lg" />
+            <Skeleton key={i} className="h-20 rounded-lg" />
           ))}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="stat-card stat-card-primary">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Ciclos Ativos</p>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-3xl font-bold mt-2">{stats?.activeCycles ?? 0}</p>
+            <p className="text-xs font-medium text-muted-foreground">Ciclos Ativos</p>
+            <p className="text-2xl font-bold mt-1">{stats?.activeCycles ?? 0}</p>
           </div>
-
           <div className="stat-card stat-card-success">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Objetivos</p>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-3xl font-bold mt-2">{stats?.totalObjectives ?? 0}</p>
+            <p className="text-xs font-medium text-muted-foreground">Objetivos</p>
+            <p className="text-2xl font-bold mt-1">{stats?.totalObjectives ?? 0}</p>
           </div>
-
           <div className="stat-card stat-card-warning">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Progresso Médio</p>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-3xl font-bold mt-2">{stats?.averageProgress ?? 0}%</p>
+            <p className="text-xs font-medium text-muted-foreground">Progresso Médio</p>
+            <p className="text-2xl font-bold mt-1">{stats?.averageProgress ?? 0}%</p>
           </div>
-
           <div className="stat-card stat-card-primary">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">KRs Concluídos</p>
-              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-3xl font-bold mt-2">
+            <p className="text-xs font-medium text-muted-foreground">KRs Concluídos</p>
+            <p className="text-2xl font-bold mt-1">
               {stats?.completedKRs ?? 0}
-              <span className="text-base font-normal text-muted-foreground">/{stats?.totalKRs ?? 0}</span>
+              <span className="text-sm font-normal text-muted-foreground">/{stats?.totalKRs ?? 0}</span>
             </p>
           </div>
         </div>
       )}
 
-      {/* Chart + Active Cycles */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Progress Chart */}
-        <Card className="card-elevated lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Progresso por Objetivo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-64 w-full" />
-            ) : stats?.objectivesChart && stats.objectivesChart.length > 0 ? (
-              <ResponsiveContainer width="100%" height={Math.max(200, stats.objectivesChart.length * 48)}>
-                <BarChart
-                  data={stats.objectivesChart}
-                  layout="vertical"
-                  margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                  <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} fontSize={12} />
-                  <YAxis
-                    dataKey="title"
-                    type="category"
-                    width={140}
-                    fontSize={12}
-                    tick={{ fill: "hsl(var(--muted-foreground))" }}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [`${value}%`, "Progresso"]}
-                    contentStyle={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Bar dataKey="progress" radius={[0, 4, 4, 0]} barSize={24}>
-                    {stats.objectivesChart.map((entry, index) => (
-                      <Cell key={index} fill={STATUS_COLORS[entry.status] || STATUS_COLORS.on_track} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-12">
-                Nenhum objetivo encontrado nos ciclos ativos.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      {/* Two-column layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left column — 2/3 */}
+        <div className="lg:col-span-2 space-y-6">
+          <MyKeyResults />
+          <MyTeam />
 
-        {/* Active Cycles Summary */}
-        <Card className="card-elevated lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Ciclos Ativos</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 2 }).map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            ) : stats?.cyclesSummary && stats.cyclesSummary.length > 0 ? (
-              stats.cyclesSummary.map((cycle) => (
-                <Link
-                  key={cycle.id}
-                  to={`/cycles/${cycle.id}`}
-                  className="block p-3 rounded-lg border border-border hover:border-primary/30 transition-smooth"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium truncate">{cycle.name}</p>
-                    <span className="text-xs text-muted-foreground">{cycle.objectiveCount} obj.</span>
-                  </div>
-                  <ProgressBar value={cycle.averageProgress} showLabel />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(cycle.start_date).toLocaleDateString("pt-BR")} — {new Date(cycle.end_date).toLocaleDateString("pt-BR")}
-                  </p>
-                </Link>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                Nenhum ciclo ativo encontrado.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          {/* Active Cycles */}
+          <Card className="card-elevated">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">Ciclos Ativos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {isLoading ? (
+                <Skeleton className="h-16 w-full" />
+              ) : stats?.cyclesSummary && stats.cyclesSummary.length > 0 ? (
+                stats.cyclesSummary.map((cycle) => (
+                  <Link
+                    key={cycle.id}
+                    to={`/cycles/${cycle.id}`}
+                    className="block p-3 rounded-md border border-border hover:border-primary/30 transition-smooth"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-medium truncate">{cycle.name}</p>
+                      <span className="text-[10px] text-muted-foreground">{cycle.objectiveCount} obj.</span>
+                    </div>
+                    <ProgressBar value={cycle.averageProgress} showLabel />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(cycle.start_date).toLocaleDateString("pt-BR")} — {new Date(cycle.end_date).toLocaleDateString("pt-BR")}
+                    </p>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">Nenhum ciclo ativo.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right column — 1/3 */}
+        <div className="space-y-6">
+          {/* Date header */}
+          <div className="card-elevated p-4">
+            <p className="text-xs text-muted-foreground">Hoje</p>
+            <p className="text-sm font-semibold">{format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
+          </div>
+
+          <ActivityFeed />
+        </div>
       </div>
 
       {/* Quick Actions */}
