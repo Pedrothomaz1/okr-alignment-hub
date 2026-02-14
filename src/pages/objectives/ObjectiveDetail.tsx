@@ -194,14 +194,14 @@ export default function ObjectiveDetail() {
       )}
 
       {isCycleLocked && activeApproval && activeApprovalCr && (
-        <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+        <div className="rounded-[calc(var(--radius)-4px)] border border-success/30 bg-success/10 p-3 flex items-center gap-2 text-sm text-success">
           <Unlock className="h-4 w-4" />
           Edição temporária aprovada — expira em {formatDistanceToNow(new Date(activeApprovalCr.expires_at!), { locale: ptBR })}.
         </div>
       )}
 
       {isCycleLocked && !activeApproval && (
-        <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
+        <div className="rounded-[calc(var(--radius)-4px)] border border-warning/30 bg-warning/10 p-3 flex items-center gap-2 text-sm text-warning">
           <Lock className="h-4 w-4" />
           Ciclo travado — solicite um change request para alterações.
         </div>
@@ -211,8 +211,8 @@ export default function ObjectiveDetail() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Key Results</h2>
           {canEdit && (
-            <Button size="sm" className="btn-cta h-8 px-3 text-xs" onClick={() => setKrFormOpen(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1" /> Novo KR
+            <Button variant="cta" size="sm" onClick={() => setKrFormOpen(true)}>
+              <Plus className="h-3.5 w-3.5" /> Novo KR
             </Button>
           )}
         </div>
