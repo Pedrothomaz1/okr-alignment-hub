@@ -125,7 +125,7 @@ export default function Profile() {
         <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
       </div>
 
-      <Card>
+      <Card className="card-elevated">
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative group">
