@@ -107,23 +107,21 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
               </Select>
             </div>
           </div>
-          {availableParents.length > 0 && (
-            <div>
-              <Label>Objetivo Pai</Label>
-              <Select
-                value={watch("parent_objective_id") || "none"}
-                onValueChange={(v) => setValue("parent_objective_id", v === "none" ? "" : v)}
-              >
-                <SelectTrigger><SelectValue placeholder="Nenhum (raiz)" /></SelectTrigger>
-                <SelectContent position="popper" className="z-[9999]">
-                  <SelectItem value="none">Nenhum (raiz)</SelectItem>
-                  {availableParents.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div>
+            <Label>Objetivo Pai</Label>
+            <Select
+              value={watch("parent_objective_id") || "none"}
+              onValueChange={(v) => setValue("parent_objective_id", v === "none" ? "" : v)}
+            >
+              <SelectTrigger><SelectValue placeholder="Nenhum (raiz)" /></SelectTrigger>
+              <SelectContent position="popper" className="z-[9999]">
+                <SelectItem value="none">Nenhum (raiz)</SelectItem>
+                {availableParents.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={isPending}>{defaultValues?.id ? "Salvar" : "Criar"}</Button>
