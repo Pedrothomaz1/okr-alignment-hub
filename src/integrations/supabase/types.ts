@@ -553,34 +553,75 @@ export type Database = {
         Row: {
           archived: boolean
           avatar_url: string | null
+          birth_date: string | null
+          config_panel_access: boolean | null
+          cpf: string | null
           created_at: string
+          department: string | null
+          eligible_for_bonus: boolean | null
           email: string | null
           full_name: string | null
           id: string
+          job_title: string | null
+          language: string | null
+          management: string | null
+          manager_id: string | null
           metadata: Json | null
+          receive_feedback_emails: boolean | null
+          status: string | null
           updated_at: string
         }
         Insert: {
           archived?: boolean
           avatar_url?: string | null
+          birth_date?: string | null
+          config_panel_access?: boolean | null
+          cpf?: string | null
           created_at?: string
+          department?: string | null
+          eligible_for_bonus?: boolean | null
           email?: string | null
           full_name?: string | null
           id: string
+          job_title?: string | null
+          language?: string | null
+          management?: string | null
+          manager_id?: string | null
           metadata?: Json | null
+          receive_feedback_emails?: boolean | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
           archived?: boolean
           avatar_url?: string | null
+          birth_date?: string | null
+          config_panel_access?: boolean | null
+          cpf?: string | null
           created_at?: string
+          department?: string | null
+          eligible_for_bonus?: boolean | null
           email?: string | null
           full_name?: string | null
           id?: string
+          job_title?: string | null
+          language?: string | null
+          management?: string | null
+          manager_id?: string | null
           metadata?: Json | null
+          receive_feedback_emails?: boolean | null
+          status?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {

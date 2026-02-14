@@ -1,13 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Enums } from "@/integrations/supabase/types";
+import { Search } from "lucide-react";
 
 type AppRole = Enums<"app_role">;
 const ROLES = Constants.public.Enums.app_role;
@@ -21,18 +24,24 @@ const roleBadgeClass = (role: string) => {
   }
 };
 
+const statusBadgeClass = (status: string | null) => {
+  return status === "inactive" ? "badge-destructive" : "badge-success";
+};
+
 export default function UsersRoles() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [assignDialog, setAssignDialog] = useState<{ userId: string; email: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("member");
+  const [search, setSearch] = useState("");
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, full_name, archived")
+        .select("id, email, full_name, archived, status")
         .eq("archived", false)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -81,29 +90,55 @@ export default function UsersRoles() {
   const getUserRoles = (userId: string) =>
     rolesQuery.data?.filter((r) => r.user_id === userId).map((r) => r.role) ?? [];
 
+  const filteredUsers = usersQuery.data?.filter((u) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (u.full_name?.toLowerCase().includes(q)) || (u.email?.toLowerCase().includes(q));
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Users & Roles</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Usuários & Papéis</h1>
+      </div>
+
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por nome ou email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
       </div>
 
       <div className="card-elevated overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Nome</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Papéis</TableHead>
+              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="table-row-hover">
-            {usersQuery.data?.map((user) => (
-              <TableRow key={user.id}>
+            {filteredUsers?.map((user) => (
+              <TableRow
+                key={user.id}
+                className="cursor-pointer"
+                onClick={() => navigate(`/admin/users/${user.id}`)}
+              >
                 <TableCell className="font-medium">{user.full_name || "—"}</TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap gap-1">
+                  <span className={statusBadgeClass((user as any).status)}>
+                    {(user as any).status === "inactive" ? "Inativo" : "Ativo"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
                     {getUserRoles(user.id).map((role) => (
                       <span key={role} className={`${roleBadgeClass(role)} cursor-pointer`} onClick={() => removeRole.mutate({ userId: user.id, role })}>
                         {role} ×
@@ -111,7 +146,7 @@ export default function UsersRoles() {
                     ))}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <Button size="sm" variant="outline" onClick={() => { setAssignDialog({ userId: user.id, email: user.email ?? "" }); setSelectedRole("member"); }}>
                     Add Role
                   </Button>
