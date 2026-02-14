@@ -50,8 +50,8 @@ export function ObjectivesList({ cycleId }: ObjectivesListProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold">Objetivos</h3>
-        <Button size="sm" className="btn-cta h-8 px-3 text-xs" onClick={() => setFormOpen(true)}>
-          <Plus className="h-3.5 w-3.5 mr-1" /> Novo Objetivo
+        <Button variant="cta" size="sm" onClick={() => setFormOpen(true)}>
+          <Plus className="h-3.5 w-3.5" /> Novo Objetivo
         </Button>
       </div>
 
