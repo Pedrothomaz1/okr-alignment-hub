@@ -1,136 +1,173 @@
 
-# Plano: Dashboard Pessoal, Feed de Atividades e Check-in Aprimorado (estilo CoBlue)
+# Refinamento do Design System — Fundacao Visual do Veri OKR
 
-## Resumo
+## Objetivo
 
-Vamos transformar o Dashboard atual em uma experiencia inspirada no CoBlue, com tres grandes blocos: (1) Dashboard pessoal com "Meus Resultados-Chave" e "Minha Equipe", (2) Feed de atividades recentes com opcao de comentar, e (3) Check-in aprimorado com indicador de sentimento e campos de comentarios/dificuldades.
-
----
-
-## 1. Banco de Dados - Novas tabelas e colunas
-
-### 1.1 Coluna `confidence` na tabela `kr_checkins`
-Adicionar um campo de sentimento/confianca ao check-in (valores: `confident`, `neutral`, `concerned`).
-
-### 1.2 Coluna `difficulties` na tabela `kr_checkins`
-Campo de texto para registrar dificuldades encontradas, separado do campo `note` (que sera usado como "Comentarios gerais").
-
-### 1.3 Tabela `activity_comments`
-Nova tabela para permitir comentarios no feed de atividades (vinculada ao `audit_logs`):
-
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid (PK) | Identificador |
-| audit_log_id | uuid (FK) | Referencia ao audit_log |
-| author_id | uuid | Quem comentou |
-| content | text | Texto do comentario |
-| created_at | timestamptz | Data de criacao |
-
-RLS: autenticados podem ver todos; autenticados podem inserir (author_id = auth.uid()); admin pode deletar.
+Padronizar toda a base visual do projeto antes de construir novas telas: espacamento baseado em grid de 8pt, raio de borda de 20px, escala tipografica consistente, componentes core refinados, layout responsivo flex-first e linguagem visual moderna com microinteracoes suaves.
 
 ---
 
-## 2. Dashboard Pessoal (reformulacao de `Dashboard.tsx`)
+## 1. Tokens Globais (CSS + Tailwind)
 
-Layout em duas colunas, inspirado no CoBlue:
+### 1.1 Espacamento 8pt
+Substituir o valor de `--radius` e alinhar o spacing do Tailwind ao grid de 8pt. O Tailwind ja usa multiplos de 4px por padrao (p-1=4px, p-2=8px, p-4=16px, p-6=24px, p-8=32px), o que e compativel. A acao sera padronizar o uso nos componentes.
 
-### Coluna Esquerda (2/3)
+### 1.2 Raio de borda 20px
+Atualizar `--radius` de `0.5rem` (8px) para `1.25rem` (20px). Isso propaga automaticamente para `rounded-lg`, `rounded-md` e `rounded-sm` via Tailwind config:
+- `lg` = 20px (cards, modais, containers)
+- `md` = 18px (botoes, inputs)
+- `sm` = 16px (badges, elementos menores)
 
-**Secao "Meus Resultados-Chave"**
-- Lista os KRs onde o usuario logado e o `owner_id`
-- Cada linha mostra: avatar do dono, titulo do KR, barra de progresso, botao de check-in rapido
-- Dados vindos de um novo hook `useMyKeyResults` que filtra por `owner_id = user.id`
+### 1.3 Escala tipografica
+Padronizar os tamanhos no `tailwind.config.ts` para garantir consistencia:
+- `2xs`: 10px (labels, metadados) — ja existe
+- `xs`: 12px (captions, badges) — padrao Tailwind
+- `sm`: 14px (corpo secundario) — padrao Tailwind
+- `base`: 16px (corpo principal) — padrao Tailwind
+- `lg`: 18px (subtitulos) — padrao Tailwind
+- `xl`: 20px (titulos de secao) — padrao Tailwind
+- `2xl`: 24px (titulos de pagina) — padrao Tailwind
 
-**Secao "Minha Equipe"**
-- Mostra membros da equipe (usuarios que compartilham objetivos ou sao colaboradores nos mesmos ciclos)
-- Cada card mostra: avatar/iniciais, nome, progresso medio, contagem de check-ins em dia vs pendentes
-- Dados vindos de um novo hook `useMyTeam`
-
-### Coluna Direita (1/3)
-
-**Secao "Check-in" (cabecalho)**
-- Data atual e periodo/ciclo ativo
-
-**Secao "Minhas Atualizacoes" (Feed de Atividades)**
-- Busca `audit_logs` filtrados pelo `actor_id = user.id`
-- Cada item mostra: avatar, "Fulano editou/criou/deletou [entidade] **Titulo**", tempo relativo
-- Link clicavel para o objetivo/KR
-- Botao "Comentar (N)" em cada item
-- Componente inline para adicionar comentarios
+Nao precisa alterar a config, mas padronizar o uso nos componentes.
 
 ---
 
-## 3. Check-in Aprimorado
+## 2. Componentes Core
 
-Modificar o componente `CheckinTimeline.tsx` (formulario de check-in):
+### 2.1 Button (button.tsx)
+- Aumentar raio de borda para usar `rounded-[var(--radius)]` (20px) em vez de `rounded-md`
+- Adicionar variante `cta` diretamente no CVA (trazendo o `.btn-cta` para dentro do componente React)
+- Refinar transicoes: `transition-all duration-200 ease-out` + `active:scale-[0.97]` em todas as variantes
+- Tamanhos alinhados ao grid 8pt: default h-10 (40px), sm h-8 (32px), lg h-12 (48px)
 
-### Campos do formulario:
-- **Valor atual** (ja existe) com unidade ao lado
-- **Como estou me sentindo?** - 3 icones clicaveis (confiante/neutro/preocupado) mapeados para `confident`, `neutral`, `concerned`
-- **Comentarios gerais** (campo `note` existente) 
-- **Dificuldades encontradas** (novo campo `difficulties`)
-- Exibir "Ultimo valor de check-in" e "Valor da meta" como referencia no topo
+### 2.2 Card (card.tsx)
+- Raio de borda `rounded-[var(--radius)]` (20px)
+- Padding base `p-6` (24px — multiplo de 8) ja esta ok
+- Adicionar variante `outline` (sem shadow, so borda) via prop opcional
+- Transicao suave no hover: `transition-all duration-200 hover:shadow-md`
 
-### Timeline atualizada:
-- Exibir o indicador de sentimento ao lado de cada check-in historico
-- Mostrar dificuldades quando preenchidas
+### 2.3 Input (input.tsx)
+- Raio de borda `rounded-[calc(var(--radius)-2px)]` (18px)
+- Altura h-10 (40px) — ja esta ok
+- Padding px-4 (16px, multiplo de 8) em vez de px-3
+
+### 2.4 Textarea (textarea.tsx)
+- Raio de borda `rounded-[calc(var(--radius)-2px)]` (18px)
+- Padding px-4 py-3 (16px / 12px)
+
+### 2.5 Dialog/Modal (dialog.tsx)
+- Raio de borda `rounded-[var(--radius)]` (20px)
+- Overlay com backdrop-blur leve: `backdrop-blur-sm bg-black/60`
+- Animacao de entrada com `animate-scale-in` ao inves de zoom
+
+### 2.6 Badge (badge.tsx)
+- Manter `rounded-full` para badges
+- Nenhuma alteracao necessaria
+
+### 2.7 Skeleton (skeleton.tsx)
+- Raio de borda `rounded-[calc(var(--radius)-2px)]`
+- Adicionar variante `.skeleton-text` para linhas de texto (altura fixa 12px)
+- Adicionar variante `.skeleton-circle` para avatares
 
 ---
 
-## 4. Arquivos a criar/modificar
+## 3. Classes Utilitarias no CSS (index.css)
 
-### Novos arquivos:
-- `src/hooks/useMyKeyResults.ts` - busca KRs do usuario logado
-- `src/hooks/useMyTeam.ts` - busca membros da equipe do usuario
-- `src/hooks/useActivityFeed.ts` - busca audit_logs do usuario com profiles
-- `src/hooks/useActivityComments.ts` - CRUD de comentarios no feed
-- `src/components/dashboard/MyKeyResults.tsx` - secao "Meus Resultados-Chave"
-- `src/components/dashboard/MyTeam.tsx` - secao "Minha Equipe"
-- `src/components/dashboard/ActivityFeed.tsx` - feed de atividades com comentarios
+### 3.1 Renomear/organizar classes utilitarias
+Manter nomes limpos e semanticos:
+- `card-elevated` — card com sombra (ja existe, atualizar raio)
+- `card-interactive` — card clicavel (ja existe, atualizar raio)
+- `card-outline` — novo, apenas borda sem sombra
+- `stat-card` — cards de estatisticas (ja existe, atualizar raio)
+- `btn-cta` — botao CTA dourado (ja existe, atualizar raio)
+- `skeleton-text` — novo, skeleton para linhas de texto
+- `skeleton-circle` — novo, skeleton circular
 
-### Arquivos modificados:
-- `src/pages/Dashboard.tsx` - layout completo reformulado
-- `src/components/okr/CheckinTimeline.tsx` - formulario aprimorado com sentimento e dificuldades
-- `src/components/okr/KeyResultCard.tsx` - exibir sentimento nos check-ins
+### 3.2 Atualizar raios em todas as classes CSS
+Trocar todos os `rounded-lg` e `rounded-md` dentro das classes utilitarias para usar `var(--radius)`.
+
+### 3.3 Microinteracoes globais
+- `transition-smooth`: ja existe (200ms ease-out)
+- `transition-spring`: ja existe (300ms spring)
+- Adicionar `hover-lift`: `hover:translate-y-[-2px] hover:shadow-md`
+- Adicionar `press-down`: `active:scale-[0.97] active:shadow-xs`
 
 ---
 
-## 5. Sequencia de Implementacao
+## 4. Layout Responsivo (flex-first)
 
-1. Migracao do banco (colunas em `kr_checkins` + tabela `activity_comments`)
-2. Hooks novos (`useMyKeyResults`, `useMyTeam`, `useActivityFeed`, `useActivityComments`)
-3. Componentes do dashboard (`MyKeyResults`, `MyTeam`, `ActivityFeed`)
-4. Reformular `Dashboard.tsx` com novo layout
-5. Aprimorar `CheckinTimeline.tsx` com sentimento e dificuldades
-6. Atualizar timeline e cards para exibir os novos campos
+### 4.1 DashboardLayout
+- Padding da main area: `p-4 md:p-6 lg:p-8` (mobile-first, grid 8pt)
+- Container max-width ja configurado em 1440px
+
+### 4.2 Dashboard.tsx
+- Grid responsivo ja usa `md:grid-cols-2 lg:grid-cols-3` — ok
+- Ajustar gaps para multiplos de 8: `gap-4` (16px) e `gap-6` (24px) — ja ok
+
+---
+
+## 5. Arquivos a Modificar
+
+| Arquivo | Alteracao |
+|---------|----------|
+| `src/index.css` | Atualizar `--radius` para 1.25rem; adicionar `card-outline`, `skeleton-text`, `skeleton-circle`, `hover-lift`, `press-down`; atualizar raios em classes existentes |
+| `tailwind.config.ts` | Sem alteracoes estruturais — escala tipografica ja esta coberta |
+| `src/components/ui/button.tsx` | Raio de borda, variante `cta`, transicao `active:scale-[0.97]` |
+| `src/components/ui/card.tsx` | Raio de borda, transicao hover suave |
+| `src/components/ui/input.tsx` | Raio de borda, padding horizontal |
+| `src/components/ui/textarea.tsx` | Raio de borda, padding |
+| `src/components/ui/dialog.tsx` | Raio de borda, overlay blur, animacao |
+| `src/components/ui/skeleton.tsx` | Raio de borda, variantes text/circle |
+| `src/components/layout/DashboardLayout.tsx` | Padding responsivo na main |
 
 ---
 
 ## Detalhes Tecnicos
 
-### Migracao SQL
-```sql
--- Novos campos em kr_checkins
-ALTER TABLE kr_checkins ADD COLUMN confidence text DEFAULT 'neutral';
-ALTER TABLE kr_checkins ADD COLUMN difficulties text;
-
--- Tabela de comentarios no feed
-CREATE TABLE activity_comments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  audit_log_id uuid NOT NULL REFERENCES audit_logs(id) ON DELETE CASCADE,
-  author_id uuid NOT NULL,
-  content text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE activity_comments ENABLE ROW LEVEL SECURITY;
--- Policies...
+### Variavel CSS atualizada
+```css
+--radius: 1.25rem; /* 20px */
 ```
 
-### Hook useMyKeyResults
-Consulta `key_results` onde `owner_id = auth.uid()`, juntando com `objectives(title, cycle_id)` para contexto.
+### Tailwind borderRadius (propagacao automatica)
+```
+lg = var(--radius)          = 20px
+md = calc(var(--radius)-2px) = 18px
+sm = calc(var(--radius)-4px) = 16px
+```
 
-### Hook useMyTeam
-Busca perfis de usuarios que sao donos de objetivos nos mesmos ciclos ativos que o usuario logado, com contagem de check-ins.
+### Button CVA — nova variante `cta`
+```typescript
+cta: "bg-cta text-cta-foreground font-semibold hover:shadow-md active:scale-[0.97]"
+```
 
-### Feed de Atividades
-Usa `audit_logs` filtrado por `actor_id = user.id`, com join em `profiles` para nome/avatar, limitado aos ultimos 20 registros. Os titulos das entidades sao extraidos de `after_state` (jsonb) do audit log.
+### Skeleton — novas variantes
+```tsx
+function Skeleton({ className, variant, ...props }) {
+  // variant: "default" | "text" | "circle"
+}
+```
+
+### Novas classes CSS
+```css
+.card-outline {
+  @apply rounded-[var(--radius)] border bg-transparent text-card-foreground;
+}
+.skeleton-text {
+  @apply animate-pulse bg-muted h-3 rounded-[calc(var(--radius)-4px)];
+}
+.skeleton-circle {
+  @apply animate-pulse bg-muted rounded-full;
+}
+.hover-lift {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.press-down:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-xs);
+}
+```
