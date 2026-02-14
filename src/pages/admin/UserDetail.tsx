@@ -64,6 +64,7 @@ export default function UserDetail() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [cpfError, setCpfError] = useState("");
+  const [nameError, setNameError] = useState("");
   const { toast: detailToast } = useToast();
 
   useEffect(() => {
@@ -116,6 +117,14 @@ export default function UserDetail() {
   };
 
   const handleSave = () => {
+    const trimmedName = form.full_name.trim();
+    if (!trimmedName) {
+      setNameError("Nome completo é obrigatório");
+      detailToast({ variant: "destructive", title: "Campo obrigatório", description: "Preencha o nome completo." });
+      return;
+    }
+    setNameError("");
+
     if (form.cpf) {
       const digits = form.cpf.replace(/\D/g, "");
       if (digits.length > 0 && (digits.length !== 11 || !isValidCpf(form.cpf))) {
@@ -209,8 +218,13 @@ export default function UserDetail() {
             <CardHeader><CardTitle className="text-base">Dados pessoais</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Nome completo</Label>
-                <Input value={form.full_name} onChange={(e) => handleChange("full_name", e.target.value)} />
+                <Label>Nome completo <span className="text-destructive">*</span></Label>
+                <Input
+                  value={form.full_name}
+                  onChange={(e) => { handleChange("full_name", e.target.value); if (e.target.value.trim()) setNameError(""); }}
+                  className={nameError ? "border-destructive" : ""}
+                />
+                {nameError && <p className="text-xs text-destructive">{nameError}</p>}
               </div>
               <div className="space-y-2">
                 <Label>CPF</Label>
