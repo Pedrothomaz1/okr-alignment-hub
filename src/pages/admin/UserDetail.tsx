@@ -9,6 +9,33 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Save, Camera, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+function formatCpf(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+}
+
+function isValidCpf(cpf: string): boolean {
+  const digits = cpf.replace(/\D/g, "");
+  if (digits.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(digits)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(digits[i]) * (10 - i);
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10) remainder = 0;
+  if (remainder !== parseInt(digits[9])) return false;
+
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(digits[i]) * (11 - i);
+  remainder = (sum * 10) % 11;
+  if (remainder === 10) remainder = 0;
+  return remainder === parseInt(digits[10]);
+}
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +63,8 @@ export default function UserDetail() {
   });
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cpfError, setCpfError] = useState("");
+  const { toast: detailToast } = useToast();
 
   useEffect(() => {
     if (profile) {
@@ -75,7 +104,25 @@ export default function UserDetail() {
     }
   };
 
+  const handleCpfChange = (value: string) => {
+    const formatted = formatCpf(value);
+    handleChange("cpf", formatted);
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length === 11 && !isValidCpf(formatted)) {
+      setCpfError("CPF inválido");
+    } else {
+      setCpfError("");
+    }
+  };
+
   const handleSave = () => {
+    if (form.cpf) {
+      const digits = form.cpf.replace(/\D/g, "");
+      if (digits.length > 0 && (digits.length !== 11 || !isValidCpf(form.cpf))) {
+        detailToast({ variant: "destructive", title: "CPF inválido", description: "Verifique o número do CPF." });
+        return;
+      }
+    }
     const { receive_feedback_emails, eligible_for_bonus, config_panel_access, ...rest } = form;
     updateProfile.mutate({
       ...rest,
@@ -167,7 +214,14 @@ export default function UserDetail() {
               </div>
               <div className="space-y-2">
                 <Label>CPF</Label>
-                <Input value={form.cpf} onChange={(e) => handleChange("cpf", e.target.value)} placeholder="000.000.000-00" />
+                <Input
+                  value={form.cpf}
+                  onChange={(e) => handleCpfChange(e.target.value)}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                  className={cpfError ? "border-destructive" : ""}
+                />
+                {cpfError && <p className="text-xs text-destructive">{cpfError}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
