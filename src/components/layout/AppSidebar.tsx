@@ -50,8 +50,9 @@ const adminItems = [
 
 export function AppSidebar() {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useRoles(user?.id);
+  const { isAdmin, hasRole } = useRoles(user?.id);
   const navigate = useNavigate();
+  const isLeader = hasRole("manager") || hasRole("okr_master") || isAdmin;
 
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
     .split(" ")
@@ -114,6 +115,30 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isLeader && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/60 text-2xs uppercase tracking-widest">
+              Gestão
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/leader"
+                      className="transition-smooth hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                    >
+                      <UsersRound className="h-4 w-4" />
+                      <span>Minha Equipe</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
     </SidebarContent>
 

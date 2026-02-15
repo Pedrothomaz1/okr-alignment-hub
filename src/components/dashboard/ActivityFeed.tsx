@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, ThumbsUp, Hand, Flame } from "lucide-react";
 import { useActivityFeed, type ActivityItem } from "@/hooks/useActivityFeed";
 import { useActivityComments } from "@/hooks/useActivityComments";
+import { useFeedReactions } from "@/hooks/useFeedReactions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,38 @@ const ENTITY_LABELS: Record<string, string> = {
   change_requests: "solicitação",
   cycle_requests: "solicitação de ciclo",
 };
+
+const REACTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  like: ThumbsUp,
+  clap: Hand,
+  fire: Flame,
+};
+
+function ReactionButtons({ entityType, entityId }: { entityType: string; entityId: string }) {
+  const { summary, toggleReaction } = useFeedReactions(entityType, entityId);
+
+  return (
+    <div className="flex items-center gap-1">
+      {summary.map((r) => {
+        const Icon = REACTION_ICONS[r.reaction];
+        return (
+          <button
+            key={r.reaction}
+            onClick={() => toggleReaction.mutate(r.reaction)}
+            className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border transition-smooth ${
+              r.reacted
+                ? "bg-primary/10 border-primary/30 text-primary"
+                : "border-transparent text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <Icon className="h-3 w-3" />
+            {r.count > 0 && <span>{r.count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function ActivityComments({ auditLogId }: { auditLogId: string }) {
   const { comments, isLoading, addComment } = useActivityComments(auditLogId);
@@ -103,6 +136,9 @@ export function ActivityFeed() {
                     >
                       Comentar
                     </button>
+                  </div>
+                  <div className="mt-1">
+                    <ReactionButtons entityType="audit_log" entityId={a.id} />
                   </div>
                 </div>
               </div>
