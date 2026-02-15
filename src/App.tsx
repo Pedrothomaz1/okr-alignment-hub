@@ -20,6 +20,7 @@ import ObjectiveDetail from "./pages/objectives/ObjectiveDetail";
 import AlignmentView from "./pages/alignment/AlignmentView";
 import WeeklyPPP from "./pages/weekly/WeeklyPPP";
 import PulseSurvey from "./pages/pulse/PulseSurvey";
+import KudosPage from "./pages/kudos/KudosPage";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/alignment" element={<AlignmentView />} />
             <Route path="/weekly" element={<WeeklyPPP />} />
             <Route path="/pulse" element={<PulseSurvey />} />
+            <Route path="/kudos" element={<KudosPage />} />
             <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
             <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
