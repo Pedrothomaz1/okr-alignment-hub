@@ -5,6 +5,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { SendKudosDialog } from "@/components/kudos/SendKudosDialog";
 
 export default function DashboardLayout() {
   const { theme, setTheme } = useTheme();
@@ -20,7 +22,9 @@ export default function DashboardLayout() {
               <h1 className="text-base font-semibold tracking-tight text-foreground">
                 OKR Platform
               </h1>
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-1">
+                <SendKudosDialog />
+                <NotificationBell />
                 <Button
                   variant="ghost"
                   size="icon"

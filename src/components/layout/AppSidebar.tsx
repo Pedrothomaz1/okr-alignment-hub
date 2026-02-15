@@ -34,6 +34,7 @@ const mainItems = [
 const engagementItems = [
   { title: "PPP Semanal", url: "/weekly", icon: ClipboardList },
   { title: "Pulse Survey", url: "/pulse", icon: Heart },
+  { title: "Kudos", url: "/kudos", icon: Award },
 ];
 
 const settingsItems = [
