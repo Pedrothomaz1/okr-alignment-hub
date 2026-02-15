@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,6 +29,11 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Ciclos", url: "/cycles", icon: CalendarDays },
   { title: "Alinhamento", url: "/alignment", icon: GitBranch },
+];
+
+const engagementItems = [
+  { title: "PPP Semanal", url: "/weekly", icon: ClipboardList },
+  { title: "Pulse Survey", url: "/pulse", icon: Heart },
 ];
 
 const settingsItems = [
@@ -83,9 +88,33 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
+      </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/60 text-2xs uppercase tracking-widest">
+            Engajamento
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {engagementItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="transition-smooth hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
 
-      </SidebarContent>
+    </SidebarContent>
 
       <SidebarFooter>
         <SidebarMenu>

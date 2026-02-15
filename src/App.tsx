@@ -18,6 +18,8 @@ import CyclesList from "./pages/cycles/CyclesList";
 import CycleDetail from "./pages/cycles/CycleDetail";
 import ObjectiveDetail from "./pages/objectives/ObjectiveDetail";
 import AlignmentView from "./pages/alignment/AlignmentView";
+import WeeklyPPP from "./pages/weekly/WeeklyPPP";
+import PulseSurvey from "./pages/pulse/PulseSurvey";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +43,8 @@ const App = () => (
             <Route path="/cycles/:id" element={<CycleDetail />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/alignment" element={<AlignmentView />} />
+            <Route path="/weekly" element={<WeeklyPPP />} />
+            <Route path="/pulse" element={<PulseSurvey />} />
             <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
             <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
