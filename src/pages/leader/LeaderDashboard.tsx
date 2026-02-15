@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { UsersRound, CheckCircle, XCircle, Star, ClipboardList } from "lucide-react";
+import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -43,12 +44,15 @@ export default function LeaderDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <UsersRound className="h-6 w-6 text-primary" />
-          Dashboard do Líder
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">Visão consolidada da sua equipe</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <UsersRound className="h-6 w-6 text-primary" />
+            Dashboard do Líder
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Visão consolidada da sua equipe</p>
+        </div>
+        <ExportReportDialog />
       </div>
 
       {isLoading ? (

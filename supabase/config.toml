@@ -1,1 +1,7 @@
 project_id = "hmvipnpfejduneusoekn"
+
+[functions.generate-report]
+verify_jwt = false
+
+[functions.slack-notify]
+verify_jwt = false

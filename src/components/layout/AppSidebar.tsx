@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +40,7 @@ const engagementItems = [
 const settingsItems = [
   { title: "Meu Perfil", url: "/settings/profile", icon: User },
   { title: "Autenticação 2FA", url: "/settings/2fa", icon: Shield },
+  { title: "Integrações", url: "/settings/integrations", icon: Link2 },
 ];
 
 const adminItems = [
@@ -132,6 +133,18 @@ export function AppSidebar() {
                     >
                       <UsersRound className="h-4 w-4" />
                       <span>Minha Equipe</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/reports"
+                      className="transition-smooth hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                    >
+                      <FileBarChart className="h-4 w-4" />
+                      <span>Relatórios</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
