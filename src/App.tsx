@@ -22,6 +22,8 @@ import WeeklyPPP from "./pages/weekly/WeeklyPPP";
 import PulseSurvey from "./pages/pulse/PulseSurvey";
 import KudosPage from "./pages/kudos/KudosPage";
 import LeaderDashboard from "./pages/leader/LeaderDashboard";
+import ReportsPage from "./pages/reports/ReportsPage";
+import IntegrationsPage from "./pages/settings/IntegrationsPage";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +51,8 @@ const App = () => (
             <Route path="/pulse" element={<PulseSurvey />} />
             <Route path="/kudos" element={<KudosPage />} />
             <Route path="/leader" element={<LeaderDashboard />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/settings/integrations" element={<IntegrationsPage />} />
             <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
             <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />

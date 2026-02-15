@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ObjectivesList } from "@/pages/objectives/ObjectivesList";
 import { OKROrgChart } from "@/components/okr/OKROrgChart";
 import { CycleApprovalCard } from "@/components/cycles/CycleApprovalCard";
+import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
 
 const statusLabel: Record<string, string> = {
   draft: "Rascunho",
@@ -64,6 +65,7 @@ export default function CycleDetail() {
             )}
           </div>
         </div>
+        <ExportReportDialog cycleId={cycle.id} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
