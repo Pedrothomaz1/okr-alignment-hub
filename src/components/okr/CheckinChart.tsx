@@ -6,10 +6,10 @@ import {
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ReferenceLine,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 import type { Checkin } from "@/hooks/useCheckins";
 
@@ -24,11 +24,12 @@ export function CheckinChart({ checkins, startValue, targetValue, unit }: Checki
   const data = useMemo(() => {
     return [...checkins]
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-      .map((c) => ({
+      .map((c, i, arr) => ({
         date: format(new Date(c.created_at), "dd/MM", { locale: ptBR }),
         fullDate: format(new Date(c.created_at), "dd MMM yyyy, HH:mm", { locale: ptBR }),
         value: c.value,
         note: c.note,
+        isLast: i === arr.length - 1,
       }));
   }, [checkins]);
 
@@ -43,31 +44,63 @@ export function CheckinChart({ checkins, startValue, targetValue, unit }: Checki
   return (
     <div className="pt-2 w-full h-[180px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-          <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
-          <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" domain={["auto", "auto"]} />
+        <LineChart data={data} margin={{ top: 16, right: 32, left: -16, bottom: 0 }}>
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis hide domain={["auto", "auto"]} />
           <Tooltip content={<CustomTooltip unit={unit} />} />
           <ReferenceLine
             y={targetValue}
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--primary) / 0.4)"
             strokeDasharray="6 3"
-            label={{ value: "Meta", position: "right", fontSize: 10, fill: "hsl(var(--primary))" }}
+            label={{
+              value: `Meta: ${targetValue}${unit ? ` ${unit}` : ""}`,
+              position: "insideTopRight",
+              fontSize: 10,
+              fill: "hsl(var(--primary))",
+            }}
           />
           <ReferenceLine
             y={startValue}
-            stroke="hsl(var(--muted-foreground))"
+            stroke="hsl(var(--muted-foreground) / 0.25)"
             strokeDasharray="4 4"
-            label={{ value: "Início", position: "right", fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
           />
           <Line
             type="monotone"
             dataKey="value"
             stroke="hsl(var(--primary))"
-            strokeWidth={2}
-            dot={{ r: 3, fill: "hsl(var(--primary))" }}
-            activeDot={{ r: 5 }}
-          />
+            strokeWidth={2.5}
+            dot={{ r: 3, fill: "hsl(var(--primary))", strokeWidth: 0 }}
+            activeDot={{ r: 5, strokeWidth: 0 }}
+          >
+            <LabelList
+              dataKey="value"
+              position="top"
+              formatter={(val: number, entry: any) => {
+                // Only show label on the last point
+                return undefined;
+              }}
+              content={({ x, y, value, index }: any) => {
+                if (index !== data.length - 1) return null;
+                return (
+                  <text
+                    x={x}
+                    y={(y ?? 0) - 10}
+                    textAnchor="middle"
+                    fontSize={12}
+                    fontWeight={700}
+                    fill="hsl(var(--primary))"
+                  >
+                    {unit ? `${value} ${unit}` : value}
+                  </text>
+                );
+              }}
+            />
+          </Line>
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -78,8 +111,8 @@ function CustomTooltip({ active, payload, unit }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="rounded-[calc(var(--radius)-4px)] border border-border bg-background px-3 py-2 text-xs shadow-lg space-y-1">
-      <p className="font-medium">{unit ? `${d.value} ${unit}` : d.value}</p>
+    <div className="rounded-[calc(var(--radius)-4px)] border border-border/50 bg-background/95 px-3 py-2 text-xs shadow-sm space-y-1">
+      <p className="font-semibold">{unit ? `${d.value} ${unit}` : d.value}</p>
       <p className="text-muted-foreground">{d.fullDate}</p>
       {d.note && <p className="text-muted-foreground italic">{d.note}</p>}
     </div>

@@ -5,10 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProgressBar } from "@/components/okr/ProgressBar";
-import { UsersRound, CheckCircle, XCircle, Star, ClipboardList } from "lucide-react";
+import { UsersRound, CheckCircle, Circle, Star, ClipboardList } from "lucide-react";
 import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+/** Returns an inline background style for heatmap cells.
+ *  0% → transparent, 100% → full semantic color at 20% opacity */
+function heatmapBg(value: number, tokenColor: string, max = 100) {
+  const intensity = Math.min(1, Math.max(0, value / max));
+  return { background: `hsl(${tokenColor} / ${(intensity * 0.2).toFixed(2)})` };
+}
+
+function pulseHeatmapBg(score: number | null) {
+  if (score === null) return {};
+  // 1-2 = low (destructive), 3 = neutral, 4-5 = good (success)
+  if (score <= 2) return { background: `hsl(var(--destructive) / 0.12)` };
+  if (score >= 4) return { background: `hsl(var(--success) / 0.12)` };
+  return {};
+}
 
 export default function LeaderDashboard() {
   const { user } = useAuth();
@@ -42,6 +57,11 @@ export default function LeaderDashboard() {
     ? Math.round((team ?? []).reduce((a, m) => a + m.avg_progress, 0) / teamSize)
     : 0;
 
+  // Find worst performer for subtle highlight
+  const worstProgress = team && team.length > 0
+    ? Math.min(...team.map((m) => m.avg_progress))
+    : null;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -67,38 +87,40 @@ export default function LeaderDashboard() {
         </Card>
       ) : (
         <>
-          {/* Stat cards */}
+          {/* Stat cards — DataStory: highlight most important metric */}
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="stat-card stat-card-primary">
+            <div className="stat-card" style={{ borderLeft: "3px solid hsl(var(--muted-foreground) / 0.3)" }}>
               <p className="text-xs font-medium text-muted-foreground">Membros</p>
-              <p className="text-2xl font-bold mt-1">{teamSize}</p>
+              <p className="text-2xl font-bold mt-1 text-muted-foreground">{teamSize}</p>
             </div>
-            <div className="stat-card stat-card-success">
-              <p className="text-xs font-medium text-muted-foreground">Progresso Médio</p>
-              <p className="text-2xl font-bold mt-1">{avgProgress}%</p>
-            </div>
-            <div className="stat-card stat-card-warning">
-              <p className="text-xs font-medium text-muted-foreground">Pulse Médio</p>
-              <p className="text-2xl font-bold mt-1 flex items-center gap-1">
-                <Star className="h-5 w-5 text-warning" /> {avgPulse}
+            <div className="stat-card stat-card-primary" style={{ background: "hsl(var(--primary) / 0.06)" }}>
+              <p className="text-xs font-semibold text-primary">Progresso Médio</p>
+              <p className="text-3xl font-bold mt-1 text-primary">
+                {avgProgress}<span className="text-base font-normal text-primary/60">%</span>
               </p>
             </div>
-            <div className="stat-card stat-card-primary">
+            <div className="stat-card" style={{ borderLeft: "3px solid hsl(var(--muted-foreground) / 0.3)" }}>
+              <p className="text-xs font-medium text-muted-foreground">Pulse Médio</p>
+              <p className="text-2xl font-bold mt-1 text-muted-foreground flex items-center gap-1">
+                <Star className="h-4 w-4 text-warning" /> {avgPulse}
+              </p>
+            </div>
+            <div className="stat-card" style={{ borderLeft: "3px solid hsl(var(--muted-foreground) / 0.3)" }}>
               <p className="text-xs font-medium text-muted-foreground">Check-in Compliance</p>
-              <p className="text-2xl font-bold mt-1">{checkinCompliance}%</p>
+              <p className="text-2xl font-bold mt-1 text-muted-foreground">{checkinCompliance}%</p>
             </div>
           </div>
 
-          {/* Team table */}
+          {/* Team table — DataStory: heatmap on progress & pulse columns */}
           <Card className="card-elevated">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Equipe</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs table-row-hover">
+                <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b">
+                    <tr className="border-b border-border/30">
                       <th className="text-left py-2 font-medium text-muted-foreground">Membro</th>
                       <th className="text-left py-2 font-medium text-muted-foreground">Progresso</th>
                       <th className="text-center py-2 font-medium text-muted-foreground">KRs</th>
@@ -108,47 +130,60 @@ export default function LeaderDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(team ?? []).map((m) => (
-                      <tr key={m.id} className="border-b border-border/50">
-                        <td className="py-2">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              {m.avatar_url && <AvatarImage src={m.avatar_url} />}
-                              <AvatarFallback className="text-[9px]">
-                                {(m.full_name || "?").charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-medium">{m.full_name || "—"}</span>
-                          </div>
-                        </td>
-                        <td className="py-2 min-w-[120px]">
-                          <ProgressBar value={m.avg_progress} showLabel />
-                        </td>
-                        <td className="text-center py-2">{m.kr_count}</td>
-                        <td className="text-center py-2">
-                          {m.last_checkin
-                            ? formatDistanceToNow(new Date(m.last_checkin), { addSuffix: true, locale: ptBR })
-                            : <span className="text-muted-foreground">—</span>
-                          }
-                        </td>
-                        <td className="text-center py-2">
-                          {m.has_ppp_this_week
-                            ? <CheckCircle className="h-4 w-4 text-success mx-auto" />
-                            : <XCircle className="h-4 w-4 text-destructive/50 mx-auto" />
-                          }
-                        </td>
-                        <td className="text-center py-2">
-                          {m.pulse_score !== null ? (
-                            <div className="flex items-center justify-center gap-0.5">
-                              <Star className="h-3 w-3 text-warning fill-warning" />
-                              <span>{m.pulse_score}</span>
+                    {(team ?? []).map((m) => {
+                      const isWorst = worstProgress !== null && m.avg_progress === worstProgress && teamSize > 1;
+                      return (
+                        <tr
+                          key={m.id}
+                          className="border-b border-border/20 transition-colors"
+                          style={isWorst ? { background: "hsl(var(--destructive) / 0.04)" } : undefined}
+                        >
+                          <td className="py-2">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                {m.avatar_url && <AvatarImage src={m.avatar_url} />}
+                                <AvatarFallback className="text-[9px]">
+                                  {(m.full_name || "?").charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{m.full_name || "—"}</span>
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td
+                            className="py-2 min-w-[120px] rounded-sm"
+                            style={heatmapBg(m.avg_progress, "var(--success)")}
+                          >
+                            <ProgressBar value={m.avg_progress} showLabel />
+                          </td>
+                          <td className="text-center py-2">{m.kr_count}</td>
+                          <td className="text-center py-2">
+                            {m.last_checkin
+                              ? formatDistanceToNow(new Date(m.last_checkin), { addSuffix: true, locale: ptBR })
+                              : <span className="text-muted-foreground">—</span>
+                            }
+                          </td>
+                          <td className="text-center py-2">
+                            {m.has_ppp_this_week
+                              ? <CheckCircle className="h-4 w-4 text-success mx-auto" />
+                              : <Circle className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                            }
+                          </td>
+                          <td
+                            className="text-center py-2 rounded-sm"
+                            style={pulseHeatmapBg(m.pulse_score)}
+                          >
+                            {m.pulse_score !== null ? (
+                              <div className="flex items-center justify-center gap-0.5">
+                                <Star className="h-3 w-3 text-warning fill-warning" />
+                                <span>{m.pulse_score}</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
