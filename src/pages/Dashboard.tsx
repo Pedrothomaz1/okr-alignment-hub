@@ -53,23 +53,26 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="stat-card stat-card-primary">
+          <div className="stat-card" style={{ borderLeft: "3px solid hsl(var(--muted-foreground) / 0.3)" }}>
             <p className="text-xs font-medium text-muted-foreground">Ciclos Ativos</p>
-            <p className="text-2xl font-bold mt-1">{stats?.activeCycles ?? 0}</p>
+            <p className="text-2xl font-bold mt-1 text-muted-foreground">{stats?.activeCycles ?? 0}</p>
           </div>
-          <div className="stat-card stat-card-success">
+          <div className="stat-card" style={{ borderLeft: "3px solid hsl(var(--muted-foreground) / 0.3)" }}>
             <p className="text-xs font-medium text-muted-foreground">Objetivos</p>
-            <p className="text-2xl font-bold mt-1">{stats?.totalObjectives ?? 0}</p>
+            <p className="text-2xl font-bold mt-1 text-muted-foreground">{stats?.totalObjectives ?? 0}</p>
           </div>
-          <div className="stat-card stat-card-warning">
-            <p className="text-xs font-medium text-muted-foreground">Progresso Médio</p>
-            <p className="text-2xl font-bold mt-1">{stats?.averageProgress ?? 0}%</p>
+          <div className="stat-card stat-card-primary" style={{ background: "hsl(var(--primary) / 0.06)" }}>
+            <p className="text-xs font-semibold text-primary">Progresso Médio</p>
+            <p className="text-3xl font-bold mt-1 text-primary">
+              {stats?.averageProgress ?? 0}
+              <span className="text-base font-normal text-primary/60">%</span>
+            </p>
           </div>
-          <div className="stat-card stat-card-primary">
+          <div className="stat-card" style={{ borderLeft: "3px solid hsl(var(--muted-foreground) / 0.3)" }}>
             <p className="text-xs font-medium text-muted-foreground">KRs Concluídos</p>
-            <p className="text-2xl font-bold mt-1">
+            <p className="text-2xl font-bold mt-1 text-muted-foreground">
               {stats?.completedKRs ?? 0}
-              <span className="text-sm font-normal text-muted-foreground">/{stats?.totalKRs ?? 0}</span>
+              <span className="text-sm font-normal text-muted-foreground/60">/{stats?.totalKRs ?? 0}</span>
             </p>
           </div>
         </div>
