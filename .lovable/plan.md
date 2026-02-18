@@ -1,278 +1,142 @@
 
+# Plano: Aplicar DataStory em Todos os Graficos do Software
 
-# Plano de Implementacao Completo — Veri OKR + Weekdone Features
+## Resumo
 
-Este plano cobre a validacao das funcionalidades ja existentes e a implementacao das 8 novas features inspiradas no Weekdone, organizadas em 4 sprints incrementais.
-
----
-
-## Funcionalidades Ja Existentes (validadas no codigo)
-
-As seguintes funcionalidades ja estao implementadas e funcionais:
-
-| Funcionalidade | Status | Arquivos Principais |
-|---|---|---|
-| Arvore hierarquica de OKRs | Implementado | OKRTreeView, OKROrgChart, useOKRTree |
-| Check-ins com confianca | Implementado | useCheckins, CheckinTimeline, CheckinChart |
-| Ciclos configuraveis com travamento | Implementado | useCycles, CycleDetail, lock_cycle_on_active trigger |
-| Dashboard com progresso e feed | Implementado | Dashboard, useDashboardStats, ActivityFeed |
-| Gestao de equipe e colaboradores | Implementado | MyTeam, useMyTeam, useOKRCollaborators |
-| Change requests para ciclos travados | Implementado | ChangeRequestCard, useChangeRequests, decide_change_request |
-| Newsfeed Social (parcial) | Implementado | ActivityFeed com comentarios via activity_comments |
+Refatorar todas as visualizacoes de dados existentes e criar as novas do Dashboard OKR Consolidado seguindo os principios do livro "Storytelling com Dados" de Cole Nussbaumer Knaflic, conforme a skill DataStory fornecida.
 
 ---
 
-## Sprint 1 — PPP Semanal + Pulse Survey (Engajamento Individual)
+## Diagnostico Atual vs. DataStory
 
-### 1.1 PPP Semanal (Plans, Progress, Problems)
+Existem 4 areas com visualizacoes no software:
 
-**Banco de dados** — Nova tabela `weekly_ppp`:
+| Local | Tipo Atual | Problemas segundo DataStory |
+|-------|-----------|---------------------------|
+| **Dashboard principal** | 4 stat cards (numeros) | OK para 1-2 numeros, mas falta contexto narrativo e destaque estrategico |
+| **Leader Dashboard** | 4 stat cards + tabela | Tabela sem mapa de calor, sem destaque visual nos pontos criticos |
+| **CheckinChart** | Grafico de linhas (Recharts) | Gridlines visiveis demais, legenda separada, falta rotulo direto nos pontos |
+| **AlignmentView** | Apenas arvore, sem metricas | Sem cards resumo, sem grafico de distribuicao |
+
+---
+
+## Principios DataStory que serao aplicados
+
+1. **Eliminacao de saturacao**: remover gridlines desnecessarias, bordas, elementos decorativos
+2. **Cor estrategica**: cinza como base, cor forte APENAS no dado que importa (tecnica cinza + destaque)
+3. **Legendas proximas aos dados**: rotular diretamente nos pontos/barras, nunca em caixa separada
+4. **Nunca pizza/donut/3D/radar**: usar barras horizontais para comparacao de categorias
+5. **Texto grande para 1-2 numeros**: stat cards com numero em destaque e contexto narrativo
+6. **Tabelas com mapa de calor**: aplicar cor de fundo proporcional ao valor em colunas numericas
+7. **Maximo 4 grupos por visual**: respeitar limite da memoria de curto prazo
+8. **Espaco em branco como respiro**: nao preencher tudo, deixar margem generosa
+
+---
+
+## Mudancas por Arquivo
+
+### 1. `src/components/okr/CheckinChart.tsx` — Grafico de Linhas de Check-ins
+
+**Antes:** Gridlines visiveis, legenda "Meta" e "Inicio" como labels de ReferenceLine, sem rotulo direto nos pontos.
+
+**Depois (DataStory):**
+- Remover `CartesianGrid` completamente (se remover, a mensagem nao muda)
+- Remover eixo Y (valores serao rotulados diretamente nos pontos com `<LabelList>`)
+- Manter eixo X apenas com datas, fonte leve em cinza
+- ReferenceLine da Meta: manter tracejada em cor primary mas com label mais proximo
+- Linha principal: unica cor forte (primary), resto cinza
+- Tooltip mais limpo: sem borda grossa, sem sombra pesada
+- Adicionar rotulo do valor DIRETAMENTE no ultimo ponto da linha (destaque pre-atentivo)
+
+### 2. `src/pages/Dashboard.tsx` — Stat Cards do Dashboard Principal
+
+**Antes:** 4 cards com cor de fundo identica, sem hierarquia visual.
+
+**Depois (DataStory):**
+- Aplicar tecnica de destaque: o card MAIS IMPORTANTE (ex: Progresso Medio) recebe cor forte, os outros ficam neutros/cinza
+- Adicionar subtexto contextual em cada card (ex: "vs. ciclo anterior" ou seta de tendencia)
+- Numero principal em tamanho grande (ja esta), mas com unidade em tamanho menor e cor muted
+- Reduzir para 3 cards se possivel (regra dos 4 grupos) ou manter 4 com hierarquia clara
+
+### 3. `src/pages/leader/LeaderDashboard.tsx` — Tabela da Equipe
+
+**Antes:** Tabela simples sem destaque visual nos valores criticos.
+
+**Depois (DataStory):**
+- Aplicar **mapa de calor** na coluna "Progresso": fundo com intensidade proporcional ao valor (verde claro a verde escuro)
+- Coluna "Pulse": cor de fundo condicional (vermelho se baixo, verde se alto)
+- Bordas da tabela leves/invisiveis (remover bordas grossas)
+- Linha do membro com pior performance destacada sutilmente (fundo levemente rosado)
+- Check-in e PPP: manter icones mas com cor estrategica (verde = ok, cinza = pendente, nao vermelho pois gera alarme desnecessario)
+
+### 4. `src/pages/alignment/AlignmentView.tsx` — Dashboard OKR Consolidado (NOVO)
+
+**Novo conteudo seguindo DataStory:**
+
+**Cards de resumo (topo):**
+- 4 metricas: Total OKRs, Concluidos (%), Em Risco (%), Progresso Medio
+- Tecnica de destaque: "Em Risco" com cor de alerta (unico card colorido), outros em cinza/neutro
+- Numero grande + label pequeno + delta vs periodo anterior (se disponivel)
+
+**Grafico de distribuicao de status:**
+- **Barras horizontais** (NAO pizza/donut — regra DataStory)
+- 4 barras: No caminho, Em risco, Atrasado, Concluido
+- Cor estrategica: "Em risco" e "Atrasado" em cor forte, "No caminho" e "Concluido" em cinza/neutro
+- Valores rotulados diretamente nas barras (sem eixo Y)
+- Sem gridlines
+
+**Filtro por responsavel:**
+- Novo Select com lista de owners (usando `useProfiles`)
+- Integrado ao `filterTree` existente
+
+### 5. `src/components/okr/ProgressBar.tsx` — Barra de Progresso
+
+**Antes:** Cores por status (verde, amarelo, vermelho, azul).
+
+**Depois (DataStory):**
+- Manter cores por status (faz sentido semantico)
+- Adicionar marcador visual no ponto atual (pequeno circulo ou linha vertical) para dar referencia
+- Label do percentual em negrito quando >= 70% (destaque pre-atentivo de intensidade)
+
+### 6. Novo: `src/components/charts/DataStoryBarChart.tsx` — Componente Reutilizavel
+
+Componente de barras horizontais seguindo todos os principios DataStory:
+- Sem gridlines
+- Sem bordas
+- Labels direto nas barras
+- Cor neutra como base, com prop para destacar barras especificas
+- Espaco em branco generoso
+- Sera usado no AlignmentView e em qualquer dashboard futuro
+
+---
+
+## Detalhes Tecnicos
+
+### Paleta de Cores DataStory
 
 ```text
-weekly_ppp
-- id: uuid PK
-- user_id: uuid FK profiles(id) NOT NULL
-- week_start: date NOT NULL
-- plans: text NOT NULL
-- progress: text NOT NULL  
-- problems: text NOT NULL
-- created_at: timestamptz DEFAULT now()
-- updated_at: timestamptz DEFAULT now()
-- UNIQUE(user_id, week_start)
+Neutro/base:    hsl(var(--muted-foreground) / 0.3)  — cinza claro para dados "nao destacados"
+Destaque:       hsl(var(--primary))                  — azul/primary para o dado principal
+Alerta:         hsl(var(--destructive))               — vermelho para "em risco" / "atrasado"
+Sucesso:        hsl(var(--success))                   — verde para "concluido" / "no caminho"
+Texto muted:    hsl(var(--muted-foreground))          — labels secundarios
 ```
 
-RLS:
-- SELECT: usuario ve os seus + gestor ve subordinados (via profiles.manager_id) + admin ve todos
-- INSERT: usuario so insere com user_id = auth.uid()
-- UPDATE: usuario so edita os seus
-- DELETE: apenas admin
+### Arquivos a criar
+- `src/components/charts/DataStoryBarChart.tsx` — barras horizontais reutilizaveis
 
-**Frontend:**
-- Hook `useWeeklyPPP.ts` — CRUD com filtro por semana
-- Pagina `/weekly` — formulario com 3 campos de texto (Plans, Progress, Problems), seletor de semana, historico
-- Componente `WeeklyPPPCard.tsx` — card resumo para dashboard
-- Link na sidebar: "PPP Semanal" com icone ClipboardList
+### Arquivos a modificar
+- `src/components/okr/CheckinChart.tsx` — remover saturacao, rotulos diretos
+- `src/pages/Dashboard.tsx` — hierarquia visual nos stat cards
+- `src/pages/leader/LeaderDashboard.tsx` — mapa de calor na tabela
+- `src/pages/alignment/AlignmentView.tsx` — cards resumo + grafico de barras + filtro owner
+- `src/components/okr/ProgressBar.tsx` — refinamento visual
 
-### 1.2 Pulse Survey
+### Ordem de implementacao
 
-**Banco de dados** — Nova tabela `pulse_surveys`:
-
-```text
-pulse_surveys
-- id: uuid PK
-- user_id: uuid FK profiles(id) NOT NULL
-- week_start: date NOT NULL
-- score: integer NOT NULL (1-5)
-- comment: text nullable
-- created_at: timestamptz DEFAULT now()
-- UNIQUE(user_id, week_start)
-```
-
-RLS:
-- SELECT: usuario ve os seus + gestor ve subordinados + admin ve todos
-- INSERT: user_id = auth.uid()
-- UPDATE/DELETE: apenas admin
-
-**Frontend:**
-- Hook `usePulseSurvey.ts`
-- Pagina `/pulse` — votacao rapida (1-5 estrelas) + grafico de tendencia (Recharts)
-- Widget `PulseWidget.tsx` no dashboard — votacao inline da semana + media da equipe
-- Link na sidebar: "Pulse" com icone Heart
-
----
-
-## Sprint 2 — Kudos + Notificacoes
-
-### 2.1 Kudos / Reconhecimento
-
-**Banco de dados** — Nova tabela `kudos`:
-
-```text
-kudos
-- id: uuid PK
-- from_user_id: uuid FK profiles(id) NOT NULL
-- to_user_id: uuid FK profiles(id) NOT NULL
-- message: text NOT NULL
-- category: text DEFAULT 'general' (general, teamwork, innovation, results)
-- objective_id: uuid FK objectives(id) nullable
-- created_at: timestamptz DEFAULT now()
-```
-
-RLS:
-- SELECT: todos autenticados podem ver (feed publico)
-- INSERT: from_user_id = auth.uid()
-- DELETE: admin ou from_user_id = auth.uid()
-
-**Frontend:**
-- Hook `useKudos.ts`
-- Componente `KudosFeed.tsx` — feed publico no dashboard com avatares e animacao
-- Dialog `SendKudosDialog.tsx` — selecionar destinatario, categoria, mensagem opcional, vincular a OKR
-- Pagina `/kudos` — historico completo com filtros
-- Botao "Dar Parabens" no header do dashboard
-
-### 2.2 Sistema de Notificacoes / Lembretes
-
-**Banco de dados** — Nova tabela `notifications`:
-
-```text
-notifications
-- id: uuid PK
-- user_id: uuid FK profiles(id) NOT NULL
-- type: text NOT NULL (checkin_reminder, ppp_reminder, pulse_reminder, kudos_received, cycle_update)
-- title: text NOT NULL
-- body: text nullable
-- entity_type: text nullable
-- entity_id: uuid nullable
-- read: boolean DEFAULT false
-- created_at: timestamptz DEFAULT now()
-```
-
-RLS:
-- SELECT: user_id = auth.uid()
-- UPDATE: user_id = auth.uid() (marcar como lida)
-- INSERT: via trigger/edge function (service role)
-- DELETE: user_id = auth.uid() ou admin
-
-**Frontend:**
-- Hook `useNotifications.ts` — com realtime subscription
-- Componente `NotificationBell.tsx` — icone Bell no header com badge de contagem
-- Dropdown com lista de notificacoes e "marcar todas como lidas"
-- Habilitar realtime na tabela notifications
-
-**Edge Function `send-reminders`:**
-- Cron semanal (segunda-feira) que verifica quem nao fez check-in/PPP/pulse na semana anterior
-- Insere notificacoes na tabela para cada usuario pendente
-
----
-
-## Sprint 3 — Leader Dashboard + Newsfeed Aprimorado
-
-### 3.1 Dashboard de Lider
-
-**Frontend (sem novas tabelas — usa dados existentes):**
-- Pagina `/leader` — acessivel para roles manager, okr_master e admin
-- Componentes:
-  - `TeamProgressTable.tsx` — tabela com todos subordinados diretos, progresso medio, ultimo check-in, status PPP
-  - `TeamPulseChart.tsx` — grafico de tendencia do pulse da equipe
-  - `CheckinComplianceCard.tsx` — porcentagem de subordinados que fizeram check-in esta semana
-  - `TeamPPPSummary.tsx` — resumo consolidado dos PPPs da equipe
-- Filtros por ciclo e periodo
-- Link na sidebar: "Minha Equipe" com icone UsersRound (visivel apenas para manager/admin)
-
-### 3.2 Newsfeed Social Aprimorado
-
-**Melhorias no ActivityFeed existente:**
-- Integrar kudos no feed (kudos aparecem como cards especiais com destaque visual)
-- Adicionar reacoes rapidas (like/aplaudir) nos itens do feed
-- Nova tabela `feed_reactions`:
-
-```text
-feed_reactions
-- id: uuid PK
-- user_id: uuid FK profiles(id) NOT NULL
-- entity_type: text NOT NULL (audit_log, kudos)
-- entity_id: uuid NOT NULL
-- reaction: text NOT NULL (like, clap, fire)
-- created_at: timestamptz DEFAULT now()
-- UNIQUE(user_id, entity_type, entity_id, reaction)
-```
-
----
-
-## Sprint 4 — Relatorios + Integracao Slack
-
-### 4.1 Relatorios Exportaveis
-
-**Edge Function `generate-report`:**
-- Aceita parametros: cycle_id, team_id (opcional), format (pdf/csv)
-- Gera CSV com resumo de progresso por objetivo, KR, responsavel
-- Para PDF: gera HTML formatado e converte via Lovable AI ou retorna HTML para impressao do navegador
-
-**Frontend:**
-- Componente `ExportReportDialog.tsx` — selecionar ciclo, equipe, formato
-- Botao "Exportar Relatorio" nas paginas de ciclo e leader dashboard
-- Opcao de "Imprimir" que abre versao formatada para print
-
-### 4.2 Integracao com Slack
-
-**Prerequisitos:** Configuracao do Slack connector
-
-**Edge Function `slack-notify`:**
-- Envia notificacoes para canal Slack configurado
-- Eventos: novo check-in, KR concluido, kudos recebido, ciclo ativado
-- Webhook configuravel por projeto
-
-**Frontend:**
-- Pagina `/settings/integrations` — configurar webhook URL do Slack
-- Toggle por tipo de notificacao
-
----
-
-## Alteracoes na Navegacao
-
-Sidebar atualizada:
-
-```text
-Principal
-  - Dashboard (Home)
-  - Ciclos (CalendarDays)
-  - Alinhamento (GitBranch)
-
-Engajamento
-  - PPP Semanal (ClipboardList)
-  - Pulse Survey (Heart)
-  - Kudos (Award)
-
-Gestao
-  - Minha Equipe (UsersRound) — visivel para manager/admin
-  - Relatorios (FileBarChart) — visivel para manager/admin
-
-Configuracoes (footer dropdown - mantido)
-  - Meu Perfil
-  - 2FA
-  - Integracoes (novo)
-  - Admin (se admin)
-```
-
----
-
-## Rotas Novas no App.tsx
-
-```text
-/weekly          — PPP Semanal
-/pulse           — Pulse Survey
-/kudos           — Feed de Kudos
-/leader          — Dashboard do Lider
-/settings/integrations — Integracoes (Slack)
-```
-
----
-
-## Resumo de Tabelas Novas
-
-| Tabela | Sprint | Realtime |
-|---|---|---|
-| weekly_ppp | 1 | Nao |
-| pulse_surveys | 1 | Nao |
-| kudos | 2 | Sim |
-| notifications | 2 | Sim |
-| feed_reactions | 3 | Nao |
-
-## Resumo de Edge Functions
-
-| Funcao | Sprint | Tipo |
-|---|---|---|
-| send-reminders | 2 | Cron semanal |
-| generate-report | 4 | On-demand |
-| slack-notify | 4 | Webhook |
-
-## Ordem de Implementacao Sugerida
-
-1. Migracoes de banco (todas as 5 tabelas de uma vez)
-2. Sprint 1: PPP + Pulse (hooks, paginas, sidebar)
-3. Sprint 2: Kudos + Notificacoes (hooks, paginas, bell, edge function)
-4. Sprint 3: Leader Dashboard + Feed aprimorado
-5. Sprint 4: Relatorios + Slack
-
-Cada sprint sera implementado em mensagens separadas para manter o controle de qualidade.
-
+1. Criar `DataStoryBarChart.tsx` (componente base reutilizavel)
+2. Refatorar `CheckinChart.tsx` (eliminacao de saturacao)
+3. Refatorar stat cards do `Dashboard.tsx` (hierarquia de destaque)
+4. Refatorar tabela do `LeaderDashboard.tsx` (mapa de calor)
+5. Implementar dashboard consolidado no `AlignmentView.tsx` (cards + barras + filtro)
+6. Refinamento do `ProgressBar.tsx`
