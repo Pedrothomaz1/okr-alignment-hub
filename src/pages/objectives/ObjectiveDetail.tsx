@@ -284,6 +284,7 @@ export default function ObjectiveDetail() {
         onOpenChange={setKrFormOpen}
         onSubmit={handleCreateKr}
         isPending={createKeyResult.isPending}
+        existingWeights={getExistingWeights()}
       />
 
       {editingKr && (
