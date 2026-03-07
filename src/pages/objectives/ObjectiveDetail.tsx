@@ -224,14 +224,21 @@ export default function ObjectiveDetail() {
         </div>
       )}
 
+      {/* Weight Distributor */}
+      {canEdit && keyResults.length >= 2 && (
+        <WeightDistributor
+          keyResults={keyResults}
+          onUpdateWeight={handleWeightUpdate}
+          isPending={updateKeyResult.isPending}
+        />
+      )}
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Key Results</h2>
             {keyResults.length > 0 && (() => {
               const totalWeight = keyResults.reduce((s, kr) => s + (kr.weight ?? 1), 0);
-              const hasCustomWeights = keyResults.some(kr => kr.weight != null && kr.weight !== 1);
-              if (!hasCustomWeights) return null;
               return (
                 <p className={`text-xs mt-0.5 ${Math.abs(totalWeight - 100) < 0.01 ? 'text-muted-foreground' : 'text-warning'}`}>
                   Soma dos pesos: {totalWeight}%{Math.abs(totalWeight - 100) >= 0.01 ? ' ⚠️ diferente de 100%' : ''}
