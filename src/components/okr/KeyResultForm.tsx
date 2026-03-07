@@ -51,6 +51,7 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
       target_value: defaultValues?.target_value ?? 100,
       current_value: defaultValues?.current_value ?? 0,
       unit: defaultValues?.unit || "",
+      weight: (defaultValues as any)?.weight ?? 1,
       owner_id: defaultValues?.owner_id || "",
     },
   });
