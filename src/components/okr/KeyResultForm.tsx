@@ -41,7 +41,8 @@ const krTypes = [
   { value: "boolean", label: "Sim/Não" },
 ];
 
-export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isPending }: KeyResultFormProps) {
+export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isPending, existingWeights = [] }: KeyResultFormProps) {
+  const { toast } = useToast();
   const { data: profiles = [] } = useProfiles();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
