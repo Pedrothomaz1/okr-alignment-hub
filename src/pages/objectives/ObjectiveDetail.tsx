@@ -12,6 +12,7 @@ import { useOKRLinks } from "@/hooks/useOKRLinks";
 import { useChangeRequests } from "@/hooks/useChangeRequests";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { KeyResultCard } from "@/components/okr/KeyResultCard";
+import { WeightDistributor } from "@/components/okr/WeightDistributor";
 import { KeyResultForm } from "@/components/okr/KeyResultForm";
 import { ObjectiveForm } from "@/pages/objectives/ObjectiveForm";
 import { useObjectives } from "@/hooks/useObjectives";
