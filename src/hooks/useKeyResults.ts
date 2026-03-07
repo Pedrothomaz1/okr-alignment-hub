@@ -14,6 +14,7 @@ export interface KeyResult {
   current_value: number;
   unit: string | null;
   status: string;
+  weight: number;
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
