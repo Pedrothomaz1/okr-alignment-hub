@@ -57,6 +57,7 @@ export function useKeyResults(objectiveId: string | undefined) {
       target_value?: number;
       current_value?: number;
       unit?: string;
+      weight?: number;
     }) => {
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
