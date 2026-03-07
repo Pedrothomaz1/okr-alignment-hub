@@ -114,6 +114,13 @@ export default function ObjectiveDetail() {
     updateProgress.mutate({ id: krId, current_value: value });
   };
 
+  const handleWeightUpdate = (krId: string, weight: number) => {
+    updateKeyResult.mutate({ id: krId, weight });
+  };
+
+  const getExistingWeights = (excludeKrId?: string) =>
+    keyResults.filter((kr) => kr.id !== excludeKrId).map((kr) => kr.weight);
+
   // Ancestors breadcrumb (exclude current)
   const ancestorList = (ancestors || []).filter((a: any) => a.id !== id);
 
