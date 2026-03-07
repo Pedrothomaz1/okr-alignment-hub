@@ -12,6 +12,7 @@ import { useOKRLinks } from "@/hooks/useOKRLinks";
 import { useChangeRequests } from "@/hooks/useChangeRequests";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { KeyResultCard } from "@/components/okr/KeyResultCard";
+import { WeightDistributor } from "@/components/okr/WeightDistributor";
 import { KeyResultForm } from "@/components/okr/KeyResultForm";
 import { ObjectiveForm } from "@/pages/objectives/ObjectiveForm";
 import { useObjectives } from "@/hooks/useObjectives";
@@ -112,6 +113,13 @@ export default function ObjectiveDetail() {
   const handleProgressUpdate = (krId: string, value: number) => {
     updateProgress.mutate({ id: krId, current_value: value });
   };
+
+  const handleWeightUpdate = (krId: string, weight: number) => {
+    updateKeyResult.mutate({ id: krId, weight });
+  };
+
+  const getExistingWeights = (excludeKrId?: string) =>
+    keyResults.filter((kr) => kr.id !== excludeKrId).map((kr) => kr.weight);
 
   // Ancestors breadcrumb (exclude current)
   const ancestorList = (ancestors || []).filter((a: any) => a.id !== id);
@@ -216,14 +224,21 @@ export default function ObjectiveDetail() {
         </div>
       )}
 
+      {/* Weight Distributor */}
+      {canEdit && keyResults.length >= 2 && (
+        <WeightDistributor
+          keyResults={keyResults}
+          onUpdateWeight={handleWeightUpdate}
+          isPending={updateKeyResult.isPending}
+        />
+      )}
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Key Results</h2>
             {keyResults.length > 0 && (() => {
               const totalWeight = keyResults.reduce((s, kr) => s + (kr.weight ?? 1), 0);
-              const hasCustomWeights = keyResults.some(kr => kr.weight != null && kr.weight !== 1);
-              if (!hasCustomWeights) return null;
               return (
                 <p className={`text-xs mt-0.5 ${Math.abs(totalWeight - 100) < 0.01 ? 'text-muted-foreground' : 'text-warning'}`}>
                   Soma dos pesos: {totalWeight}%{Math.abs(totalWeight - 100) >= 0.01 ? ' ⚠️ diferente de 100%' : ''}
@@ -269,6 +284,7 @@ export default function ObjectiveDetail() {
         onOpenChange={setKrFormOpen}
         onSubmit={handleCreateKr}
         isPending={createKeyResult.isPending}
+        existingWeights={getExistingWeights()}
       />
 
       {editingKr && (
@@ -278,6 +294,7 @@ export default function ObjectiveDetail() {
           onSubmit={handleUpdateKr}
           defaultValues={editingKr}
           isPending={updateKeyResult.isPending}
+          existingWeights={getExistingWeights(editingKr.id)}
         />
       )}
 

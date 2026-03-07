@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -30,6 +31,7 @@ interface KeyResultFormProps {
   onSubmit: (values: FormValues) => void;
   defaultValues?: Partial<KeyResult>;
   isPending?: boolean;
+  existingWeights?: number[];
 }
 
 const krTypes = [
@@ -39,7 +41,8 @@ const krTypes = [
   { value: "boolean", label: "Sim/Não" },
 ];
 
-export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isPending }: KeyResultFormProps) {
+export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isPending, existingWeights = [] }: KeyResultFormProps) {
+  const { toast } = useToast();
   const { data: profiles = [] } = useProfiles();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -62,7 +65,18 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
         <DialogHeader>
           <DialogTitle>{defaultValues?.id ? "Editar Key Result" : "Novo Key Result"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit((values) => {
+          const othersSum = existingWeights.reduce((s, w) => s + w, 0);
+          if (othersSum + values.weight > 100) {
+            toast({
+              title: "Peso excede 100%",
+              description: `Disponível: ${Math.max(0, 100 - othersSum)}%. Reduza o peso para continuar.`,
+              variant: "destructive",
+            });
+            return;
+          }
+          onSubmit(values);
+        })} className="space-y-4">
           <div>
             <Label htmlFor="kr-title">Título</Label>
             <Input id="kr-title" {...register("title")} />
@@ -102,6 +116,11 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
               <Label htmlFor="kr-weight">Peso (%)</Label>
               <Input id="kr-weight" type="number" step="any" {...register("weight")} />
               {errors.weight && <p className="text-xs text-destructive mt-1">{errors.weight.message}</p>}
+              {existingWeights.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Disponível: {Math.max(0, 100 - existingWeights.reduce((s, w) => s + w, 0))}%
+                </p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
