@@ -116,6 +116,11 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
               <Label htmlFor="kr-weight">Peso (%)</Label>
               <Input id="kr-weight" type="number" step="any" {...register("weight")} />
               {errors.weight && <p className="text-xs text-destructive mt-1">{errors.weight.message}</p>}
+              {existingWeights.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Disponível: {Math.max(0, 100 - existingWeights.reduce((s, w) => s + w, 0))}%
+                </p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
