@@ -30,6 +30,7 @@ interface KeyResultFormProps {
   onSubmit: (values: FormValues) => void;
   defaultValues?: Partial<KeyResult>;
   isPending?: boolean;
+  existingWeights?: number[];
 }
 
 const krTypes = [
