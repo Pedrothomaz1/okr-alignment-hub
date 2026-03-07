@@ -294,6 +294,7 @@ export default function ObjectiveDetail() {
           onSubmit={handleUpdateKr}
           defaultValues={editingKr}
           isPending={updateKeyResult.isPending}
+          existingWeights={getExistingWeights(editingKr.id)}
         />
       )}
 
