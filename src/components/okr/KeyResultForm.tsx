@@ -18,6 +18,7 @@ const schema = z.object({
   target_value: z.coerce.number().default(100),
   current_value: z.coerce.number().default(0),
   unit: z.string().optional(),
+  weight: z.coerce.number().min(0.01, "Peso deve ser maior que 0").default(1),
   owner_id: z.string().optional(),
 });
 
@@ -50,6 +51,7 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
       target_value: defaultValues?.target_value ?? 100,
       current_value: defaultValues?.current_value ?? 0,
       unit: defaultValues?.unit || "",
+      weight: (defaultValues as any)?.weight ?? 1,
       owner_id: defaultValues?.owner_id || "",
     },
   });
@@ -82,7 +84,7 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <Label>Tipo</Label>
               <Select value={watch("kr_type")} onValueChange={(v) => setValue("kr_type", v)}>
@@ -95,6 +97,11 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
             <div>
               <Label htmlFor="kr-unit">Unidade</Label>
               <Input id="kr-unit" placeholder="%, R$, users..." {...register("unit")} />
+            </div>
+            <div>
+              <Label htmlFor="kr-weight">Peso (%)</Label>
+              <Input id="kr-weight" type="number" step="any" {...register("weight")} />
+              {errors.weight && <p className="text-xs text-destructive mt-1">{errors.weight.message}</p>}
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">

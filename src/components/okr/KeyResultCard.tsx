@@ -41,6 +41,9 @@ export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
               <span className="text-xs text-muted-foreground">{kr.owner_name}</span>
             </div>
             {kr.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{kr.description}</p>}
+            {kr.weight != null && kr.weight !== 1 && (
+              <span className="inline-block mt-1 text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">Peso: {kr.weight}%</span>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <CollapsibleTrigger asChild>

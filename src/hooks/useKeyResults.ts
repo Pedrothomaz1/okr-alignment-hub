@@ -14,6 +14,7 @@ export interface KeyResult {
   current_value: number;
   unit: string | null;
   status: string;
+  weight: number;
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
@@ -56,6 +57,7 @@ export function useKeyResults(objectiveId: string | undefined) {
       target_value?: number;
       current_value?: number;
       unit?: string;
+      weight?: number;
     }) => {
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
@@ -73,7 +75,7 @@ export function useKeyResults(objectiveId: string | undefined) {
   });
 
   const updateKeyResult = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; kr_type?: string; start_value?: number; target_value?: number; current_value?: number; unit?: string; status?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; kr_type?: string; start_value?: number; target_value?: number; current_value?: number; unit?: string; status?: string; weight?: number }) => {
       const { data, error } = await supabase
         .from("key_results")
         .update(updates)
