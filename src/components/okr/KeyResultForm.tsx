@@ -18,6 +18,7 @@ const schema = z.object({
   target_value: z.coerce.number().default(100),
   current_value: z.coerce.number().default(0),
   unit: z.string().optional(),
+  weight: z.coerce.number().min(0.01, "Peso deve ser maior que 0").default(1),
   owner_id: z.string().optional(),
 });
 
