@@ -84,7 +84,7 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <Label>Tipo</Label>
               <Select value={watch("kr_type")} onValueChange={(v) => setValue("kr_type", v)}>
@@ -97,6 +97,11 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
             <div>
               <Label htmlFor="kr-unit">Unidade</Label>
               <Input id="kr-unit" placeholder="%, R$, users..." {...register("unit")} />
+            </div>
+            <div>
+              <Label htmlFor="kr-weight">Peso (%)</Label>
+              <Input id="kr-weight" type="number" step="any" {...register("weight")} />
+              {errors.weight && <p className="text-xs text-destructive mt-1">{errors.weight.message}</p>}
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">

@@ -75,7 +75,7 @@ export function useKeyResults(objectiveId: string | undefined) {
   });
 
   const updateKeyResult = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; kr_type?: string; start_value?: number; target_value?: number; current_value?: number; unit?: string; status?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; kr_type?: string; start_value?: number; target_value?: number; current_value?: number; unit?: string; status?: string; weight?: number }) => {
       const { data, error } = await supabase
         .from("key_results")
         .update(updates)

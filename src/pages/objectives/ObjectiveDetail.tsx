@@ -218,7 +218,19 @@ export default function ObjectiveDetail() {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Key Results</h2>
+          <div>
+            <h2 className="text-lg font-semibold">Key Results</h2>
+            {keyResults.length > 0 && (() => {
+              const totalWeight = keyResults.reduce((s, kr) => s + (kr.weight ?? 1), 0);
+              const hasCustomWeights = keyResults.some(kr => kr.weight != null && kr.weight !== 1);
+              if (!hasCustomWeights) return null;
+              return (
+                <p className={`text-xs mt-0.5 ${Math.abs(totalWeight - 100) < 0.01 ? 'text-muted-foreground' : 'text-warning'}`}>
+                  Soma dos pesos: {totalWeight}%{Math.abs(totalWeight - 100) >= 0.01 ? ' ⚠️ diferente de 100%' : ''}
+                </p>
+              );
+            })()}
+          </div>
           {canEdit && (
             <Button variant="cta" size="sm" onClick={() => setKrFormOpen(true)}>
               <Plus className="h-3.5 w-3.5" /> Novo KR
