@@ -65,7 +65,18 @@ export function KeyResultForm({ open, onOpenChange, onSubmit, defaultValues, isP
         <DialogHeader>
           <DialogTitle>{defaultValues?.id ? "Editar Key Result" : "Novo Key Result"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit((values) => {
+          const othersSum = existingWeights.reduce((s, w) => s + w, 0);
+          if (othersSum + values.weight > 100) {
+            toast({
+              title: "Peso excede 100%",
+              description: `Disponível: ${Math.max(0, 100 - othersSum)}%. Reduza o peso para continuar.`,
+              variant: "destructive",
+            });
+            return;
+          }
+          onSubmit(values);
+        })} className="space-y-4">
           <div>
             <Label htmlFor="kr-title">Título</Label>
             <Input id="kr-title" {...register("title")} />
