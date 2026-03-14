@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Enums } from "@/integrations/supabase/types";
-import { Search } from "lucide-react";
+import { Search, UserPlus } from "lucide-react";
 
 type AppRole = Enums<"app_role">;
 const ROLES = Constants.public.Enums.app_role;
@@ -35,6 +36,10 @@ export default function UsersRoles() {
   const [assignDialog, setAssignDialog] = useState<{ userId: string; email: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("member");
   const [search, setSearch] = useState("");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<AppRole>("member");
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
@@ -87,6 +92,29 @@ export default function UsersRoles() {
     },
   });
 
+  const inviteUser = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("invite-user", {
+        body: { email: inviteEmail, full_name: inviteName, role: inviteRole },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-all-roles"] });
+      toast({ title: "Usuário convidado com sucesso!" });
+      setInviteOpen(false);
+      setInviteEmail("");
+      setInviteName("");
+      setInviteRole("member");
+    },
+    onError: (err: Error) => {
+      toast({ variant: "destructive", title: "Erro ao convidar", description: err.message });
+    },
+  });
+
   const getUserRoles = (userId: string) =>
     rolesQuery.data?.filter((r) => r.user_id === userId).map((r) => r.role) ?? [];
 
@@ -100,6 +128,10 @@ export default function UsersRoles() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Usuários & Papéis</h1>
+        <Button onClick={() => setInviteOpen(true)}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Convidar Usuário
+        </Button>
       </div>
 
       <div className="relative max-w-sm">
@@ -171,6 +203,53 @@ export default function UsersRoles() {
           <DialogFooter>
             <Button onClick={() => assignDialog && assignRole.mutate({ userId: assignDialog.userId, role: selectedRole })}>
               Assign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Convidar Novo Usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Email *</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="usuario@empresa.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-name">Nome completo</Label>
+              <Input
+                id="invite-name"
+                placeholder="Nome do usuário"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-role">Papel</Label>
+              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as AppRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={() => inviteUser.mutate()}
+              disabled={!inviteEmail || inviteUser.isPending}
+            >
+              {inviteUser.isPending ? "Convidando..." : "Convidar"}
             </Button>
           </DialogFooter>
         </DialogContent>
