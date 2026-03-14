@@ -33,7 +33,7 @@ describe("getSafeAuthError", () => {
 
 describe("getSafeError", () => {
   it("returns generic message in production", () => {
-    vi.stubEnv("DEV", "");
+    vi.stubEnv("DEV", false);
     expect(getSafeError(new Error("DB connection failed"))).toBe("Ocorreu um erro. Tente novamente.");
     vi.unstubAllEnvs();
   });

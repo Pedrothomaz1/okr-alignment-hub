@@ -60,7 +60,7 @@ export function useCycleRequests(cycleId: string | undefined) {
       const { data, error } = await supabase.rpc("decide_cycle_request", {
         _request_id: params.request_id,
         _decision: params.decision,
-        _comment: params.comment || null,
+        _comment: params.comment || undefined,
       });
       if (error) throw error;
       return data;

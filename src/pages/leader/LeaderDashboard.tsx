@@ -44,7 +44,7 @@ export default function LeaderDashboard() {
   const checkinCompliance = teamSize > 0
     ? Math.round((team?.filter((m) => m.last_checkin).length ?? 0) / teamSize * 100)
     : 0;
-  const pppCompliance = teamSize > 0
+  const _pppCompliance = teamSize > 0
     ? Math.round((team?.filter((m) => m.has_ppp_this_week).length ?? 0) / teamSize * 100)
     : 0;
   const avgPulse = teamSize > 0

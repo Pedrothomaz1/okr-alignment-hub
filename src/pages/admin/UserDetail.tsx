@@ -43,7 +43,7 @@ export default function UserDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
-    profile, isLoading, roles, managers,
+    profile, isLoading, managers,
     updateProfile, toggleOkrMaster, uploadAvatar, isOkrMaster,
   } = useUserDetail(id);
 

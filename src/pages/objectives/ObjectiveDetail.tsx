@@ -129,7 +129,7 @@ export default function ObjectiveDetail() {
       {/* Breadcrumb de alinhamento */}
       {ancestorList.length > 0 && (
         <nav className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
-          {ancestorList.map((a: any, i: number) => (
+          {ancestorList.map((a: any) => (
             <span key={a.id} className="flex items-center gap-1">
               <Link to={`/objectives/${a.id}`} className="hover:underline hover:text-foreground">
                 {a.title}

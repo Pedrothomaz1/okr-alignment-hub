@@ -80,7 +80,7 @@ export function CheckinChart({ checkins, startValue, targetValue, unit }: Checki
             <LabelList
               dataKey="value"
               position="top"
-              formatter={(val: number, entry: any) => {
+              formatter={() => {
                 // Only show label on the last point
                 return undefined;
               }}

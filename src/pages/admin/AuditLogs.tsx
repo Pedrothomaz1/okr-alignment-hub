@@ -15,7 +15,7 @@ export default function AuditLogs() {
   const [action, setAction] = useState<string>("");
   const [detail, setDetail] = useState<{ before: unknown; after: unknown } | null>(null);
 
-  const { data, isLoading } = useAuditLogs({
+  const { data } = useAuditLogs({
     page,
     pageSize: 20,
     entityType: entityType || undefined,
