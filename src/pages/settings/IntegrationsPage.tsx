@@ -34,13 +34,13 @@ export default function IntegrationsPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("webhook_integrations")
+    (supabase
+      .from("webhook_integrations" as any)
       .select("*")
       .eq("user_id", user.id)
       .eq("provider", "slack")
-      .maybeSingle()
-      .then(({ data }) => {
+      .maybeSingle() as any)
+      .then(({ data }: any) => {
         if (data) {
           setExistingId(data.id);
           setConfig({
