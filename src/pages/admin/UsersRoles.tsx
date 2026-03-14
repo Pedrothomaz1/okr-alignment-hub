@@ -92,6 +92,29 @@ export default function UsersRoles() {
     },
   });
 
+  const inviteUser = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("invite-user", {
+        body: { email: inviteEmail, full_name: inviteName, role: inviteRole },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-all-roles"] });
+      toast({ title: "Usuário convidado com sucesso!" });
+      setInviteOpen(false);
+      setInviteEmail("");
+      setInviteName("");
+      setInviteRole("member");
+    },
+    onError: (err: Error) => {
+      toast({ variant: "destructive", title: "Erro ao convidar", description: err.message });
+    },
+  });
+
   const getUserRoles = (userId: string) =>
     rolesQuery.data?.filter((r) => r.user_id === userId).map((r) => r.role) ?? [];
 
