@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { getSafeAuthError } from "@/lib/safe-error";
 
 export default function ForgotPassword() {
   const { resetPassword } = useAuth();
@@ -26,7 +27,7 @@ export default function ForgotPassword() {
     try {
       const { error } = await resetPassword(values.email);
       if (error) {
-        toast({ variant: "destructive", title: "Error", description: error.message });
+        toast({ variant: "destructive", title: "Erro", description: getSafeAuthError(error) });
         return;
       }
       setSent(true);

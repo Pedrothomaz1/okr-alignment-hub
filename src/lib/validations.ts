@@ -1,22 +1,32 @@
 import { z } from "zod";
 
+const passwordSchema = z.string()
+  .min(8, "A senha deve ter no mínimo 8 caracteres")
+  .regex(/[A-Z]/, "A senha deve conter ao menos uma letra maiúscula")
+  .regex(/[a-z]/, "A senha deve conter ao menos uma letra minúscula")
+  .regex(/[0-9]/, "A senha deve conter ao menos um número")
+  .regex(/[^A-Za-z0-9]/, "A senha deve conter ao menos um caractere especial");
+
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Endereço de email inválido"),
+  password: z.string().min(1, "Senha é obrigatória"),
 });
 
 export const signupSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Endereço de email inválido"),
+  password: passwordSchema,
+  fullName: z.string()
+    .min(2, "Nome deve ter no mínimo 2 caracteres")
+    .max(100, "Nome deve ter no máximo 100 caracteres")
+    .regex(/^[\p{L}\s'-]+$/u, "Nome contém caracteres inválidos"),
 });
 
 export const resetPasswordSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Endereço de email inválido"),
 });
 
 export const otpSchema = z.object({
-  code: z.string().length(6, "Code must be 6 digits"),
+  code: z.string().length(6, "Código deve ter 6 dígitos").regex(/^\d{6}$/, "Código deve conter apenas números"),
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;

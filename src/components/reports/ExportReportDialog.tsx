@@ -59,17 +59,16 @@ export function ExportReportDialog({ cycleId }: ExportReportDialogProps) {
         URL.revokeObjectURL(url);
         toast({ title: "CSV exportado com sucesso!" });
       } else {
-        const win = window.open("", "_blank");
-        if (win) {
-          win.document.write(res.data);
-          win.document.close();
-          toast({ title: "Relatório aberto para impressão" });
-        }
+        const blob = new Blob([res.data], { type: "text/html;charset=utf-8" });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_blank");
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+        toast({ title: "Relatório aberto para impressão" });
       }
       setOpen(false);
     } catch (err: any) {
-      console.error(err);
-      toast({ title: "Erro ao gerar relatório", description: err.message, variant: "destructive" });
+      if (import.meta.env.DEV) console.error(err);
+      toast({ title: "Erro ao gerar relatório", description: "Tente novamente mais tarde.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

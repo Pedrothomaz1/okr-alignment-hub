@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { getSafeAuthError } from "@/lib/safe-error";
 import { MFAVerify } from "@/components/auth/MFAVerify";
 
 export default function Login() {
@@ -29,7 +30,7 @@ export default function Login() {
     try {
       const { error } = await signIn(values.email, values.password);
       if (error) {
-        toast({ variant: "destructive", title: "Login failed", description: error.message });
+        toast({ variant: "destructive", title: "Falha no login", description: getSafeAuthError(error) });
         return;
       }
       const { data: factors } = await listMFAFactors();

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { getSafeAuthError } from "@/lib/safe-error";
 
 export default function Signup() {
   const { signUp } = useAuth();
@@ -26,7 +27,7 @@ export default function Signup() {
     try {
       const { error } = await signUp(values.email, values.password, values.fullName);
       if (error) {
-        toast({ variant: "destructive", title: "Signup failed", description: error.message });
+        toast({ variant: "destructive", title: "Falha no cadastro", description: getSafeAuthError(error) });
         return;
       }
       setEmailSent(true);

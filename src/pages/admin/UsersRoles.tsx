@@ -68,8 +68,8 @@ export default function UsersRoles() {
       toast({ title: "Role assigned" });
       setAssignDialog(null);
     },
-    onError: (err: Error) => {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+    onError: () => {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível atribuir o papel." });
     },
   });
 
@@ -82,8 +82,8 @@ export default function UsersRoles() {
       queryClient.invalidateQueries({ queryKey: ["admin-all-roles"] });
       toast({ title: "Role removed" });
     },
-    onError: (err: Error) => {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+    onError: () => {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível remover o papel." });
     },
   });
 

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(where:*)",
+      "Bash(npx vite build)",
+      "Bash(npm audit:*)",
+      "Bash(npx update-browserslist-db@latest:*)"
+    ]
+  }
+}

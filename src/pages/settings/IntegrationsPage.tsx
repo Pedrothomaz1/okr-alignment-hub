@@ -7,8 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Link2, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-const STORAGE_KEY = "veri_slack_config";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SlackConfig {
   webhook_url: string;
@@ -27,22 +26,73 @@ const defaultConfig: SlackConfig = {
 };
 
 export default function IntegrationsPage() {
+  const { user } = useAuth();
   const [config, setConfig] = useState<SlackConfig>(defaultConfig);
+  const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [existingId, setExistingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setConfig(JSON.parse(saved));
-      } catch {}
-    }
-  }, []);
+    if (!user) return;
+    supabase
+      .from("webhook_integrations")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("provider", "slack")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setExistingId(data.id);
+          setConfig({
+            webhook_url: data.webhook_url,
+            notify_checkin: data.notify_checkin,
+            notify_kr_done: data.notify_kr_done,
+            notify_kudos: data.notify_kudos,
+            notify_cycle: data.notify_cycle,
+          });
+        }
+      });
+  }, [user]);
 
-  const save = (updated: SlackConfig) => {
-    setConfig(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    toast({ title: "Configurações salvas" });
+  const save = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      if (existingId) {
+        const { error } = await supabase
+          .from("webhook_integrations")
+          .update({
+            webhook_url: config.webhook_url,
+            notify_checkin: config.notify_checkin,
+            notify_kr_done: config.notify_kr_done,
+            notify_kudos: config.notify_kudos,
+            notify_cycle: config.notify_cycle,
+          })
+          .eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("webhook_integrations")
+          .insert({
+            user_id: user.id,
+            provider: "slack",
+            webhook_url: config.webhook_url,
+            notify_checkin: config.notify_checkin,
+            notify_kr_done: config.notify_kr_done,
+            notify_kudos: config.notify_kudos,
+            notify_cycle: config.notify_cycle,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        setExistingId(data.id);
+      }
+      toast({ title: "Configurações salvas" });
+    } catch {
+      toast({ title: "Erro ao salvar configurações", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const testWebhook = async () => {
@@ -56,13 +106,13 @@ export default function IntegrationsPage() {
         body: {
           webhook_url: config.webhook_url,
           event_type: "Teste",
-          message: "🔔 Teste de integração Veri OKR — funcionando!",
+          message: "Teste de integracao Veri OKR - funcionando!",
         },
       });
       if (error) throw error;
       toast({ title: "Mensagem de teste enviada com sucesso!" });
-    } catch (err: any) {
-      toast({ title: "Erro ao enviar teste", description: err.message, variant: "destructive" });
+    } catch {
+      toast({ title: "Erro ao enviar teste", description: "Verifique a URL do webhook e tente novamente.", variant: "destructive" });
     } finally {
       setTesting(false);
     }
@@ -134,8 +184,8 @@ export default function IntegrationsPage() {
           </div>
 
           <div className="flex gap-2 pt-2">
-            <Button onClick={() => save(config)} className="flex-1">
-              Salvar
+            <Button onClick={save} className="flex-1" disabled={saving}>
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
             <Button variant="outline" onClick={testWebhook} disabled={testing || !config.webhook_url}>
               <Send className="h-4 w-4 mr-2" />
