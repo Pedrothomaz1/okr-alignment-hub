@@ -71,8 +71,8 @@ export default function IntegrationsPage() {
           .eq("id", existingId) as any);
         if (error) throw error;
       } else {
-        const { data, error } = await supabase
-          .from("webhook_integrations")
+        const { data, error } = await (supabase
+          .from("webhook_integrations" as any)
           .insert({
             user_id: user.id,
             provider: "slack",
@@ -81,9 +81,9 @@ export default function IntegrationsPage() {
             notify_kr_done: config.notify_kr_done,
             notify_kudos: config.notify_kudos,
             notify_cycle: config.notify_cycle,
-          })
+          } as any)
           .select("id")
-          .single();
+          .single() as any);
         if (error) throw error;
         setExistingId(data.id);
       }
