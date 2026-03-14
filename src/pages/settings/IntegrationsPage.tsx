@@ -59,16 +59,16 @@ export default function IntegrationsPage() {
     setSaving(true);
     try {
       if (existingId) {
-        const { error } = await supabase
-          .from("webhook_integrations")
+        const { error } = await (supabase
+          .from("webhook_integrations" as any)
           .update({
             webhook_url: config.webhook_url,
             notify_checkin: config.notify_checkin,
             notify_kr_done: config.notify_kr_done,
             notify_kudos: config.notify_kudos,
             notify_cycle: config.notify_cycle,
-          })
-          .eq("id", existingId);
+          } as any)
+          .eq("id", existingId) as any);
         if (error) throw error;
       } else {
         const { data, error } = await supabase
