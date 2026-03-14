@@ -1075,6 +1075,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_own_profile: {
+        Args: {
+          _avatar_url?: string
+          _birth_date?: string
+          _department?: string
+          _full_name?: string
+          _job_title?: string
+          _language?: string
+          _management?: string
+          _receive_feedback_emails?: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "okr_master" | "manager" | "member"
