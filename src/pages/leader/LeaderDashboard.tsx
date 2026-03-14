@@ -44,10 +44,9 @@ export default function LeaderDashboard() {
   const checkinCompliance = teamSize > 0
     ? Math.round((team?.filter((m) => m.last_checkin).length ?? 0) / teamSize * 100)
     : 0;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const pppCompliance = teamSize > 0
+  void (teamSize > 0
     ? Math.round((team?.filter((m) => m.has_ppp_this_week).length ?? 0) / teamSize * 100)
-    : 0;
+    : 0);
   const avgPulse = teamSize > 0
     ? (() => {
         const scores = (team ?? []).filter((m) => m.pulse_score !== null).map((m) => m.pulse_score!);
