@@ -29,7 +29,7 @@ export function useActivityComments(auditLogId: string | undefined) {
       // Get author profiles
       const authorIds = [...new Set((data ?? []).map((c: any) => c.author_id))];
       const { data: profiles } = authorIds.length > 0
-        ? await supabase.from("profiles").select("id, full_name").in("id", authorIds)
+        ? await supabase.from("profiles_public" as any).select("id, full_name").in("id", authorIds)
         : { data: [] };
       const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
 

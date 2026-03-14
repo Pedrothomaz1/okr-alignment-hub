@@ -24,13 +24,13 @@ export function useLeaderDashboard() {
       if (!user) return [];
 
       // Get direct reports
-      const { data: subordinates, error: subErr } = await supabase
-        .from("profiles")
+      const { data: subordinatesRaw, error: subErr } = await supabase
+        .from("profiles_public" as any)
         .select("id, full_name, avatar_url")
-        .eq("manager_id", user.id)
-        .eq("archived", false);
+        .eq("manager_id", user.id);
       if (subErr) throw subErr;
-      if (!subordinates || subordinates.length === 0) return [];
+      const subordinates = (subordinatesRaw ?? []) as unknown as Array<{ id: string; full_name: string | null; avatar_url: string | null }>;
+      if (subordinates.length === 0) return [];
 
       const subIds = subordinates.map((s) => s.id);
 

@@ -13,12 +13,17 @@ export function useProfiles() {
     queryKey: ["profiles"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, avatar_url")
-        .eq("archived", false)
+        .from("profiles_public" as any)
+        .select("id, full_name, avatar_url")
+        .eq("status", "active")
         .order("full_name", { ascending: true });
       if (error) throw error;
-      return data as Profile[];
+      return (data as any[]).map((p) => ({
+        id: p.id,
+        full_name: p.full_name,
+        email: null,
+        avatar_url: p.avatar_url,
+      })) as Profile[];
     },
   });
 }
