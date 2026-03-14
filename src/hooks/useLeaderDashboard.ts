@@ -29,7 +29,7 @@ export function useLeaderDashboard() {
         .select("id, full_name, avatar_url")
         .eq("manager_id", user.id);
       if (subErr) throw subErr;
-      const subordinates = (subordinatesRaw ?? []) as Array<{ id: string; full_name: string | null; avatar_url: string | null }>;
+      const subordinates = (subordinatesRaw ?? []) as unknown as Array<{ id: string; full_name: string | null; avatar_url: string | null }>;
       if (subordinates.length === 0) return [];
 
       const subIds = subordinates.map((s) => s.id);
