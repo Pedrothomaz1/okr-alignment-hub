@@ -974,53 +974,6 @@ export type Database = {
           },
         ]
       }
-      webhook_integrations: {
-        Row: {
-          id: string
-          user_id: string
-          provider: string
-          webhook_url: string
-          notify_checkin: boolean
-          notify_kr_done: boolean
-          notify_kudos: boolean
-          notify_cycle: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          provider?: string
-          webhook_url: string
-          notify_checkin?: boolean
-          notify_kr_done?: boolean
-          notify_kudos?: boolean
-          notify_cycle?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          provider?: string
-          webhook_url?: string
-          notify_checkin?: boolean
-          notify_kr_done?: boolean
-          notify_kudos?: boolean
-          notify_cycle?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "webhook_integrations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       profiles_public: {
