@@ -36,6 +36,10 @@ export default function UsersRoles() {
   const [assignDialog, setAssignDialog] = useState<{ userId: string; email: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("member");
   const [search, setSearch] = useState("");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<AppRole>("member");
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
