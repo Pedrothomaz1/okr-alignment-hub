@@ -25,7 +25,7 @@ export function useLeaderDashboard() {
 
       // Get direct reports
       const { data: subordinates, error: subErr } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("id, full_name, avatar_url")
         .eq("manager_id", user.id)
         .eq("archived", false);
