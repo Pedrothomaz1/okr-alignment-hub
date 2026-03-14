@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Clock, Unlock, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Unlock, Pencil } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,7 +129,7 @@ export default function ObjectiveDetail() {
       {/* Breadcrumb de alinhamento */}
       {ancestorList.length > 0 && (
         <nav className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
-          {ancestorList.map((a: any, i: number) => (
+          {ancestorList.map((a: any) => (
             <span key={a.id} className="flex items-center gap-1">
               <Link to={`/objectives/${a.id}`} className="hover:underline hover:text-foreground">
                 {a.title}

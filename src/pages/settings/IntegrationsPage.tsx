@@ -34,13 +34,13 @@ export default function IntegrationsPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("webhook_integrations")
+    (supabase
+      .from("webhook_integrations" as any)
       .select("*")
       .eq("user_id", user.id)
       .eq("provider", "slack")
-      .maybeSingle()
-      .then(({ data }) => {
+      .maybeSingle() as any)
+      .then(({ data }: any) => {
         if (data) {
           setExistingId(data.id);
           setConfig({
@@ -59,20 +59,20 @@ export default function IntegrationsPage() {
     setSaving(true);
     try {
       if (existingId) {
-        const { error } = await supabase
-          .from("webhook_integrations")
+        const { error } = await (supabase
+          .from("webhook_integrations" as any)
           .update({
             webhook_url: config.webhook_url,
             notify_checkin: config.notify_checkin,
             notify_kr_done: config.notify_kr_done,
             notify_kudos: config.notify_kudos,
             notify_cycle: config.notify_cycle,
-          })
-          .eq("id", existingId);
+          } as any)
+          .eq("id", existingId) as any);
         if (error) throw error;
       } else {
-        const { data, error } = await supabase
-          .from("webhook_integrations")
+        const { data, error } = await (supabase
+          .from("webhook_integrations" as any)
           .insert({
             user_id: user.id,
             provider: "slack",
@@ -81,9 +81,9 @@ export default function IntegrationsPage() {
             notify_kr_done: config.notify_kr_done,
             notify_kudos: config.notify_kudos,
             notify_cycle: config.notify_cycle,
-          })
+          } as any)
           .select("id")
-          .single();
+          .single() as any);
         if (error) throw error;
         setExistingId(data.id);
       }

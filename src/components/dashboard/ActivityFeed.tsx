@@ -2,7 +2,7 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { MessageSquare, Send, ThumbsUp, Hand, Flame } from "lucide-react";
-import { useActivityFeed, type ActivityItem } from "@/hooks/useActivityFeed";
+import { useActivityFeed } from "@/hooks/useActivityFeed";
 import { useActivityComments } from "@/hooks/useActivityComments";
 import { useFeedReactions } from "@/hooks/useFeedReactions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProgressBar } from "@/components/okr/ProgressBar";
-import { UsersRound, CheckCircle, Circle, Star, ClipboardList } from "lucide-react";
+import { UsersRound, CheckCircle, Circle, Star } from "lucide-react";
 import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,9 +44,9 @@ export default function LeaderDashboard() {
   const checkinCompliance = teamSize > 0
     ? Math.round((team?.filter((m) => m.last_checkin).length ?? 0) / teamSize * 100)
     : 0;
-  const pppCompliance = teamSize > 0
+  void (teamSize > 0
     ? Math.round((team?.filter((m) => m.has_ppp_this_week).length ?? 0) / teamSize * 100)
-    : 0;
+    : 0);
   const avgPulse = teamSize > 0
     ? (() => {
         const scores = (team ?? []).filter((m) => m.pulse_score !== null).map((m) => m.pulse_score!);

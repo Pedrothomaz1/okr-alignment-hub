@@ -25,7 +25,7 @@ function computeProgress(kr: KeyResult): number {
 export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
   const [open, setOpen] = useState(false);
   const progress = computeProgress(kr);
-  const { checkins, isLoading } = useCheckins(open ? kr.id : undefined);
+  const { checkins } = useCheckins(open ? kr.id : undefined);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
