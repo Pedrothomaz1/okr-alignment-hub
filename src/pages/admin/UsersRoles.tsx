@@ -128,6 +128,10 @@ export default function UsersRoles() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Usuários & Papéis</h1>
+        <Button onClick={() => setInviteOpen(true)}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Convidar Usuário
+        </Button>
       </div>
 
       <div className="relative max-w-sm">
