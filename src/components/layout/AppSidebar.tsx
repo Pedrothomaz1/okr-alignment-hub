@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
-import veriLogo from "@/assets/veri-logo.jpg";
+
 import {
   Sidebar,
   SidebarContent,
