@@ -1,11 +1,10 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -26,6 +25,7 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/useInitiatives";
 import { formatValue, computeStatus, STATUS_DISPLAY } from "@/lib/initiative-format";
 import InitiativeForm from "./InitiativeForm";
+import InlineProgress from "@/components/initiatives/InlineProgress";
 
 export default function InitiativesList() {
   const { user } = useAuth();
@@ -170,9 +170,6 @@ export default function InitiativesList() {
                   const current = init.current_value || 0;
                   const status = computeStatus(current, target, init.deadline, mu);
                   const display = STATUS_DISPLAY[status];
-                  const progressPct = mu === "bool"
-                    ? (current >= 1 ? 100 : 0)
-                    : target > 0 ? Math.min(100, (current / target) * 100) : 0;
                   const expired = isDeadlineExpired(init.deadline);
 
                   return (
@@ -187,32 +184,11 @@ export default function InitiativesList() {
                         {mu === "bool" ? "—" : formatValue(target, mu)}
                       </TableCell>
                       <TableCell>
-                        {mu === "bool" ? (
-                          <div className="flex items-center gap-2">
-                            {current >= 1 ? (
-                              <Check className="h-5 w-5 text-green-600" />
-                            ) : (
-                              <X className="h-5 w-5 text-muted-foreground" />
-                            )}
-                            <span className="text-sm">{current >= 1 ? "Sim" : "Não"}</span>
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>{formatValue(current, mu)}</span>
-                              <span>{Math.round(progressPct)}%</span>
-                            </div>
-                            <Progress
-                              value={progressPct}
-                              className={cn(
-                                "h-2",
-                                status === "completed" && "[&>[data-state]]:bg-green-600",
-                                status === "expired" && "[&>[data-state]]:bg-destructive",
-                                status === "in_progress" && "[&>[data-state]]:bg-blue-600"
-                              )}
-                            />
-                          </div>
-                        )}
+                        <InlineProgress
+                          init={init}
+                          canEdit={(canManage || init.owner_id === user?.id) && !expired}
+                          onUpdate={updateInitiative}
+                        />
                       </TableCell>
                       <TableCell>
                         <Badge
