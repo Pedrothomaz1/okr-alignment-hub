@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -101,8 +102,6 @@ export default function InitiativesList() {
     return new Date(deadline + "T00:00:00") < today;
   };
 
-  const canEdit = (init: Initiative) =>
-    (canManage || init.owner_id === user?.id) && !isDeadlineExpired(init.deadline);
 
   return (
     <TooltipProvider>
