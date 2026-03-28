@@ -150,7 +150,7 @@ function OrgNode({ node, isRoot = false }: { node: TreeNode; isRoot?: boolean })
         <>
           <VLine height="h-4" />
           <div className="flex gap-3 relative">
-            <HConnector count={node.keyResults.length} itemWidth={176} gap={12} />
+            <HConnector count={node.keyResults.length} itemWidth={224} gap={12} />
             {node.keyResults.map((kr) => (
               <div key={kr.id} className="flex flex-col items-center">
                 <VLine height="h-4" />
