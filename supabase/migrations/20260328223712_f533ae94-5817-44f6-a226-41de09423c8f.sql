@@ -1,0 +1,4 @@
+ALTER TABLE public.initiatives
+  ADD COLUMN measurement_unit TEXT NOT NULL DEFAULT 'R$',
+  ADD COLUMN target_value NUMERIC NOT NULL DEFAULT 0,
+  ADD COLUMN current_value NUMERIC NOT NULL DEFAULT 0;
