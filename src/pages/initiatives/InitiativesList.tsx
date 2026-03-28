@@ -170,9 +170,6 @@ export default function InitiativesList() {
                   const current = init.current_value || 0;
                   const status = computeStatus(current, target, init.deadline, mu);
                   const display = STATUS_DISPLAY[status];
-                  const progressPct = mu === "bool"
-                    ? (current >= 1 ? 100 : 0)
-                    : target > 0 ? Math.min(100, (current / target) * 100) : 0;
                   const expired = isDeadlineExpired(init.deadline);
 
                   return (
