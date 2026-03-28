@@ -28,6 +28,7 @@ import {
 const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Ciclos", url: "/cycles", icon: CalendarDays },
+  { title: "Iniciativas", url: "/initiatives", icon: Target },
   { title: "Alinhamento", url: "/alignment", icon: GitBranch },
 ];
 
