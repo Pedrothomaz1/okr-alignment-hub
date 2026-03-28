@@ -82,16 +82,16 @@ function KRCard({ kr }: { kr: any }) {
       : 0;
 
   return (
-    <div className="w-44 rounded-[calc(var(--radius)-4px)] border border-border bg-muted/30 p-3 text-xs">
-      <div className="flex items-center gap-1.5 mb-1">
+    <div className="w-56 rounded-[calc(var(--radius)-4px)] border border-border bg-muted/30 p-3 text-xs">
+      <div className="flex items-center gap-1.5 mb-1.5">
         <Key className="h-3 w-3 text-muted-foreground shrink-0" />
-        <span className="font-medium truncate">{kr.title}</span>
+        <span className="font-medium leading-snug line-clamp-2">{kr.title}</span>
       </div>
-      <div className="flex items-center justify-between text-muted-foreground mb-1">
-        <span>
+      <div className="flex items-center justify-between text-muted-foreground mb-1.5">
+        <span className="font-mono text-[11px]">
           {kr.current_value}/{kr.target_value} {kr.unit || ""}
         </span>
-        <Badge variant={statusVariant[kr.status] || "outline"} className="text-[10px] px-1 py-0">
+        <Badge variant={statusVariant[kr.status] || "outline"} className="text-[10px] px-1.5 py-0">
           {statusLabel[kr.status] || kr.status}
         </Badge>
       </div>
@@ -150,7 +150,7 @@ function OrgNode({ node, isRoot = false }: { node: TreeNode; isRoot?: boolean })
         <>
           <VLine height="h-4" />
           <div className="flex gap-3 relative">
-            <HConnector count={node.keyResults.length} itemWidth={176} gap={12} />
+            <HConnector count={node.keyResults.length} itemWidth={224} gap={12} />
             {node.keyResults.map((kr) => (
               <div key={kr.id} className="flex flex-col items-center">
                 <VLine height="h-4" />
