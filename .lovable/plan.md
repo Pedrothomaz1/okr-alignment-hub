@@ -1,54 +1,37 @@
+## Plano: Redesign das telas de Login e Signup
 
+A tela atual usa "OKR Platform" como titulo e tem um design basico. Vamos transformar em algo profissional com a marca **Veri** (by VektorFlow).
 
-## Plano: Expandir Cobertura de Testes Unitarios
+### Mudancas
 
-O projeto tem 5 arquivos de teste cobrindo validações, error boundary, safe-error e auth guards. Faltam testes para os hooks principais de negocio e utilitarios criticos.
+**1. `src/pages/Login.tsx**` — Redesign completo
 
-### Arquivos de teste a criar
+- Layout split-screen: lado esquerdo com branding (gradient hero, logo "Veri", tagline, decorative elements), lado direito com o formulario
+- Em mobile, so mostra o formulario com branding compacto no topo
+- Trocar "OKR Platform" por "Vektor Flow" 
+- Adicionar tagline tipo "Alinhe objetivos. Acelere resultados."
+- Usar o Button component (variant cta) em vez do btn-cta raw
+- Melhorar espacamento e hierarquia visual
 
-**1. `src/test/useAuth.test.ts`** — Testes do hook de autenticacao
-- Mock do supabase client (auth.signUp, signIn, signOut, resetPasswordForEmail, mfa.*)
-- Verifica que signUp passa email, password e full_name corretamente
-- Verifica que signIn retorna erro quando credenciais invalidas
-- Verifica que signOut chama supabase.auth.signOut
-- Verifica que resetPassword usa redirectTo correto
+**2. `src/pages/Signup.tsx**` — Mesmo redesign
 
-**2. `src/test/useObjectives.test.ts`** — Testes do hook de objetivos
-- Mock do supabase e react-query
-- Retorna lista vazia quando cycleId undefined
-- Mapeia owner_name e kr_count corretamente dos dados retornados
-- createObjective usa user.id como fallback para owner_id
-- createObjective lanca erro quando nao autenticado
+- Manter consistencia visual com a tela de login
+- Mesmo layout split-screen
+- Trocar "OKR Platform" por "Vektor Flow"
 
-**3. `src/test/useKeyResults.test.ts`** — Testes do hook de KRs
-- Retorna lista vazia quando objectiveId undefined
-- Mapeia owner_name corretamente
-- createKeyResult usa user.id como fallback
-- createKeyResult lanca erro sem autenticacao
+**3. `src/pages/ForgotPassword.tsx**` — Atualizar branding
 
-**4. `src/test/useCycles.test.ts`** — Testes do hook de ciclos
-- createCycle lanca erro sem autenticacao
-- createCycle passa created_by com user.id
+- Trocar "OKR Platform" por "Vektor Flow" e manter consistencia
 
-**5. `src/test/useCheckins.test.ts`** — Testes do hook de check-ins
-- Retorna lista vazia sem keyResultId
-- createCheckin adiciona author_id do user
-- createCheckin lanca erro sem autenticacao
+### Design visual
 
-**6. `src/test/useRoles.test.ts`** — Testes do hook de roles
-- Retorna lista vazia sem userId
-- hasRole retorna true/false corretamente
-- isAdmin mapeia role "admin"
+- Lado esquerdo: fundo com gradient-hero (verde escuro), nome "Vektor Flow" grande em branco/dourado, tagline, icones decorativos ou formas geometricas em CSS
+- Lado direito: fundo claro, card com formulario limpo
+- Mobile: formulario centralizado com logo "Vektor Flow" no topo
+- Botoes usando a variante `cta` do Button component
 
-### Abordagem tecnica
+### Tecnico
 
-- Todos os testes mocam `@/integrations/supabase/client` com `vi.mock`
-- Hooks com react-query serao testados com `renderHook` + `QueryClientProvider` wrapper
-- Mock do `useAuth` onde necessario para injetar user fake
-- Padrao consistente com os testes existentes (vitest, describe/it/expect)
-
-### Resultado esperado
-- Cobertura dos fluxos criticos de CRUD (objectives, KRs, cycles, checkins)
-- Validacao de guards de autenticacao em cada mutation
-- Base solida para rodar antes de cada deploy
-
+- Sem dependencias novas
+- Usa tokens do design system existente (--gradient-hero, --cta, --primary)
+- Responsivo com Tailwind (lg:grid-cols-2)
