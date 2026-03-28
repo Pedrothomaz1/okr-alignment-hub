@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
-
+import veriLogo from "@/assets/veri-logo.jpg";
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +29,6 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Ciclos", url: "/cycles", icon: CalendarDays },
   { title: "Alinhamento", url: "/alignment", icon: GitBranch },
-  { title: "Iniciativas", url: "/initiatives", icon: Target },
 ];
 
 const engagementItems = [
@@ -66,7 +65,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-4 py-5 flex items-center justify-center border-b border-sidebar-border/50">
-        <span className="text-lg font-bold tracking-tight text-sidebar-foreground">OKR Platform</span>
+        <img src={veriLogo} alt="Veri logo" className="h-12 w-auto rounded-[var(--radius)] shadow-sm" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -146,6 +145,18 @@ export function AppSidebar() {
                     >
                       <FileBarChart className="h-4 w-4" />
                       <span>Relatórios</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/initiatives"
+                      className="transition-smooth hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                    >
+                      <Target className="h-4 w-4" />
+                      <span>Iniciativas</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
