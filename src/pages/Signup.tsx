@@ -6,10 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { signupSchema, type SignupFormValues } from "@/lib/validations";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { getSafeAuthError } from "@/lib/safe-error";
+import { AuthBrandingPanel } from "@/pages/Login";
 
 export default function Signup() {
   const { signUp } = useAuth();
@@ -38,64 +40,78 @@ export default function Signup() {
 
   if (emailSent) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
-        <Card className="card-elevated w-full max-w-md text-center animate-scale-in">
-          <CardHeader>
-            <CardTitle>Check your email</CardTitle>
-            <CardDescription>We've sent a confirmation link to your email address. Please verify to continue.</CardDescription>
-          </CardHeader>
-          <CardFooter className="justify-center">
-            <Link to="/login" className="text-primary hover:underline text-sm">Back to login</Link>
-          </CardFooter>
-        </Card>
+      <div className="grid min-h-screen lg:grid-cols-2">
+        <AuthBrandingPanel />
+        <div className="flex flex-col items-center justify-center px-6 py-12 bg-background">
+          <Card className="card-elevated w-full max-w-md text-center animate-scale-in">
+            <CardHeader>
+              <CardTitle>Verifique seu email</CardTitle>
+              <CardDescription>Enviamos um link de confirmação para o seu email. Verifique para continuar.</CardDescription>
+            </CardHeader>
+            <CardFooter className="justify-center">
+              <Link to="/login" className="text-primary hover:underline text-sm">Voltar ao login</Link>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
-      <Card className="card-elevated w-full max-w-md animate-scale-in">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 text-2xl font-bold text-gradient">OKR Platform</div>
-          <CardTitle className="text-xl font-semibold tracking-tight">Create Account</CardTitle>
-          <CardDescription>Sign up to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="fullName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <button type="submit" className="btn-cta w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Sign Up"}
-              </button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="justify-center text-sm">
-          <p className="text-muted-foreground">
-            Already have an account? <Link to="/login" className="text-primary hover:underline">Sign in</Link>
-          </p>
-        </CardFooter>
-      </Card>
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <AuthBrandingPanel />
+
+      <div className="flex flex-col items-center justify-center px-6 py-12 bg-background">
+        {/* Mobile-only compact branding */}
+        <div className="mb-8 text-center lg:hidden">
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+            Vektor<span className="text-cta">Flow</span>
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">Alinhe objetivos. Acelere resultados.</p>
+        </div>
+
+        <Card className="card-elevated w-full max-w-md animate-scale-in">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl font-semibold tracking-tight">Criar Conta</CardTitle>
+            <CardDescription>Cadastre-se para começar</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField control={form.control} name="fullName" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome Completo</FormLabel>
+                    <FormControl><Input placeholder="João Silva" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="password" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <Button type="submit" variant="cta" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Criando conta..." : "Cadastrar"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+          <CardFooter className="justify-center text-sm">
+            <p className="text-muted-foreground">
+              Já tem conta? <Link to="/login" className="text-primary hover:underline">Entrar</Link>
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
