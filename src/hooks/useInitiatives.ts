@@ -12,6 +12,9 @@ export interface Initiative {
   deadline: string;
   status: string;
   expected_impact: string | null;
+  measurement_unit: string;
+  target_value: number;
+  current_value: number;
   created_by: string;
   created_at: string;
   updated_at: string;

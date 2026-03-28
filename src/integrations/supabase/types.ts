@@ -336,13 +336,16 @@ export type Database = {
           action: string
           created_at: string
           created_by: string
+          current_value: number
           date: string
           deadline: string
           dre_line: string
           expected_impact: string | null
           id: string
+          measurement_unit: string
           owner_id: string
           status: string
+          target_value: number
           unit: string
           updated_at: string
         }
@@ -350,13 +353,16 @@ export type Database = {
           action: string
           created_at?: string
           created_by: string
+          current_value?: number
           date?: string
           deadline: string
           dre_line: string
           expected_impact?: string | null
           id?: string
+          measurement_unit?: string
           owner_id: string
           status?: string
+          target_value?: number
           unit: string
           updated_at?: string
         }
@@ -364,13 +370,16 @@ export type Database = {
           action?: string
           created_at?: string
           created_by?: string
+          current_value?: number
           date?: string
           deadline?: string
           dre_line?: string
           expected_impact?: string | null
           id?: string
+          measurement_unit?: string
           owner_id?: string
           status?: string
+          target_value?: number
           unit?: string
           updated_at?: string
         }
