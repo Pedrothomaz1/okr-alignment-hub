@@ -1,21 +1,27 @@
 
 
-# Destravar o ciclo "Q1 2026 - Teste Travado"
+## Problem: Blank Login Page
 
-## Situação atual
-O ciclo `aaaaaaaa-0001-0001-0001-000000000001` está com `locked = true` e `status = active`.
+The preview shows `/login` but nothing is visible. The DOM is rendering (24KB), but the page appears blank. 
 
-## Plano
-Executar uma migration que:
-1. Seta `locked = false` no ciclo
-2. Remove o `lock_after_start` do metadata para que ele não trave novamente automaticamente ao reativar
-
-```sql
-UPDATE cycles
-SET locked = false,
-    metadata = metadata - 'lock_after_start'
-WHERE id = 'aaaaaaaa-0001-0001-0001-000000000001';
+**Root cause identified**: The `Content-Security-Policy` in `index.html` is too restrictive:
 ```
+script-src 'self'
+```
+This blocks Vite's HMR inline scripts and potentially the Lovable preview token handling, which can prevent the app from rendering properly in the preview environment.
 
-Isso permitirá editar OKRs, redistribuir pesos dos KRs e testar os sliders interativamente.
+Additionally, `connect-src` only allows `https://*.supabase.co` — it doesn't include the Lovable preview infrastructure URLs, which may block API calls needed for the preview to function.
+
+## Plan
+
+### 1. Relax CSP in `index.html`
+- Remove or loosen the `Content-Security-Policy` meta tag for development. In production, CSP should be set via server headers, not meta tags, for better control.
+- Specifically: remove the entire `<meta http-equiv="Content-Security-Policy" ...>` tag. This is the most impactful single change and will unblock the preview immediately.
+
+### 2. Verify the fix
+- After removing the CSP meta tag, the login page should render with the card, email/password fields, and sign-in button visible.
+
+---
+
+**Single file change**: `index.html` — remove line 6 (the CSP meta tag).
 
