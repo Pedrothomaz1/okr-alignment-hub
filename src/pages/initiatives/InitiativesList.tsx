@@ -191,32 +191,11 @@ export default function InitiativesList() {
                         {mu === "bool" ? "—" : formatValue(target, mu)}
                       </TableCell>
                       <TableCell>
-                        {mu === "bool" ? (
-                          <div className="flex items-center gap-2">
-                            {current >= 1 ? (
-                              <Check className="h-5 w-5 text-green-600" />
-                            ) : (
-                              <X className="h-5 w-5 text-muted-foreground" />
-                            )}
-                            <span className="text-sm">{current >= 1 ? "Sim" : "Não"}</span>
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>{formatValue(current, mu)}</span>
-                              <span>{Math.round(progressPct)}%</span>
-                            </div>
-                            <Progress
-                              value={progressPct}
-                              className={cn(
-                                "h-2",
-                                status === "completed" && "[&>[data-state]]:bg-green-600",
-                                status === "expired" && "[&>[data-state]]:bg-destructive",
-                                status === "in_progress" && "[&>[data-state]]:bg-blue-600"
-                              )}
-                            />
-                          </div>
-                        )}
+                        <InlineProgress
+                          init={init}
+                          canEdit={(canManage || init.owner_id === user?.id) && !expired}
+                          onUpdate={updateInitiative}
+                        />
                       </TableCell>
                       <TableCell>
                         <Badge
