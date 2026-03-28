@@ -25,6 +25,7 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/useInitiatives";
 import { formatValue, computeStatus, STATUS_DISPLAY } from "@/lib/initiative-format";
 import InitiativeForm from "./InitiativeForm";
+import InlineProgress from "@/components/initiatives/InlineProgress";
 
 export default function InitiativesList() {
   const { user } = useAuth();
