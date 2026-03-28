@@ -72,7 +72,6 @@ export default function InitiativesList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Iniciativas</h1>
-          <p className="text-muted-foreground">Ações corretivas fora do ciclo de OKRs</p>
         </div>
         {canManage && (
           <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
