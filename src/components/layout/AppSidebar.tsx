@@ -149,18 +149,6 @@ export function AppSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/initiatives"
-                      className="transition-smooth hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
-                    >
-                      <Target className="h-4 w-4" />
-                      <span>Iniciativas</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
