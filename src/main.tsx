@@ -2,8 +2,10 @@ import { createRoot } from "react-dom/client";
 
 const root = createRoot(document.getElementById("root")!);
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Fallback values for published builds where env vars may not be injected.
+// These are publishable/anon keys — safe to include in client-side code.
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://hmvipnpfejduneusoekn.supabase.co";
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtdmlwbnBmZWpkdW5ldXNvZWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NDgyOTcsImV4cCI6MjA4NjQyNDI5N30.xMhQXWFN_tnw0wWoSOkxw_rWpEEAfAKJ3Mvmj7rZiAk";
 
 if (!supabaseUrl || !supabaseKey) {
   root.render(
@@ -15,7 +17,12 @@ if (!supabaseUrl || !supabaseKey) {
     </div>
   );
 } else {
-  // Only import the app (and therefore the Supabase client) when env vars exist
+  // Inject env vars globally so the auto-generated client.ts can use them
+  if (!import.meta.env.VITE_SUPABASE_URL) {
+    (import.meta as any).env.VITE_SUPABASE_URL = supabaseUrl;
+    (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY = supabaseKey;
+  }
+
   Promise.all([
     import("next-themes"),
     import("./App"),
