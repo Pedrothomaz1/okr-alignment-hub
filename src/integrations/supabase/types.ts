@@ -1122,6 +1122,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_sensitive_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          birth_date: string
+          cpf: string
+          eligible_for_bonus: boolean
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

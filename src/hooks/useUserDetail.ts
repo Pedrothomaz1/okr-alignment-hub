@@ -27,13 +27,26 @@ export function useUserDetail(userId: string | undefined) {
   const profileQuery = useQuery({
     queryKey: ["user-detail", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch non-sensitive profile fields
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("id, full_name, email, avatar_url, cpf, birth_date, language, job_title, department, management, manager_id, status, receive_feedback_emails, eligible_for_bonus, config_panel_access")
+        .select("id, full_name, email, avatar_url, language, job_title, department, management, manager_id, status, receive_feedback_emails, config_panel_access")
         .eq("id", userId!)
         .single();
-      if (error) throw error;
-      return data as UserProfile;
+      if (profileError) throw profileError;
+
+      // Fetch sensitive PII via secure RPC (admin or owner only)
+      const { data: sensitiveData } = await supabase
+        .rpc("get_sensitive_profile", { _user_id: userId! });
+
+      const sensitive = sensitiveData?.[0] ?? { cpf: null, birth_date: null, eligible_for_bonus: null };
+
+      return {
+        ...profileData,
+        cpf: sensitive.cpf,
+        birth_date: sensitive.birth_date,
+        eligible_for_bonus: sensitive.eligible_for_bonus,
+      } as UserProfile;
     },
     enabled: !!userId,
   });
