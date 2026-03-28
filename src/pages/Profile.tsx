@@ -74,10 +74,7 @@ export default function Profile() {
       const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
       setAvatarUrl(newUrl);
 
-      await supabase
-        .from("profiles")
-        .update({ avatar_url: newUrl })
-        .eq("id", user.id);
+      await supabase.rpc("update_own_profile", { _avatar_url: newUrl });
 
       queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
@@ -91,10 +88,10 @@ export default function Profile() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ full_name: fullName, avatar_url: avatarUrl || null })
-        .eq("id", user!.id);
+      const { error } = await supabase.rpc("update_own_profile", {
+        _full_name: fullName,
+        _avatar_url: avatarUrl || undefined,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
