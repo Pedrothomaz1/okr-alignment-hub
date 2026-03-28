@@ -1,36 +1,54 @@
 
 
-## Diagnóstico
+## Plano: Expandir Cobertura de Testes Unitarios
 
-O site publicado mostra tela branca porque o `createClient()` do Supabase recebe `undefined` para URL e chave, causando um crash imediato. O preview funciona porque o servidor de desenvolvimento injeta as variáveis do `.env` corretamente, mas o build publicado pode ter sido gerado antes das variáveis estarem configuradas.
+O projeto tem 5 arquivos de teste cobrindo validações, error boundary, safe-error e auth guards. Faltam testes para os hooks principais de negocio e utilitarios criticos.
 
-O arquivo `client.ts` é auto-gerado e não pode ser editado. Porém, o app não tem nenhuma proteção contra falha na inicialização do Supabase.
+### Arquivos de teste a criar
 
-## Plano
+**1. `src/test/useAuth.test.ts`** — Testes do hook de autenticacao
+- Mock do supabase client (auth.signUp, signIn, signOut, resetPasswordForEmail, mfa.*)
+- Verifica que signUp passa email, password e full_name corretamente
+- Verifica que signIn retorna erro quando credenciais invalidas
+- Verifica que signOut chama supabase.auth.signOut
+- Verifica que resetPassword usa redirectTo correto
 
-### 1. Adicionar guard de inicialização no `App.tsx`
+**2. `src/test/useObjectives.test.ts`** — Testes do hook de objetivos
+- Mock do supabase e react-query
+- Retorna lista vazia quando cycleId undefined
+- Mapeia owner_name e kr_count corretamente dos dados retornados
+- createObjective usa user.id como fallback para owner_id
+- createObjective lanca erro quando nao autenticado
 
-Adicionar uma verificação no início do App que detecta se as variáveis de ambiente estão ausentes e mostra uma mensagem de erro amigável em vez de uma tela branca. Isso previne o crash silencioso.
+**3. `src/test/useKeyResults.test.ts`** — Testes do hook de KRs
+- Retorna lista vazia quando objectiveId undefined
+- Mapeia owner_name corretamente
+- createKeyResult usa user.id como fallback
+- createKeyResult lanca erro sem autenticacao
 
-```tsx
-// No início do App, antes do render
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+**4. `src/test/useCycles.test.ts`** — Testes do hook de ciclos
+- createCycle lanca erro sem autenticacao
+- createCycle passa created_by com user.id
 
-if (!supabaseUrl || !supabaseKey) {
-  return (
-    <div>Erro de configuração: variáveis de ambiente não encontradas. Tente republicar o site.</div>
-  );
-}
-```
+**5. `src/test/useCheckins.test.ts`** — Testes do hook de check-ins
+- Retorna lista vazia sem keyResultId
+- createCheckin adiciona author_id do user
+- createCheckin lanca erro sem autenticacao
 
-### 2. Forçar re-deploy
+**6. `src/test/useRoles.test.ts`** — Testes do hook de roles
+- Retorna lista vazia sem userId
+- hasRole retorna true/false corretamente
+- isAdmin mapeia role "admin"
 
-A mudança no código vai habilitar o botão "Update" no painel de publicação, forçando um novo build que incluirá as variáveis de ambiente corretamente.
+### Abordagem tecnica
 
-### Detalhes técnicos
+- Todos os testes mocam `@/integrations/supabase/client` com `vi.mock`
+- Hooks com react-query serao testados com `renderHook` + `QueryClientProvider` wrapper
+- Mock do `useAuth` onde necessario para injetar user fake
+- Padrao consistente com os testes existentes (vitest, describe/it/expect)
 
-- **Arquivo alterado**: `src/App.tsx` — adicionar early return com mensagem de erro se env vars estiverem undefined
-- **Efeito colateral**: nenhum impacto no funcionamento normal; a guard só ativa se as variáveis estiverem ausentes
-- Após a implementação, o usuário precisará clicar em **Publish → Update** para gerar um novo build
+### Resultado esperado
+- Cobertura dos fluxos criticos de CRUD (objectives, KRs, cycles, checkins)
+- Validacao de guards de autenticacao em cada mutation
+- Base solida para rodar antes de cada deploy
 
