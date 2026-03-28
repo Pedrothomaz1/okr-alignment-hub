@@ -17,9 +17,6 @@ export default function DashboardLayout() {
         <div className="flex-1 flex flex-col">
           <header className="h-12 flex items-center border-b bg-background px-4">
             <SidebarTrigger className="mr-4" />
-            <h1 className="text-base font-semibold tracking-tight text-foreground">
-              OKR Platform
-            </h1>
             <div className="ml-auto flex items-center gap-1">
               <SendKudosDialog />
               <NotificationBell />
