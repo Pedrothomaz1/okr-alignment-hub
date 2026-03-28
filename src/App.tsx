@@ -52,7 +52,24 @@ function PageLoader() {
   );
 }
 
-const App = () => (
+const App = () => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-4 p-8">
+          <h1 className="text-2xl font-semibold text-foreground">Erro de configuração</h1>
+          <p className="text-muted-foreground">
+            Variáveis de ambiente não encontradas. Tente republicar o site.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -92,6 +109,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
-);
+  );
+};
 
 export default App;
