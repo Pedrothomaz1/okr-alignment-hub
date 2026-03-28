@@ -1,104 +1,71 @@
 
 
-## Tela de Gerenciamento de Iniciativas
+## Reformular Iniciativas: Mensuração, Progresso, Bloqueio e Filtros
 
-Criar uma nova seção completa para gerenciar Iniciativas — ações corretivas criadas quando resultados do plano estratégico não são atingidos, separadas dos OKRs.
+### Resumo das mudanças
 
-### Campos da Iniciativa
-- **Data** (data de criação)
-- **Unidade** (unidade de negócio)
-- **Linha da DRE** (linha do P&L: Receita, COGS, Despesas Operacionais, etc.)
-- **Ação** (descrição da iniciativa)
-- **Dono** (responsável, selecionado entre usuários ativos)
-- **Prazo** (data limite)
-- **Status** (pendente, em andamento, concluída, cancelada)
-- **Impacto esperado** (texto livre descrevendo o impacto financeiro/operacional)
+A iniciativa passa a ter uma **unidade de medida** (R$, %, unidades, horas, **booleano**), um **valor-alvo** numérico e um **valor atual** (progresso). O status textual (pendente/concluída) é removido e passa a ser **calculado no front**. Após o prazo, edição é bloqueada. Filtros por **Unidade** e **Responsável**.
 
 ---
 
-### 1. Criar tabela `initiatives` no banco
+### 1. Migration: adicionar colunas na tabela `initiatives`
 
-Nova migration com a tabela e RLS policies:
-- Qualquer autenticado pode visualizar
-- Admin/OKR master pode criar, editar e deletar
-- O dono (owner) também pode editar suas próprias iniciativas
-
-Colunas: `id`, `created_at`, `updated_at`, `date`, `unit`, `dre_line`, `action`, `owner_id` (ref profiles), `deadline`, `status`, `expected_impact`, `created_by`
-
-### 2. Criar hook `useInitiatives`
-
-Hook com React Query para CRUD da tabela `initiatives`, seguindo o padrão dos hooks existentes (ex: `useCycles`). Inclui queries para listar, criar, atualizar e deletar.
-
-### 3. Criar página `InitiativesList`
-
-Página em `src/pages/initiatives/InitiativesList.tsx`:
-- Tabela com todas as colunas solicitadas
-- Botão "Nova Iniciativa" (para admin/okr_master)
-- Ações de editar/excluir por linha
-- Badges de status coloridos
-- Formatação de datas em pt-BR
-
-### 4. Criar formulário `InitiativeForm`
-
-Dialog/modal com formulário para criar/editar iniciativa:
-- Select para Unidade (texto livre ou lista predefinida)
-- Select para Linha da DRE (Receita, CPV, Despesas Operacionais, EBITDA, etc.)
-- Select para Dono (lista de perfis ativos)
-- DatePicker para Data e Prazo
-- Select para Status
-- Textarea para Ação e Impacto esperado
-
-### 5. Adicionar rota e link na sidebar
-
-- Nova rota `/initiatives` no `App.tsx`
-- Novo item "Iniciativas" no grupo "Gestão" da sidebar (visível para leaders/admin)
-
----
-
-### Detalhes técnicos
-
-**Migration SQL:**
 ```sql
-CREATE TABLE public.initiatives (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  date DATE NOT NULL DEFAULT CURRENT_DATE,
-  unit TEXT NOT NULL,
-  dre_line TEXT NOT NULL,
-  action TEXT NOT NULL,
-  owner_id UUID NOT NULL,
-  deadline DATE NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',
-  expected_impact TEXT,
-  created_by UUID NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.initiatives ENABLE ROW LEVEL SECURITY;
-
--- RLS policies
-CREATE POLICY "Authenticated can view initiatives" ON public.initiatives
-  FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Admin/OKR master can create initiatives" ON public.initiatives
-  FOR INSERT TO authenticated
-  WITH CHECK (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'okr_master'));
-
-CREATE POLICY "Admin/OKR master/owner can update initiatives" ON public.initiatives
-  FOR UPDATE TO authenticated
-  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'okr_master') OR owner_id = auth.uid());
-
-CREATE POLICY "Admin can delete initiatives" ON public.initiatives
-  FOR DELETE TO authenticated
-  USING (has_role(auth.uid(), 'admin'));
+ALTER TABLE public.initiatives
+  ADD COLUMN measurement_unit TEXT NOT NULL DEFAULT 'R$',
+  ADD COLUMN target_value NUMERIC NOT NULL DEFAULT 0,
+  ADD COLUMN current_value NUMERIC NOT NULL DEFAULT 0;
 ```
 
-**Novos arquivos:**
-- `src/hooks/useInitiatives.ts`
-- `src/pages/initiatives/InitiativesList.tsx`
-- `src/pages/initiatives/InitiativeForm.tsx`
+- `measurement_unit`: "R$", "%", "un", "horas", "bool"
+- `target_value`: valor-alvo (para booleano: 1 = sim)
+- `current_value`: progresso (para booleano: 0 ou 1)
+- `status` e `expected_impact` permanecem no banco por compatibilidade, mas deixam de ser usados na UI
 
-**Arquivos modificados:**
-- `src/App.tsx` — nova rota `/initiatives`
-- `src/components/layout/AppSidebar.tsx` — novo item no menu Gestão
+### 2. Atualizar hook `useInitiatives`
+
+Adicionar `measurement_unit`, `target_value`, `current_value` ao tipo `Initiative` e aos inserts/updates.
+
+### 3. Reformular `InitiativeForm`
+
+- Remover campo Status (select pendente/em andamento)
+- Adicionar **Unidade de Medida** (select: R$, %, unidades, horas, booleano)
+- **Impacto Esperado** vira input numérico formatado pela unidade; para booleano fica oculto (target_value = 1 automaticamente)
+- **Valor Atual** aparece ao editar: input numérico ou toggle/switch para booleano
+- Todo formulário bloqueado se `deadline < hoje`, com aviso "Prazo expirado"
+
+### 4. Reformular `InitiativesList`
+
+**Filtros** (barra acima da tabela):
+- Select por **Unidade** (valores únicos das iniciativas existentes)
+- Select por **Dono/Responsável** (perfis)
+
+**Tabela**:
+- Coluna "Impacto Esperado" → valor-alvo formatado (ex: "R$ 100.000,00", "Sim/Não")
+- Coluna "Status" → valor atual formatado + barra de progresso; para booleano mostra check/X
+- Cores: verde (atingiu), amarelo (em progresso), vermelho (expirou sem atingir)
+- Botão editar desabilitado se prazo expirou
+
+**Status calculado no front:**
+- `current_value >= target_value` → Concluída (verde)
+- `deadline < hoje` e não concluída → Expirada (vermelho)
+- Caso contrário → Em andamento (azul)
+
+### 5. Formatação por unidade
+
+| Unidade | Impacto Esperado | Valor Atual |
+|---------|-----------------|-------------|
+| R$ | R$ 100.000,00 | R$ 80.000,00 |
+| % | 100% | 80% |
+| un | 150 un | 120 un |
+| horas | 40 horas | 30 horas |
+| bool | — | Switch Sim/Não |
+
+---
+
+### Arquivos modificados
+- **Migration SQL** — adicionar 3 colunas
+- `src/hooks/useInitiatives.ts` — novos campos no tipo
+- `src/pages/initiatives/InitiativeForm.tsx` — reformulação completa
+- `src/pages/initiatives/InitiativesList.tsx` — filtros + nova visualização
 
