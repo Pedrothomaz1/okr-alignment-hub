@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2 } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -145,6 +145,18 @@ export function AppSidebar() {
                     >
                       <FileBarChart className="h-4 w-4" />
                       <span>Relatórios</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/initiatives"
+                      className="transition-smooth hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                    >
+                      <Target className="h-4 w-4" />
+                      <span>Iniciativas</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

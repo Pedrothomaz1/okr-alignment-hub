@@ -331,6 +331,51 @@ export type Database = {
           },
         ]
       }
+      initiatives: {
+        Row: {
+          action: string
+          created_at: string
+          created_by: string
+          date: string
+          deadline: string
+          dre_line: string
+          expected_impact: string | null
+          id: string
+          owner_id: string
+          status: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          created_by: string
+          date?: string
+          deadline: string
+          dre_line: string
+          expected_impact?: string | null
+          id?: string
+          owner_id: string
+          status?: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          created_by?: string
+          date?: string
+          deadline?: string
+          dre_line?: string
+          expected_impact?: string | null
+          id?: string
+          owner_id?: string
+          status?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       key_results: {
         Row: {
           created_at: string

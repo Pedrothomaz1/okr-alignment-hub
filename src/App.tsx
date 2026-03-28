@@ -30,6 +30,7 @@ const KudosPage = lazy(() => import("./pages/kudos/KudosPage"));
 const LeaderDashboard = lazy(() => import("./pages/leader/LeaderDashboard"));
 const ReportsPage = lazy(() => import("./pages/reports/ReportsPage"));
 const IntegrationsPage = lazy(() => import("./pages/settings/IntegrationsPage"));
+const InitiativesList = lazy(() => import("./pages/initiatives/InitiativesList"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -78,6 +79,7 @@ const App = () => (
                 <Route path="/leader" element={<LeaderDashboard />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/settings/integrations" element={<IntegrationsPage />} />
+                <Route path="/initiatives" element={<InitiativesList />} />
                 <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
                 <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
                 <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
