@@ -6,8 +6,6 @@ import React from "react";
 const mockInsert = vi.fn();
 const mockSelect = vi.fn();
 const mockSingle = vi.fn();
-const mockEq = vi.fn();
-const mockOrder = vi.fn();
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
