@@ -183,7 +183,7 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton className="h-auto py-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || "Usuário"} />
+                    <AvatarImage src={avatarUrl || undefined} alt={user?.user_metadata?.full_name || "Usuário"} />
                     <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs">
                       {initials}
                     </AvatarFallback>
