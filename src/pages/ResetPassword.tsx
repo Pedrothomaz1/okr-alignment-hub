@@ -134,8 +134,12 @@ export default function ResetPassword() {
 
         <Card className="card-elevated w-full max-w-md animate-scale-in">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl font-semibold tracking-tight">Nova Senha</CardTitle>
-            <CardDescription>Digite sua nova senha abaixo</CardDescription>
+            <CardTitle className="text-xl font-semibold tracking-tight">
+              {isInvite ? "Crie sua Senha" : "Nova Senha"}
+            </CardTitle>
+            <CardDescription>
+              {isInvite ? "Bem-vindo ao VektorFlow! Defina sua senha para acessar a plataforma." : "Digite sua nova senha abaixo"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
