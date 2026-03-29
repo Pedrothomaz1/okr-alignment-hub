@@ -58,6 +58,22 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const isLeader = hasRole("manager") || hasRole("okr_master") || isAdmin;
 
+  const { data: profileData } = useQuery({
+    queryKey: ["sidebar-avatar", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const avatarUrl = profileData?.avatar_url || user?.user_metadata?.avatar_url;
+
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
     .split(" ")
     .map((w: string) => w[0])
