@@ -165,7 +165,7 @@ export default function ObjectiveDetail() {
             <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
           </div>
         </div>
-        {canEdit && (
+        {canEditObj && (
           <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
             <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
           </Button>
@@ -233,7 +233,7 @@ export default function ObjectiveDetail() {
       )}
 
       {/* Weight Distributor */}
-      {canEdit && keyResults.length >= 2 && (
+      {canEditObj && keyResults.length >= 2 && (
         <WeightDistributor
           keyResults={keyResults}
           onUpdateWeight={handleWeightUpdate}
@@ -254,7 +254,7 @@ export default function ObjectiveDetail() {
               );
             })()}
           </div>
-          {canEdit && (
+          {canEditObj && (
             <Button variant="cta" size="sm" onClick={() => setKrFormOpen(true)}>
               <Plus className="h-3.5 w-3.5" /> Novo KR
             </Button>
@@ -275,7 +275,9 @@ export default function ObjectiveDetail() {
                 key={kr.id}
                 kr={kr}
                 onUpdateProgress={handleProgressUpdate}
-                onEdit={(kr) => setEditingKr(kr)}
+                onEdit={canEditKr(kr) ? (kr) => setEditingKr(kr) : undefined}
+                canEdit={canEditKr(kr)}
+                canCheckin={canCheckinKr(kr)}
               />
             ))}
           </div>
