@@ -43,6 +43,9 @@ const statusBadge: Record<string, string> = {
 export default function ObjectiveDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { isAdmin, hasRole } = useRoles(user?.id);
+  const isPrivileged = isAdmin || hasRole("okr_master");
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
   const [editObjOpen, setEditObjOpen] = useState(false);
@@ -73,7 +76,10 @@ export default function ObjectiveDetail() {
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
-  const canEdit = !isCycleLocked || activeApproval;
+  const isObjOwner = user?.id === obj?.owner_id;
+  const canEditObj = (isObjOwner || isPrivileged) && (!isCycleLocked || activeApproval);
+  const canEditKr = (kr: KeyResult) => (kr.owner_id === user?.id || isPrivileged) && (!isCycleLocked || activeApproval);
+  const canCheckinKr = (kr: KeyResult) => kr.owner_id === user?.id || isPrivileged;
 
   // Find the active approval's expiry for banner
   const activeApprovalCr = changeRequests.find(
