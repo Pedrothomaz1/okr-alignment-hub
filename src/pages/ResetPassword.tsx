@@ -34,18 +34,37 @@ export default function ResetPassword() {
     defaultValues: { password: "", confirmPassword: "" },
   });
 
+  const [isInvite, setIsInvite] = useState(false);
+
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event from the URL hash
+    // Listen for recovery or invite events from the URL hash
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsValid(true);
         setChecking(false);
       }
+      if (event === "SIGNED_IN") {
+        // inviteUserByEmail redirects with a SIGNED_IN event after token exchange
+        // Check if URL hash contains type=invite or type=recovery
+        const hash = window.location.hash;
+        if (hash.includes("type=invite") || hash.includes("type=recovery")) {
+          setIsValid(true);
+          setIsInvite(hash.includes("type=invite"));
+          setChecking(false);
+        }
+      }
     });
 
-    // Also check current session - user may already be in recovery state
+    // Check URL hash for token indicators
+    const hash = window.location.hash;
+    const hasRecoveryOrInvite = hash.includes("type=recovery") || hash.includes("type=invite");
+
+    // Also check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session && hasRecoveryOrInvite) {
+        setIsValid(true);
+        setIsInvite(hash.includes("type=invite"));
+      } else if (session) {
         setIsValid(true);
       }
       setChecking(false);
@@ -115,8 +134,12 @@ export default function ResetPassword() {
 
         <Card className="card-elevated w-full max-w-md animate-scale-in">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl font-semibold tracking-tight">Nova Senha</CardTitle>
-            <CardDescription>Digite sua nova senha abaixo</CardDescription>
+            <CardTitle className="text-xl font-semibold tracking-tight">
+              {isInvite ? "Crie sua Senha" : "Nova Senha"}
+            </CardTitle>
+            <CardDescription>
+              {isInvite ? "Bem-vindo ao VektorFlow! Defina sua senha para acessar a plataforma." : "Digite sua nova senha abaixo"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -136,7 +159,7 @@ export default function ResetPassword() {
                   </FormItem>
                 )} />
                 <Button type="submit" variant="cta" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Salvando..." : "Redefinir Senha"}
+                  {isLoading ? "Salvando..." : isInvite ? "Criar Senha" : "Redefinir Senha"}
                 </Button>
               </form>
             </Form>
