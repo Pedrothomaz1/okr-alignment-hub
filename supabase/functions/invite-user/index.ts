@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
 
     // Validate caller using getUser with the service role client
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
     const callerId = userData.user.id;
 
     // Check admin role
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: roles } = await adminClient
       .from("user_roles")
       .select("role")
