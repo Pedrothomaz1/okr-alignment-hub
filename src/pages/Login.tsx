@@ -152,8 +152,8 @@ export default function Login() {
           </CardContent>
           <CardFooter className="flex flex-col gap-2 text-sm">
             <Link to="/forgot-password" className="text-primary hover:underline">Esqueceu a senha?</Link>
-            <p className="text-muted-foreground">
-              Não tem conta? <Link to="/signup" className="text-primary hover:underline">Cadastre-se</Link>
+            <p className="text-muted-foreground text-xs">
+              O acesso é feito por convite. Fale com o administrador.
             </p>
           </CardFooter>
         </Card>
