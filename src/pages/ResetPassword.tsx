@@ -159,7 +159,7 @@ export default function ResetPassword() {
                   </FormItem>
                 )} />
                 <Button type="submit" variant="cta" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Salvando..." : "Redefinir Senha"}
+                  {isLoading ? "Salvando..." : isInvite ? "Criar Senha" : "Redefinir Senha"}
                 </Button>
               </form>
             </Form>
