@@ -14,6 +14,8 @@ interface KeyResultCardProps {
   kr: KeyResult;
   onUpdateProgress: (id: string, value: number) => void;
   onEdit?: (kr: KeyResult) => void;
+  canEdit?: boolean;
+  canCheckin?: boolean;
 }
 
 function computeProgress(kr: KeyResult): number {

@@ -12,6 +12,7 @@ interface CheckinTimelineProps {
   keyResultId: string;
   unit?: string | null;
   targetValue?: number;
+  canCheckin?: boolean;
 }
 
 type Confidence = "confident" | "neutral" | "concerned";
