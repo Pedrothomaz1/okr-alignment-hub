@@ -34,18 +34,37 @@ export default function ResetPassword() {
     defaultValues: { password: "", confirmPassword: "" },
   });
 
+  const [isInvite, setIsInvite] = useState(false);
+
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event from the URL hash
+    // Listen for recovery or invite events from the URL hash
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsValid(true);
         setChecking(false);
       }
+      if (event === "SIGNED_IN") {
+        // inviteUserByEmail redirects with a SIGNED_IN event after token exchange
+        // Check if URL hash contains type=invite or type=recovery
+        const hash = window.location.hash;
+        if (hash.includes("type=invite") || hash.includes("type=recovery")) {
+          setIsValid(true);
+          setIsInvite(hash.includes("type=invite"));
+          setChecking(false);
+        }
+      }
     });
 
-    // Also check current session - user may already be in recovery state
+    // Check URL hash for token indicators
+    const hash = window.location.hash;
+    const hasRecoveryOrInvite = hash.includes("type=recovery") || hash.includes("type=invite");
+
+    // Also check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session && hasRecoveryOrInvite) {
+        setIsValid(true);
+        setIsInvite(hash.includes("type=invite"));
+      } else if (session) {
         setIsValid(true);
       }
       setChecking(false);
