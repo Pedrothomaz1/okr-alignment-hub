@@ -97,7 +97,20 @@ export default function UsersRoles() {
       const { data, error } = await supabase.functions.invoke("invite-user", {
         body: { email: inviteEmail, full_name: inviteName, role: inviteRole },
       });
-      if (error) throw error;
+      if (error) {
+        // Extract the actual error message from the edge function response
+        let message = "Erro ao convidar usuário";
+        try {
+          const context = (error as any).context;
+          if (context instanceof Response) {
+            const body = await context.json();
+            if (body?.error) message = body.error;
+          }
+        } catch {
+          // fallback to generic message
+        }
+        throw new Error(message);
+      }
       if (data?.error) throw new Error(data.error);
       return data;
     },
