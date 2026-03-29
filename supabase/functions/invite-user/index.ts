@@ -22,7 +22,6 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
 
     // Validate caller using getUser with the service role client
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
@@ -55,7 +54,7 @@ Deno.serve(async (req) => {
     const { email, full_name, role } = await req.json();
 
     if (!email || typeof email !== "string") {
-      return new Response(JSON.stringify({ error: "Email is required" }), {
+      return new Response(JSON.stringify({ error: "Email é obrigatório" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -63,22 +62,24 @@ Deno.serve(async (req) => {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return new Response(JSON.stringify({ error: "Invalid email format" }), {
+      return new Response(JSON.stringify({ error: "Formato de email inválido" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check if user already exists
     const { data: existingProfiles } = await adminClient
       .from("profiles")
       .select("id")
-      .eq("email", email.toLowerCase().trim())
+      .eq("email", normalizedEmail)
       .limit(1);
 
     if (existingProfiles && existingProfiles.length > 0) {
       return new Response(
-        JSON.stringify({ error: "User with this email already exists" }),
+        JSON.stringify({ error: "Usuário com este email já existe" }),
         {
           status: 409,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -86,32 +87,27 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate a temporary password
-    const tempPassword =
-      crypto.randomUUID().slice(0, 8) +
-      "A1!" +
-      crypto.randomUUID().slice(0, 4);
-
-    // Create user via admin API
-    const { data: newUser, error: createError } =
-      await adminClient.auth.admin.createUser({
-        email: email.toLowerCase().trim(),
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
+    // Use inviteUserByEmail - this creates the user AND sends an invite email
+    // The user will receive an email with a link to set their password
+    const { data: inviteData, error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(normalizedEmail, {
+        data: {
           full_name: full_name || "",
         },
       });
 
-    if (createError) {
+    if (inviteError) {
+      console.error("Invite error:", inviteError.message);
       return new Response(
-        JSON.stringify({ error: createError.message }),
+        JSON.stringify({ error: inviteError.message }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
+
+    const newUserId = inviteData.user.id;
 
     // Assign role if specified (and not 'member' which is auto-assigned by trigger)
     if (
@@ -121,34 +117,23 @@ Deno.serve(async (req) => {
     ) {
       await adminClient
         .from("user_roles")
-        .insert({ user_id: newUser.user.id, role });
-    }
-
-    // Send password reset email so user can set their own password
-    const { error: resetError } =
-      await adminClient.auth.admin.generateLink({
-        type: "recovery",
-        email: email.toLowerCase().trim(),
-      });
-
-    if (resetError) {
-      console.warn("Could not send recovery email:", resetError.message);
+        .insert({ user_id: newUserId, role });
     }
 
     // Audit log
     await adminClient.from("audit_logs").insert({
       actor_id: callerId,
       entity_type: "user",
-      entity_id: newUser.user.id,
+      entity_id: newUserId,
       action: "INVITE",
-      metadata: { email, role: role || "member", full_name },
+      metadata: { email: normalizedEmail, role: role || "member", full_name },
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        user_id: newUser.user.id,
-        message: "User created successfully",
+        user_id: newUserId,
+        message: "Usuário convidado com sucesso. Um email foi enviado.",
       }),
       {
         status: 200,
@@ -158,7 +143,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("invite-user error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Erro interno do servidor" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
