@@ -1,8 +1,10 @@
 import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
+import { supabase } from "@/integrations/supabase/client";
 
 import {
   Sidebar,
@@ -16,7 +18,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +57,22 @@ export function AppSidebar() {
   const { isAdmin, hasRole } = useRoles(user?.id);
   const navigate = useNavigate();
   const isLeader = hasRole("manager") || hasRole("okr_master") || isAdmin;
+
+  const { data: profileData } = useQuery({
+    queryKey: ["sidebar-avatar", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const avatarUrl = profileData?.avatar_url || user?.user_metadata?.avatar_url;
 
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
     .split(" ")
@@ -165,6 +183,7 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton className="h-auto py-2">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={avatarUrl || undefined} alt={user?.user_metadata?.full_name || "Usuário"} />
                     <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs">
                       {initials}
                     </AvatarFallback>
