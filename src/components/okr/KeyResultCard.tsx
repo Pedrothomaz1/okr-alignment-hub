@@ -14,6 +14,8 @@ interface KeyResultCardProps {
   kr: KeyResult;
   onUpdateProgress: (id: string, value: number) => void;
   onEdit?: (kr: KeyResult) => void;
+  canEdit?: boolean;
+  canCheckin?: boolean;
 }
 
 function computeProgress(kr: KeyResult): number {
@@ -22,7 +24,7 @@ function computeProgress(kr: KeyResult): number {
   return Math.min(100, Math.max(0, ((kr.current_value - kr.start_value) / range) * 100));
 }
 
-export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
+export function KeyResultCard({ kr, onEdit, canEdit = true, canCheckin = true }: KeyResultCardProps) {
   const [open, setOpen] = useState(false);
   const progress = computeProgress(kr);
   const { checkins } = useCheckins(open ? kr.id : undefined);
@@ -51,7 +53,7 @@ export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
                 <History className="h-3.5 w-3.5" />
               </Button>
             </CollapsibleTrigger>
-            {onEdit && (
+            {canEdit && onEdit && (
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(kr)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
@@ -76,7 +78,7 @@ export function KeyResultCard({ kr, onEdit }: KeyResultCardProps) {
               <TabsTrigger value="chart" className="text-xs flex-1">Gráfico</TabsTrigger>
             </TabsList>
             <TabsContent value="timeline">
-              <CheckinTimeline keyResultId={kr.id} unit={kr.unit} targetValue={kr.target_value} />
+              <CheckinTimeline keyResultId={kr.id} unit={kr.unit} targetValue={kr.target_value} canCheckin={canCheckin} />
             </TabsContent>
             <TabsContent value="chart">
               <CheckinChart

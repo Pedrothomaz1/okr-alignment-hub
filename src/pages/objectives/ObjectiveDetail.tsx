@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Unlock, Pencil } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRoles } from "@/hooks/useRoles";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +43,9 @@ const statusBadge: Record<string, string> = {
 export default function ObjectiveDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { isAdmin, hasRole } = useRoles(user?.id);
+  const isPrivileged = isAdmin || hasRole("okr_master");
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
   const [editObjOpen, setEditObjOpen] = useState(false);
@@ -71,7 +76,10 @@ export default function ObjectiveDetail() {
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
-  const canEdit = !isCycleLocked || activeApproval;
+  const isObjOwner = user?.id === obj?.owner_id;
+  const canEditObj = (isObjOwner || isPrivileged) && (!isCycleLocked || activeApproval);
+  const canEditKr = (kr: KeyResult) => (kr.owner_id === user?.id || isPrivileged) && (!isCycleLocked || activeApproval);
+  const canCheckinKr = (kr: KeyResult) => kr.owner_id === user?.id || isPrivileged;
 
   // Find the active approval's expiry for banner
   const activeApprovalCr = changeRequests.find(
@@ -157,7 +165,7 @@ export default function ObjectiveDetail() {
             <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
           </div>
         </div>
-        {canEdit && (
+        {canEditObj && (
           <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
             <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
           </Button>
@@ -225,7 +233,7 @@ export default function ObjectiveDetail() {
       )}
 
       {/* Weight Distributor */}
-      {canEdit && keyResults.length >= 2 && (
+      {canEditObj && keyResults.length >= 2 && (
         <WeightDistributor
           keyResults={keyResults}
           onUpdateWeight={handleWeightUpdate}
@@ -246,7 +254,7 @@ export default function ObjectiveDetail() {
               );
             })()}
           </div>
-          {canEdit && (
+          {canEditObj && (
             <Button variant="cta" size="sm" onClick={() => setKrFormOpen(true)}>
               <Plus className="h-3.5 w-3.5" /> Novo KR
             </Button>
@@ -267,7 +275,9 @@ export default function ObjectiveDetail() {
                 key={kr.id}
                 kr={kr}
                 onUpdateProgress={handleProgressUpdate}
-                onEdit={(kr) => setEditingKr(kr)}
+                onEdit={canEditKr(kr) ? (kr) => setEditingKr(kr) : undefined}
+                canEdit={canEditKr(kr)}
+                canCheckin={canCheckinKr(kr)}
               />
             ))}
           </div>

@@ -12,6 +12,7 @@ interface CheckinTimelineProps {
   keyResultId: string;
   unit?: string | null;
   targetValue?: number;
+  canCheckin?: boolean;
 }
 
 type Confidence = "confident" | "neutral" | "concerned";
@@ -22,7 +23,7 @@ const CONFIDENCE_CONFIG: Record<Confidence, { icon: typeof Smile; label: string;
   concerned: { icon: Frown, label: "Preocupado", colorClass: "text-[hsl(var(--destructive))]" },
 };
 
-export function CheckinTimeline({ keyResultId, unit, targetValue }: CheckinTimelineProps) {
+export function CheckinTimeline({ keyResultId, unit, targetValue, canCheckin = true }: CheckinTimelineProps) {
   const { checkins, isLoading, createCheckin } = useCheckins(keyResultId);
   const [value, setValue] = useState("");
   const [note, setNote] = useState("");
@@ -66,6 +67,7 @@ export function CheckinTimeline({ keyResultId, unit, targetValue }: CheckinTimel
       </div>
 
       {/* New check-in form */}
+      {canCheckin && (
       <div className="flex flex-col gap-2 p-3 rounded-md border border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <Input
@@ -127,6 +129,7 @@ export function CheckinTimeline({ keyResultId, unit, targetValue }: CheckinTimel
           onChange={(e) => setDifficulties(e.target.value)}
         />
       </div>
+      )}
 
       {/* Timeline */}
       {isLoading ? (
