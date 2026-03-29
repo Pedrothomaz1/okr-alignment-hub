@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
 
     // Audit log
     await adminClient.from("audit_logs").insert({
-      actor_id: caller.id,
+      actor_id: callerId,
       entity_type: "user",
       entity_id: newUser.user.id,
       action: "INVITE",
