@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Pencil, History } from "lucide-react";
+import { Pencil, History, Trash2 } from "lucide-react";
 import { ProgressBar } from "./ProgressBar";
 import { CheckinTimeline } from "./CheckinTimeline";
 import { CheckinChart } from "./CheckinChart";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useCheckins } from "@/hooks/useCheckins";
 import type { KeyResult } from "@/hooks/useKeyResults";
 
@@ -14,6 +15,7 @@ interface KeyResultCardProps {
   kr: KeyResult;
   onUpdateProgress: (id: string, value: number) => void;
   onEdit?: (kr: KeyResult) => void;
+  onDelete?: (id: string) => void;
   canEdit?: boolean;
   canCheckin?: boolean;
 }
