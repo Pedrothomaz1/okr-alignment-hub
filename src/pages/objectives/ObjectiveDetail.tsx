@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Unlock, Pencil } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Unlock, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -22,6 +22,7 @@ import { ChangeRequestCard } from "@/components/cycles/ChangeRequestCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,6 +47,7 @@ export default function ObjectiveDetail() {
   const { user } = useAuth();
   const { isAdmin, hasRole } = useRoles(user?.id);
   const isPrivileged = isAdmin || hasRole("okr_master");
+  const navigate = useNavigate();
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
   const [editObjOpen, setEditObjOpen] = useState(false);
@@ -72,7 +74,13 @@ export default function ObjectiveDetail() {
   const { links } = useOKRLinks(id);
   const { changeRequests, hasActiveApproval } = useChangeRequests(id);
   const obj = objectiveQuery.data;
-  const { objectives: siblingObjectives, updateObjective } = useObjectives(obj?.cycle_id);
+  const { objectives: siblingObjectives, updateObjective, deleteObjective } = useObjectives(obj?.cycle_id);
+
+  // Check if objective has children
+  const hasChildren = siblingObjectives.some((o) => o.parent_objective_id === id);
+  const hasKRs = keyResults.length > 0;
+  const hasLinkedItems = hasChildren || hasKRs || collaborators.length > 0 || links.length > 0;
+  const canDelete = isAdmin && !hasLinkedItems;
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
@@ -165,11 +173,61 @@ export default function ObjectiveDetail() {
             <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
           </div>
         </div>
-        {canEditObj && (
-          <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
-            <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {canEditObj && (
+            <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
+              <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+            </Button>
+          )}
+          {isAdmin && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={hasLinkedItems}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
+                </Button>
+              </AlertDialogTrigger>
+              {canDelete ? (
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir objetivo</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir "{obj.title}"? Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => {
+                        deleteObjective.mutate(obj.id, {
+                          onSuccess: () => {
+                            toast({ title: "Objetivo excluído" });
+                            navigate(`/cycles/${obj.cycle_id}`);
+                          },
+                          onError: (e) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),
+                        });
+                      }}
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              ) : (
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Não é possível excluir</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Este objetivo possui itens vinculados ({hasKRs ? "Key Results" : ""}{hasChildren ? (hasKRs ? ", " : "") + "objetivos filhos" : ""}{collaborators.length > 0 ? ", colaboradores" : ""}{links.length > 0 ? ", links" : ""}). Remova-os antes de excluir.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Entendi</AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              )}
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       <Card className="card-elevated">
