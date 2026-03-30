@@ -67,7 +67,7 @@ export default function ObjectiveDetail() {
     enabled: !!id,
   });
 
-  const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress } = useKeyResults(id);
+  const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress, deleteKeyResult } = useKeyResults(id);
   const { cycles } = useCycles();
   const { data: ancestors } = useObjectiveAncestors(id);
   const { collaborators } = useOKRCollaborators(id);
