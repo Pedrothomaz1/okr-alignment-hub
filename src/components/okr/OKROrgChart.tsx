@@ -37,16 +37,16 @@ function ObjectiveCard({ node, isRoot }: { node: TreeNode; isRoot?: boolean }) {
   return (
     <Link
       to={`/objectives/${obj.id}`}
-      className={`block rounded-[var(--radius)] border bg-card p-4 transition-all hover:border-primary/40 ${
+      className={`block rounded-[var(--radius)] border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md ${
         isRoot
-          ? "min-w-[280px] max-w-[320px] border-l-4 " + (typeBorderColor[obj.objective_type] || "border-l-primary")
-          : "min-w-[240px] max-w-[280px]"
+          ? "min-w-[280px] max-w-[340px] border-l-4 " + (typeBorderColor[obj.objective_type] || "border-l-primary")
+          : "min-w-[240px] max-w-[300px]"
       }`}
       style={{ boxShadow: "var(--shadow-sm)" }}
     >
       <div className="flex items-start gap-2 mb-1.5">
         <Target className={`shrink-0 mt-0.5 text-primary ${isRoot ? "h-5 w-5" : "h-4 w-4"}`} />
-        <span className={`font-semibold leading-snug line-clamp-2 flex-1 ${isRoot ? "text-sm" : "text-xs"}`}>
+        <span className={`font-semibold leading-snug line-clamp-3 flex-1 ${isRoot ? "text-sm" : "text-xs"}`}>
           {obj.title}
         </span>
       </div>
@@ -87,7 +87,7 @@ function KRCard({ kr }: { kr: any }) {
     <div className="min-w-[220px] max-w-[260px] rounded-[calc(var(--radius)-4px)] border border-border bg-muted/30 p-3 text-xs">
       <div className="flex items-center gap-1.5 mb-1.5">
         <Key className="h-3 w-3 text-muted-foreground shrink-0" />
-        <span className="font-medium leading-snug line-clamp-2">{kr.title}</span>
+        <span className="font-medium leading-snug line-clamp-3">{kr.title}</span>
       </div>
       <div className="flex items-center justify-between text-muted-foreground mb-1.5">
         <span className="font-mono text-[11px]">
@@ -102,24 +102,9 @@ function KRCard({ kr }: { kr: any }) {
   );
 }
 
-/* Vertical connector line — thicker & more visible */
+/* Vertical connector line */
 function VLine({ height = "h-6" }: { height?: string }) {
-  return <div className={`w-0.5 ${height} bg-muted-foreground/30 mx-auto rounded-full`} />;
-}
-
-/* Horizontal connector spanning children — thicker & more visible */
-function HConnector({ count, itemWidth, gap }: { count: number; itemWidth: number; gap: number }) {
-  if (count <= 1) return null;
-  const totalWidth = (count - 1) * (itemWidth + gap);
-  return (
-    <div
-      className="absolute top-0 h-0.5 bg-muted-foreground/30 rounded-full"
-      style={{
-        left: `calc(50% - ${totalWidth / 2}px)`,
-        width: `${totalWidth}px`,
-      }}
-    />
-  );
+  return <div className={`w-[2px] ${height} bg-foreground/20 mx-auto`} />;
 }
 
 function OrgNode({ node, isRoot = false }: { node: TreeNode; isRoot?: boolean }) {
@@ -133,23 +118,41 @@ function OrgNode({ node, isRoot = false }: { node: TreeNode; isRoot?: boolean })
       {hasChildren && (
         <>
           <VLine />
-          <div className="flex gap-6 md:gap-8 relative">
-            <HConnector count={node.children.length} itemWidth={260} gap={32} />
-            {node.children.map((child) => (
-              <div key={child.objective.id} className="flex flex-col items-center">
-                <VLine height="h-4" />
-                <OrgNode node={child} />
+          {node.children.length === 1 ? (
+            <div className="flex flex-col items-center">
+              <OrgNode node={node.children[0]} />
+            </div>
+          ) : (
+            <div className="relative">
+              {/* Horizontal bar connecting children */}
+              <div className="flex">
+                {node.children.map((child, i) => (
+                  <div key={child.objective.id} className="flex flex-col items-center" style={{ margin: '0 16px' }}>
+                    {/* Top vertical stub + horizontal half-lines */}
+                    <div className="relative w-full flex justify-center">
+                      {/* Left half */}
+                      {i > 0 && (
+                        <div className="absolute top-0 right-1/2 h-[2px] bg-foreground/20" style={{ left: '-16px', right: '50%' }} />
+                      )}
+                      {/* Right half */}
+                      {i < node.children.length - 1 && (
+                        <div className="absolute top-0 left-1/2 h-[2px] bg-foreground/20" style={{ right: '-16px', left: '50%' }} />
+                      )}
+                      <div className="w-[2px] h-4 bg-foreground/20" />
+                    </div>
+                    <OrgNode node={child} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </>
       )}
 
       {hasKRs && !hasChildren && (
         <>
           <VLine height="h-4" />
-          <div className="flex flex-wrap gap-3 justify-center relative max-w-[560px]">
-            <HConnector count={Math.min(node.keyResults.length, 1)} itemWidth={0} gap={0} />
+          <div className="flex flex-wrap gap-3 justify-center max-w-[600px]">
             {node.keyResults.map((kr) => (
               <div key={kr.id} className="flex flex-col items-center">
                 <VLine height="h-4" />
@@ -161,7 +164,7 @@ function OrgNode({ node, isRoot = false }: { node: TreeNode; isRoot?: boolean })
       )}
 
       {hasKRs && hasChildren && (
-        <div className="mt-2 flex gap-2 justify-center flex-wrap max-w-[320px]">
+        <div className="mt-2 flex gap-2 justify-center flex-wrap max-w-[340px]">
           {node.keyResults.map((kr) => (
             <div
               key={kr.id}
@@ -192,7 +195,7 @@ export function OKROrgChart({ tree }: OKROrgChartProps) {
   }
 
   return (
-    <div className="overflow-x-auto pb-6 -mx-2 px-2 scrollbar-thin touch-pan-x">
+    <div className="overflow-x-auto pb-6 -mx-2 px-2 touch-pan-x">
       <div className="flex gap-8 md:gap-12 justify-center min-w-max py-4 px-4 md:px-8">
         {tree.map((node) => (
           <OrgNode key={node.objective.id} node={node} isRoot />
