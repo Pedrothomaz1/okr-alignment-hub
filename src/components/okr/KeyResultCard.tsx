@@ -26,7 +26,7 @@ function computeProgress(kr: KeyResult): number {
   return Math.min(100, Math.max(0, ((kr.current_value - kr.start_value) / range) * 100));
 }
 
-export function KeyResultCard({ kr, onEdit, canEdit = true, canCheckin = true }: KeyResultCardProps) {
+export function KeyResultCard({ kr, onEdit, onDelete, canEdit = true, canCheckin = true }: KeyResultCardProps) {
   const [open, setOpen] = useState(false);
   const progress = computeProgress(kr);
   const { checkins } = useCheckins(open ? kr.id : undefined);
