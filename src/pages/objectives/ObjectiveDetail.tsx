@@ -74,7 +74,13 @@ export default function ObjectiveDetail() {
   const { links } = useOKRLinks(id);
   const { changeRequests, hasActiveApproval } = useChangeRequests(id);
   const obj = objectiveQuery.data;
-  const { objectives: siblingObjectives, updateObjective } = useObjectives(obj?.cycle_id);
+  const { objectives: siblingObjectives, updateObjective, deleteObjective } = useObjectives(obj?.cycle_id);
+
+  // Check if objective has children
+  const hasChildren = siblingObjectives.some((o) => o.parent_objective_id === id);
+  const hasKRs = keyResults.length > 0;
+  const hasLinkedItems = hasChildren || hasKRs || collaborators.length > 0 || links.length > 0;
+  const canDelete = isAdmin && !hasLinkedItems;
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
