@@ -114,7 +114,10 @@ function KRCard({ kr }: { kr: any }) {
       : 0;
 
   return (
-    <div className="min-w-[220px] max-w-[260px] rounded-[calc(var(--radius)-4px)] border border-border bg-muted/30 p-3 text-xs">
+    <Link
+      to={`/objectives/${kr.objective_id}`}
+      className="block min-w-[220px] max-w-[260px] rounded-[calc(var(--radius)-4px)] border border-border bg-muted/30 p-3 text-xs transition-all hover:border-primary/40 hover:shadow-md"
+    >
       <div className="flex items-center gap-1.5 mb-1.5">
         <Key className="h-3 w-3 text-muted-foreground shrink-0" />
         <span className="font-medium leading-snug line-clamp-3">{kr.title}</span>
@@ -128,7 +131,7 @@ function KRCard({ kr }: { kr: any }) {
         </Badge>
       </div>
       <ProgressBar value={Math.max(0, Math.min(100, progress))} status={kr.status} />
-    </div>
+    </Link>
   );
 }
 
