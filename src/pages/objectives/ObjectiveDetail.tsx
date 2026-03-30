@@ -67,7 +67,7 @@ export default function ObjectiveDetail() {
     enabled: !!id,
   });
 
-  const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress } = useKeyResults(id);
+  const { keyResults, isLoading: krsLoading, createKeyResult, updateKeyResult, updateProgress, deleteKeyResult } = useKeyResults(id);
   const { cycles } = useCycles();
   const { data: ancestors } = useObjectiveAncestors(id);
   const { collaborators } = useOKRCollaborators(id);
@@ -334,6 +334,12 @@ export default function ObjectiveDetail() {
                 kr={kr}
                 onUpdateProgress={handleProgressUpdate}
                 onEdit={canEditKr(kr) ? (kr) => setEditingKr(kr) : undefined}
+                onDelete={isPrivileged ? (id) => {
+                  deleteKeyResult.mutate(id, {
+                    onSuccess: () => toast({ title: "Key Result excluído" }),
+                    onError: (e: Error) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),
+                  });
+                } : undefined}
                 canEdit={canEditKr(kr)}
                 canCheckin={canCheckinKr(kr)}
               />

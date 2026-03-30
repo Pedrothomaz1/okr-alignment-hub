@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Pencil, History } from "lucide-react";
+import { Pencil, History, Trash2 } from "lucide-react";
 import { ProgressBar } from "./ProgressBar";
 import { CheckinTimeline } from "./CheckinTimeline";
 import { CheckinChart } from "./CheckinChart";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useCheckins } from "@/hooks/useCheckins";
 import type { KeyResult } from "@/hooks/useKeyResults";
 
@@ -14,6 +15,7 @@ interface KeyResultCardProps {
   kr: KeyResult;
   onUpdateProgress: (id: string, value: number) => void;
   onEdit?: (kr: KeyResult) => void;
+  onDelete?: (id: string) => void;
   canEdit?: boolean;
   canCheckin?: boolean;
 }
@@ -24,7 +26,7 @@ function computeProgress(kr: KeyResult): number {
   return Math.min(100, Math.max(0, ((kr.current_value - kr.start_value) / range) * 100));
 }
 
-export function KeyResultCard({ kr, onEdit, canEdit = true, canCheckin = true }: KeyResultCardProps) {
+export function KeyResultCard({ kr, onEdit, onDelete, canEdit = true, canCheckin = true }: KeyResultCardProps) {
   const [open, setOpen] = useState(false);
   const progress = computeProgress(kr);
   const { checkins } = useCheckins(open ? kr.id : undefined);
@@ -70,6 +72,32 @@ export function KeyResultCard({ kr, onEdit, canEdit = true, canCheckin = true }:
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(kr)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
+            )}
+            {canEdit && onDelete && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir Key Result</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir "{kr.title}"? Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => onDelete(kr.id)}
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         </div>
