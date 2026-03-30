@@ -47,6 +47,7 @@ export default function ObjectiveDetail() {
   const { user } = useAuth();
   const { isAdmin, hasRole } = useRoles(user?.id);
   const isPrivileged = isAdmin || hasRole("okr_master");
+  const navigate = useNavigate();
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
   const [editObjOpen, setEditObjOpen] = useState(false);
