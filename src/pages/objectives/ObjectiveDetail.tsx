@@ -173,11 +173,61 @@ export default function ObjectiveDetail() {
             <span className="text-xs text-muted-foreground">{obj.profiles?.full_name}</span>
           </div>
         </div>
-        {canEditObj && (
-          <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
-            <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {canEditObj && (
+            <Button variant="outline" size="sm" onClick={() => setEditObjOpen(true)}>
+              <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+            </Button>
+          )}
+          {isAdmin && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={hasLinkedItems}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
+                </Button>
+              </AlertDialogTrigger>
+              {canDelete ? (
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir objetivo</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir "{obj.title}"? Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => {
+                        deleteObjective.mutate(obj.id, {
+                          onSuccess: () => {
+                            toast({ title: "Objetivo excluído" });
+                            navigate(`/cycles/${obj.cycle_id}`);
+                          },
+                          onError: (e) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),
+                        });
+                      }}
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              ) : (
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Não é possível excluir</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Este objetivo possui itens vinculados ({hasKRs ? "Key Results" : ""}{hasChildren ? (hasKRs ? ", " : "") + "objetivos filhos" : ""}{collaborators.length > 0 ? ", colaboradores" : ""}{links.length > 0 ? ", links" : ""}). Remova-os antes de excluir.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Entendi</AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              )}
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       <Card className="card-elevated">
