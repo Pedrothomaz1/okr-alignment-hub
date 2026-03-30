@@ -337,7 +337,7 @@ export default function ObjectiveDetail() {
                 onDelete={isPrivileged ? (id) => {
                   deleteKeyResult.mutate(id, {
                     onSuccess: () => toast({ title: "Key Result excluído" }),
-                    onError: (e) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),
+                    onError: (e: Error) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),
                   });
                 } : undefined}
                 canEdit={canEditKr(kr)}
