@@ -334,6 +334,12 @@ export default function ObjectiveDetail() {
                 kr={kr}
                 onUpdateProgress={handleProgressUpdate}
                 onEdit={canEditKr(kr) ? (kr) => setEditingKr(kr) : undefined}
+                onDelete={isPrivileged ? (id) => {
+                  deleteKeyResult.mutate(id, {
+                    onSuccess: () => toast({ title: "Key Result excluído" }),
+                    onError: (e) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),
+                  });
+                } : undefined}
                 canEdit={canEditKr(kr)}
                 canCheckin={canCheckinKr(kr)}
               />
