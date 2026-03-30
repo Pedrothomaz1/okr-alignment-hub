@@ -28,10 +28,23 @@ export function KeyResultCard({ kr, onEdit, canEdit = true, canCheckin = true }:
   const [open, setOpen] = useState(false);
   const progress = computeProgress(kr);
   const { checkins } = useCheckins(open ? kr.id : undefined);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === `#kr-${kr.id}`) {
+      setOpen(true);
+      setTimeout(() => {
+        cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [kr.id]);
+
+  const isHighlighted = window.location.hash === `#kr-${kr.id}`;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="card-elevated p-4 space-y-3">
+      <div ref={cardRef} id={`kr-${kr.id}`} className={`card-elevated p-4 space-y-3 ${isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{kr.title}</p>
