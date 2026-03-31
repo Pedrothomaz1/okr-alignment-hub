@@ -20,6 +20,7 @@ const UsersRoles = lazy(() => import("./pages/admin/UsersRoles"));
 const UserDetail = lazy(() => import("./pages/admin/UserDetail"));
 const AuditLogs = lazy(() => import("./pages/admin/AuditLogs"));
 const ChangeRequestsPage = lazy(() => import("./pages/admin/ChangeRequests"));
+const PermissionsPage = lazy(() => import("./pages/admin/PermissionsPage"));
 const CyclesList = lazy(() => import("./pages/cycles/CyclesList"));
 const CycleDetail = lazy(() => import("./pages/cycles/CycleDetail"));
 const ObjectivesPage = lazy(() => import("./pages/objectives/ObjectivesPage"));
