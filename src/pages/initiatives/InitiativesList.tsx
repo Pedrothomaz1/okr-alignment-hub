@@ -152,6 +152,7 @@ export default function InitiativesList() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
+                  <TableHead>Canal</TableHead>
                   <TableHead>Unidade</TableHead>
                   <TableHead>Linha da DRE</TableHead>
                   <TableHead className="min-w-[200px]">Ação</TableHead>
