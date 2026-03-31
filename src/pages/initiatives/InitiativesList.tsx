@@ -41,6 +41,7 @@ export default function InitiativesList() {
 
   // Filters
   const [filterUnit, setFilterUnit] = useState<string>("all");
+  const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
 
   const profileMap = new Map(profiles?.map((p) => [p.id, p.full_name]) ?? []);
