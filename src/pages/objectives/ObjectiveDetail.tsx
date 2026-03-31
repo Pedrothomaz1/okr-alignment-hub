@@ -45,8 +45,10 @@ export default function ObjectiveDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isAdmin, hasRole } = useRoles(user?.id);
-  const isPrivileged = isAdmin || hasRole("okr_master");
+  const { can } = usePermissions();
+  const isPrivileged = can("objectives.edit_any");
+  const canDeleteObj = can("objectives.delete");
+  const canDeleteKr = can("kr.delete");
   const navigate = useNavigate();
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
