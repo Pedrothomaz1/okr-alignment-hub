@@ -98,6 +98,7 @@ export default function InitiativeForm({
     const isBool = measurementUnit === "bool";
     await onSubmit({
       date: format(date, "yyyy-MM-dd"),
+      canal,
       unit,
       dre_line: dreLine,
       action,
