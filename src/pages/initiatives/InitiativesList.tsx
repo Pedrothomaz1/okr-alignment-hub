@@ -18,7 +18,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useRoles } from "@/hooks/useRoles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/useInitiatives";
 import { formatValue, computeStatus, STATUS_DISPLAY } from "@/lib/initiative-format";
