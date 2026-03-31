@@ -31,8 +31,10 @@ type SortDir = "asc" | "desc";
 
 export default function InitiativesList() {
   const { user } = useAuth();
-  const { isAdmin, hasRole } = useRoles(user?.id);
-  const canManage = isAdmin || hasRole("okr_master");
+  const { can } = usePermissions();
+  const canManage = can("initiatives.edit_any");
+  const canCreate = can("initiatives.create");
+  const canDelete = can("initiatives.delete");
   const { data: profiles } = useProfiles();
   const { initiatives, isLoading, createInitiative, updateInitiative, deleteInitiative, isCreating, isUpdating } = useInitiatives();
   const { toast } = useToast();
