@@ -4,8 +4,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useCycles } from "@/hooks/useCycles";
-import { useRoles } from "@/hooks/useRoles";
-import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -38,9 +37,8 @@ const statusLabel: Record<string, string> = {
 
 export default function CyclesList() {
   const { cycles, isLoading, deleteCycle } = useCycles();
-  const { user } = useAuth();
-  const { hasRole } = useRoles(user?.id);
-  const canManage = hasRole("admin") || hasRole("okr_master");
+  const { can } = usePermissions();
+  const canManage = can("cycles.create") || can("cycles.edit");
   const { toast } = useToast();
 
   const [formOpen, setFormOpen] = useState(false);

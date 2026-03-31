@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Target, Lock, Users, LinkIcon, ChevronRight, Unlock, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useRoles } from "@/hooks/useRoles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,8 +45,10 @@ export default function ObjectiveDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isAdmin, hasRole } = useRoles(user?.id);
-  const isPrivileged = isAdmin || hasRole("okr_master");
+  const { can } = usePermissions();
+  const isPrivileged = can("objectives.edit_any");
+  const canDeleteObj = can("objectives.delete");
+  const canDeleteKr = can("kr.delete");
   const navigate = useNavigate();
   const [krFormOpen, setKrFormOpen] = useState(false);
   const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
@@ -80,7 +82,7 @@ export default function ObjectiveDetail() {
   const hasChildren = siblingObjectives.some((o) => o.parent_objective_id === id);
   const hasKRs = keyResults.length > 0;
   const hasLinkedItems = hasChildren || hasKRs || collaborators.length > 0 || links.length > 0;
-  const canDelete = isAdmin && !hasLinkedItems;
+  const canDelete = canDeleteObj && !hasLinkedItems;
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
@@ -179,7 +181,7 @@ export default function ObjectiveDetail() {
               <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
             </Button>
           )}
-          {isAdmin && (
+          {canDeleteObj && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={hasLinkedItems}>
@@ -334,7 +336,7 @@ export default function ObjectiveDetail() {
                 kr={kr}
                 onUpdateProgress={handleProgressUpdate}
                 onEdit={canEditKr(kr) ? (kr) => setEditingKr(kr) : undefined}
-                onDelete={isPrivileged ? (id) => {
+                onDelete={canDeleteKr ? (id) => {
                   deleteKeyResult.mutate(id, {
                     onSuccess: () => toast({ title: "Key Result excluído" }),
                     onError: (e: Error) => toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" }),

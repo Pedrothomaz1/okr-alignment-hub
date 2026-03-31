@@ -18,7 +18,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useRoles } from "@/hooks/useRoles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/useInitiatives";
 import { formatValue, computeStatus, STATUS_DISPLAY } from "@/lib/initiative-format";
@@ -31,8 +31,10 @@ type SortDir = "asc" | "desc";
 
 export default function InitiativesList() {
   const { user } = useAuth();
-  const { isAdmin, hasRole } = useRoles(user?.id);
-  const canManage = isAdmin || hasRole("okr_master");
+  const { can } = usePermissions();
+  const canManage = can("initiatives.edit_any");
+  const canCreate = can("initiatives.create");
+  const canDelete = can("initiatives.delete");
   const { data: profiles } = useProfiles();
   const { initiatives, isLoading, createInitiative, updateInitiative, deleteInitiative, isCreating, isUpdating } = useInitiatives();
   const { toast } = useToast();
@@ -177,7 +179,7 @@ export default function InitiativesList() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Iniciativas</h1>
-          {canManage && (
+          {canCreate && (
             <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
               <Plus className="h-4 w-4 mr-2" /> Nova Iniciativa
             </Button>
@@ -289,7 +291,7 @@ export default function InitiativesList() {
                         <InitiativeActions
                           init={init}
                           canManage={canManage}
-                          isAdmin={isAdmin}
+                          isAdmin={canDelete}
                           isOwner={init.owner_id === user?.id}
                           expired={expired}
                           onEdit={() => { setEditing(init); setFormOpen(true); }}

@@ -1,9 +1,10 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2, Target } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2, Target, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -48,15 +49,17 @@ const settingsItems = [
 
 const adminItems = [
   { title: "Usuários & Papéis", url: "/admin/users", icon: Users },
+  { title: "Permissões", url: "/admin/permissions", icon: ShieldCheck },
   { title: "Logs de Auditoria", url: "/admin/audit", icon: FileText },
   { title: "Change Requests", url: "/admin/change-requests", icon: FileQuestion },
 ];
 
 export function AppSidebar() {
   const { user, signOut } = useAuth();
-  const { isAdmin, hasRole } = useRoles(user?.id);
+  const { isAdmin } = useRoles(user?.id);
+  const { can } = usePermissions();
   const navigate = useNavigate();
-  const isLeader = hasRole("manager") || hasRole("okr_master") || isAdmin;
+  const isLeader = can("reports.view") || can("ppp.view_team");
 
   const { data: profileData } = useQuery({
     queryKey: ["sidebar-avatar", user?.id],

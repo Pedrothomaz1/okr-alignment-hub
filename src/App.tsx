@@ -20,6 +20,7 @@ const UsersRoles = lazy(() => import("./pages/admin/UsersRoles"));
 const UserDetail = lazy(() => import("./pages/admin/UserDetail"));
 const AuditLogs = lazy(() => import("./pages/admin/AuditLogs"));
 const ChangeRequestsPage = lazy(() => import("./pages/admin/ChangeRequests"));
+const PermissionsPage = lazy(() => import("./pages/admin/PermissionsPage"));
 const CyclesList = lazy(() => import("./pages/cycles/CyclesList"));
 const CycleDetail = lazy(() => import("./pages/cycles/CycleDetail"));
 const ObjectivesPage = lazy(() => import("./pages/objectives/ObjectivesPage"));
@@ -103,6 +104,7 @@ const App = () => {
                 <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
                 <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
                 <Route path="/admin/change-requests" element={<AdminRoute><ChangeRequestsPage /></AdminRoute>} />
+                <Route path="/admin/permissions" element={<AdminRoute><PermissionsPage /></AdminRoute>} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
