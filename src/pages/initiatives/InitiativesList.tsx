@@ -137,6 +137,18 @@ export default function InitiativesList() {
             </SelectContent>
           </Select>
 
+          <Select value={filterCanal} onValueChange={setFilterCanal}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrar por canal" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os canais</SelectItem>
+              {uniqueCanals.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={filterOwner} onValueChange={setFilterOwner}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filtrar por responsável" />
