@@ -49,6 +49,7 @@ const settingsItems = [
 
 const adminItems = [
   { title: "Usuários & Papéis", url: "/admin/users", icon: Users },
+  { title: "Permissões", url: "/admin/permissions", icon: ShieldCheck },
   { title: "Logs de Auditoria", url: "/admin/audit", icon: FileText },
   { title: "Change Requests", url: "/admin/change-requests", icon: FileQuestion },
 ];

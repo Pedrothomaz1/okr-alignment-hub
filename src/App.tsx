@@ -104,6 +104,7 @@ const App = () => {
                 <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
                 <Route path="/admin/audit" element={<AdminRoute><AuditLogs /></AdminRoute>} />
                 <Route path="/admin/change-requests" element={<AdminRoute><ChangeRequestsPage /></AdminRoute>} />
+                <Route path="/admin/permissions" element={<AdminRoute><PermissionsPage /></AdminRoute>} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
