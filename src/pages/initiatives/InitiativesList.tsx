@@ -72,10 +72,11 @@ export default function InitiativesList() {
   const filtered = useMemo(() => {
     return initiatives.filter((i) => {
       if (filterUnit !== "all" && i.unit !== filterUnit) return false;
+      if (filterCanal !== "all" && i.canal !== filterCanal) return false;
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
       return true;
     });
-  }, [initiatives, filterUnit, filterOwner]);
+  }, [initiatives, filterUnit, filterCanal, filterOwner]);
 
   const handleSubmit = async (data: InitiativeInsert) => {
     try {
