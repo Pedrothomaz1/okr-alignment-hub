@@ -1,0 +1,1 @@
+ALTER TABLE public.initiatives ADD COLUMN canal TEXT DEFAULT '' NOT NULL;
