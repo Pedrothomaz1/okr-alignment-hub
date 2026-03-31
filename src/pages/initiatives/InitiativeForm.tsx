@@ -23,9 +23,10 @@ import { MEASUREMENT_UNITS } from "@/lib/initiative-format";
 import type { Initiative, InitiativeInsert } from "@/hooks/useInitiatives";
 
 const DRE_LINES = [
-  "Receita Bruta", "Deduções", "Receita Líquida", "CPV / CMV",
+  "Receita Bruta", "Deduções", "Receita Líquida", "CPV / CMV", "Custos",
   "Lucro Bruto", "Despesas Operacionais", "Despesas Administrativas",
-  "Despesas Comerciais", "EBITDA", "Depreciação e Amortização",
+  "Despesas Comerciais", "SG&A", "Estrutura", "Outras Desp Op",
+  "EBITDA", "Depreciação e Amortização",
   "EBIT", "Resultado Financeiro", "Lucro Líquido", "Outros",
 ];
 
