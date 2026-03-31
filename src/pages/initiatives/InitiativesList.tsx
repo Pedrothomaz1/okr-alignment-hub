@@ -48,7 +48,7 @@ export default function InitiativesList() {
 
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey>("date");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const profileMap = new Map(profiles?.map((p) => [p.id, p.full_name]) ?? []);
 
