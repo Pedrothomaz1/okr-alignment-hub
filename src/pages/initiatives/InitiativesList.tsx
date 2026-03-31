@@ -256,7 +256,7 @@ export default function InitiativesList() {
 
                   return (
                     <TableRow key={init.id}>
-                      <TableCell className="whitespace-nowrap">{format(new Date(init.date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                      <TableCell className="whitespace-nowrap">{format(new Date(init.date + "T00:00:00"), "MMM/yy", { locale: ptBR })}</TableCell>
                       <TableCell>{init.canal || "—"}</TableCell>
                       <TableCell>{init.unit}</TableCell>
                       <TableCell>{init.dre_line}</TableCell>
