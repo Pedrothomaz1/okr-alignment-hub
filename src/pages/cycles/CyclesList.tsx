@@ -38,8 +38,6 @@ const statusLabel: Record<string, string> = {
 
 export default function CyclesList() {
   const { cycles, isLoading, deleteCycle } = useCycles();
-  useAuth(); // ensure authenticated
-  const { can } = usePermissions();
   const { can } = usePermissions();
   const canManage = can("cycles.create") || can("cycles.edit");
   const { toast } = useToast();
