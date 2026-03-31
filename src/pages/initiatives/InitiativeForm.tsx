@@ -80,6 +80,7 @@ export default function InitiativeForm({
       setBoolValue((initiative.current_value || 0) >= 1);
     } else {
       setDate(new Date());
+      setCanal("");
       setUnit("");
       setDreLine("");
       setAction("");
