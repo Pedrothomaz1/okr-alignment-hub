@@ -82,7 +82,7 @@ export default function ObjectiveDetail() {
   const hasChildren = siblingObjectives.some((o) => o.parent_objective_id === id);
   const hasKRs = keyResults.length > 0;
   const hasLinkedItems = hasChildren || hasKRs || collaborators.length > 0 || links.length > 0;
-  const canDelete = isAdmin && !hasLinkedItems;
+  const canDelete = canDeleteObj && !hasLinkedItems;
   const parentCycle = obj ? cycles.find((c) => c.id === obj.cycle_id) : null;
   const isCycleLocked = parentCycle?.locked ?? false;
   const activeApproval = hasActiveApproval(id);
