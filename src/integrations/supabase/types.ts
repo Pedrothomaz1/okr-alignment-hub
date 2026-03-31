@@ -334,6 +334,7 @@ export type Database = {
       initiatives: {
         Row: {
           action: string
+          canal: string
           created_at: string
           created_by: string
           current_value: number
@@ -351,6 +352,7 @@ export type Database = {
         }
         Insert: {
           action: string
+          canal?: string
           created_at?: string
           created_by: string
           current_value?: number
@@ -368,6 +370,7 @@ export type Database = {
         }
         Update: {
           action?: string
+          canal?: string
           created_at?: string
           created_by?: string
           current_value?: number
