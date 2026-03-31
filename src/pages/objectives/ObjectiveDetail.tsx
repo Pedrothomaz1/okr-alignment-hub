@@ -181,7 +181,7 @@ export default function ObjectiveDetail() {
               <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
             </Button>
           )}
-          {isAdmin && (
+          {canDeleteObj && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={hasLinkedItems}>
