@@ -165,9 +165,15 @@ export default function InitiativeForm({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Unidade</Label>
-              <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Ex: Unidade SP, Filial RJ..." required />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Canal</Label>
+                <Input value={canal} onChange={(e) => setCanal(e.target.value)} placeholder="Ex: Lojas físicas, Consultoras, Site..." />
+              </div>
+              <div className="space-y-2">
+                <Label>Unidade</Label>
+                <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Ex: Todas, Cambuí..." required />
+              </div>
             </div>
 
             <div className="space-y-2">
