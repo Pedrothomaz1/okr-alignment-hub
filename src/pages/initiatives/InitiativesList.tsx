@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,10 @@ import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/
 import { formatValue, computeStatus, STATUS_DISPLAY } from "@/lib/initiative-format";
 import InitiativeForm from "./InitiativeForm";
 import InlineProgress from "@/components/initiatives/InlineProgress";
+import InitiativeActions from "@/components/initiatives/InitiativeActions";
+
+type SortKey = "date" | "canal" | "unit" | "dre_line" | "action" | "owner" | "deadline" | "target_value" | "status";
+type SortDir = "asc" | "desc";
 
 export default function InitiativesList() {
   const { user } = useAuth();
@@ -44,21 +48,22 @@ export default function InitiativesList() {
   const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
 
+  // Sorting
+  const [sortKey, setSortKey] = useState<SortKey>("date");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
   const profileMap = new Map(profiles?.map((p) => [p.id, p.full_name]) ?? []);
 
-  // Unique units from initiatives for filter
   const uniqueUnits = useMemo(() => {
     const units = new Set(initiatives.map((i) => i.unit));
     return Array.from(units).sort();
   }, [initiatives]);
 
-  // Unique canals from initiatives for filter
   const uniqueCanals = useMemo(() => {
     const canals = new Set(initiatives.map((i) => i.canal).filter(Boolean));
     return Array.from(canals).sort();
   }, [initiatives]);
 
-  // Unique owners from initiatives for filter
   const uniqueOwners = useMemo(() => {
     const owners = new Map<string, string>();
     initiatives.forEach((i) => {
@@ -77,6 +82,65 @@ export default function InitiativesList() {
       return true;
     });
   }, [initiatives, filterUnit, filterCanal, filterOwner]);
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    const dir = sortDir === "asc" ? 1 : -1;
+
+    arr.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "date":
+          cmp = a.date.localeCompare(b.date);
+          break;
+        case "canal":
+          cmp = (a.canal || "").localeCompare(b.canal || "");
+          break;
+        case "unit":
+          cmp = a.unit.localeCompare(b.unit);
+          break;
+        case "dre_line":
+          cmp = a.dre_line.localeCompare(b.dre_line);
+          break;
+        case "action":
+          cmp = a.action.localeCompare(b.action);
+          break;
+        case "owner":
+          cmp = (profileMap.get(a.owner_id) ?? "").localeCompare(profileMap.get(b.owner_id) ?? "");
+          break;
+        case "deadline":
+          cmp = a.deadline.localeCompare(b.deadline);
+          break;
+        case "target_value":
+          cmp = (a.target_value || 0) - (b.target_value || 0);
+          break;
+        case "status": {
+          const sa = computeStatus(a.current_value || 0, a.target_value || 0, a.deadline, a.measurement_unit || "R$");
+          const sb = computeStatus(b.current_value || 0, b.target_value || 0, b.deadline, b.measurement_unit || "R$");
+          cmp = sa.localeCompare(sb);
+          break;
+        }
+      }
+      return cmp * dir;
+    });
+    return arr;
+  }, [filtered, sortKey, sortDir, profileMap]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+    return sortDir === "asc"
+      ? <ArrowUp className="h-3 w-3 ml-1" />
+      : <ArrowDown className="h-3 w-3 ml-1" />;
+  };
 
   const handleSubmit = async (data: InitiativeInsert) => {
     try {
@@ -109,7 +173,6 @@ export default function InitiativesList() {
     today.setHours(0, 0, 0, 0);
     return new Date(deadline + "T00:00:00") < today;
   };
-
 
   return (
     <TooltipProvider>
@@ -164,28 +227,28 @@ export default function InitiativesList() {
 
         {isLoading ? (
           <div className="text-muted-foreground text-center py-12">Carregando...</div>
-        ) : filtered.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <div className="text-muted-foreground text-center py-12">Nenhuma iniciativa encontrada.</div>
         ) : (
           <div className="rounded-[var(--radius)] border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Canal</TableHead>
-                  <TableHead>Unidade</TableHead>
-                  <TableHead>Linha da DRE</TableHead>
-                  <TableHead className="min-w-[200px]">Ação</TableHead>
-                  <TableHead>Dono</TableHead>
-                  <TableHead>Prazo</TableHead>
-                  <TableHead>Impacto Esperado</TableHead>
+                  <SortableHead col="date" label="Data" toggleSort={toggleSort} SortIcon={SortIcon} />
+                  <SortableHead col="canal" label="Canal" toggleSort={toggleSort} SortIcon={SortIcon} />
+                  <SortableHead col="unit" label="Unidade" toggleSort={toggleSort} SortIcon={SortIcon} />
+                  <SortableHead col="dre_line" label="Linha da DRE" toggleSort={toggleSort} SortIcon={SortIcon} />
+                  <SortableHead col="action" label="Ação" toggleSort={toggleSort} SortIcon={SortIcon} className="min-w-[250px]" />
+                  <SortableHead col="owner" label="Dono" toggleSort={toggleSort} SortIcon={SortIcon} />
+                  <SortableHead col="deadline" label="Prazo" toggleSort={toggleSort} SortIcon={SortIcon} />
+                  <SortableHead col="target_value" label="Impacto Esperado" toggleSort={toggleSort} SortIcon={SortIcon} />
                   <TableHead className="min-w-[180px]">Progresso</TableHead>
-                  <TableHead>Status</TableHead>
+                  <SortableHead col="status" label="Status" toggleSort={toggleSort} SortIcon={SortIcon} />
                   <TableHead className="w-[80px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((init) => {
+                {sorted.map((init) => {
                   const mu = init.measurement_unit || "R$";
                   const target = init.target_value || 0;
                   const current = init.current_value || 0;
@@ -199,7 +262,9 @@ export default function InitiativesList() {
                       <TableCell>{init.canal || "—"}</TableCell>
                       <TableCell>{init.unit}</TableCell>
                       <TableCell>{init.dre_line}</TableCell>
-                      <TableCell className="max-w-[300px] truncate">{init.action}</TableCell>
+                      <TableCell className="min-w-[250px]">
+                        <span className="block whitespace-normal break-words">{init.action}</span>
+                      </TableCell>
                       <TableCell className="whitespace-nowrap">{profileMap.get(init.owner_id) ?? "—"}</TableCell>
                       <TableCell className="whitespace-nowrap">{format(new Date(init.deadline), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                       <TableCell className="whitespace-nowrap">
@@ -223,30 +288,15 @@ export default function InitiativesList() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
-                          {(canManage || init.owner_id === user?.id) && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    disabled={expired}
-                                    onClick={() => { setEditing(init); setFormOpen(true); }}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </span>
-                              </TooltipTrigger>
-                              {expired && <TooltipContent>Prazo expirado</TooltipContent>}
-                            </Tooltip>
-                          )}
-                          {isAdmin && (
-                            <Button size="icon" variant="ghost" onClick={() => setDeleteTarget(init.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          )}
-                        </div>
+                        <InitiativeActions
+                          init={init}
+                          canManage={canManage}
+                          isAdmin={isAdmin}
+                          isOwner={init.owner_id === user?.id}
+                          expired={expired}
+                          onEdit={() => { setEditing(init); setFormOpen(true); }}
+                          onDelete={() => setDeleteTarget(init.id)}
+                        />
                       </TableCell>
                     </TableRow>
                   );
@@ -279,5 +329,33 @@ export default function InitiativesList() {
         </AlertDialog>
       </div>
     </TooltipProvider>
+  );
+}
+
+/* ── Sortable header cell ── */
+function SortableHead({
+  col,
+  label,
+  toggleSort,
+  SortIcon,
+  className,
+}: {
+  col: SortKey;
+  label: string;
+  toggleSort: (k: SortKey) => void;
+  SortIcon: React.FC<{ col: SortKey }>;
+  className?: string;
+}) {
+  return (
+    <TableHead className={className}>
+      <button
+        type="button"
+        className="flex items-center gap-0.5 hover:text-foreground transition-colors"
+        onClick={() => toggleSort(col)}
+      >
+        {label}
+        <SortIcon col={col} />
+      </button>
+    </TableHead>
   );
 }
