@@ -52,6 +52,12 @@ export default function InitiativesList() {
     return Array.from(units).sort();
   }, [initiatives]);
 
+  // Unique canals from initiatives for filter
+  const uniqueCanals = useMemo(() => {
+    const canals = new Set(initiatives.map((i) => i.canal).filter(Boolean));
+    return Array.from(canals).sort();
+  }, [initiatives]);
+
   // Unique owners from initiatives for filter
   const uniqueOwners = useMemo(() => {
     const owners = new Map<string, string>();
