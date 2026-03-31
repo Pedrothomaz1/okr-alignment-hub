@@ -41,6 +41,7 @@ export default function InitiativesList() {
 
   // Filters
   const [filterUnit, setFilterUnit] = useState<string>("all");
+  const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
 
   const profileMap = new Map(profiles?.map((p) => [p.id, p.full_name]) ?? []);
@@ -49,6 +50,12 @@ export default function InitiativesList() {
   const uniqueUnits = useMemo(() => {
     const units = new Set(initiatives.map((i) => i.unit));
     return Array.from(units).sort();
+  }, [initiatives]);
+
+  // Unique canals from initiatives for filter
+  const uniqueCanals = useMemo(() => {
+    const canals = new Set(initiatives.map((i) => i.canal).filter(Boolean));
+    return Array.from(canals).sort();
   }, [initiatives]);
 
   // Unique owners from initiatives for filter
@@ -65,10 +72,11 @@ export default function InitiativesList() {
   const filtered = useMemo(() => {
     return initiatives.filter((i) => {
       if (filterUnit !== "all" && i.unit !== filterUnit) return false;
+      if (filterCanal !== "all" && i.canal !== filterCanal) return false;
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
       return true;
     });
-  }, [initiatives, filterUnit, filterOwner]);
+  }, [initiatives, filterUnit, filterCanal, filterOwner]);
 
   const handleSubmit = async (data: InitiativeInsert) => {
     try {
@@ -129,6 +137,18 @@ export default function InitiativesList() {
             </SelectContent>
           </Select>
 
+          <Select value={filterCanal} onValueChange={setFilterCanal}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrar por canal" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os canais</SelectItem>
+              {uniqueCanals.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={filterOwner} onValueChange={setFilterOwner}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filtrar por responsável" />
@@ -152,6 +172,7 @@ export default function InitiativesList() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
+                  <TableHead>Canal</TableHead>
                   <TableHead>Unidade</TableHead>
                   <TableHead>Linha da DRE</TableHead>
                   <TableHead className="min-w-[200px]">Ação</TableHead>
@@ -175,6 +196,7 @@ export default function InitiativesList() {
                   return (
                     <TableRow key={init.id}>
                       <TableCell className="whitespace-nowrap">{format(new Date(init.date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                      <TableCell>{init.canal || "—"}</TableCell>
                       <TableCell>{init.unit}</TableCell>
                       <TableCell>{init.dre_line}</TableCell>
                       <TableCell className="max-w-[300px] truncate">{init.action}</TableCell>

@@ -23,9 +23,10 @@ import { MEASUREMENT_UNITS } from "@/lib/initiative-format";
 import type { Initiative, InitiativeInsert } from "@/hooks/useInitiatives";
 
 const DRE_LINES = [
-  "Receita Bruta", "Deduções", "Receita Líquida", "CPV / CMV",
+  "Receita Bruta", "Deduções", "Receita Líquida", "CPV / CMV", "Custos",
   "Lucro Bruto", "Despesas Operacionais", "Despesas Administrativas",
-  "Despesas Comerciais", "EBITDA", "Depreciação e Amortização",
+  "Despesas Comerciais", "SG&A", "Estrutura", "Outras Desp Op",
+  "EBITDA", "Depreciação e Amortização",
   "EBIT", "Resultado Financeiro", "Lucro Líquido", "Outros",
 ];
 
@@ -44,6 +45,7 @@ export default function InitiativeForm({
   const { data: profiles } = useProfiles();
 
   const [date, setDate] = useState<Date>(new Date());
+  const [canal, setCanal] = useState("");
   const [unit, setUnit] = useState("");
   const [dreLine, setDreLine] = useState("");
   const [action, setAction] = useState("");
@@ -66,6 +68,7 @@ export default function InitiativeForm({
   useEffect(() => {
     if (initiative) {
       setDate(new Date(initiative.date));
+      setCanal(initiative.canal || "");
       setUnit(initiative.unit);
       setDreLine(initiative.dre_line);
       setAction(initiative.action);
@@ -77,6 +80,7 @@ export default function InitiativeForm({
       setBoolValue((initiative.current_value || 0) >= 1);
     } else {
       setDate(new Date());
+      setCanal("");
       setUnit("");
       setDreLine("");
       setAction("");
@@ -94,6 +98,7 @@ export default function InitiativeForm({
     const isBool = measurementUnit === "bool";
     await onSubmit({
       date: format(date, "yyyy-MM-dd"),
+      canal,
       unit,
       dre_line: dreLine,
       action,
@@ -160,9 +165,15 @@ export default function InitiativeForm({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Unidade</Label>
-              <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Ex: Unidade SP, Filial RJ..." required />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Canal</Label>
+                <Input value={canal} onChange={(e) => setCanal(e.target.value)} placeholder="Ex: Lojas físicas, Consultoras, Site..." />
+              </div>
+              <div className="space-y-2">
+                <Label>Unidade</Label>
+                <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Ex: Todas, Cambuí..." required />
+              </div>
             </div>
 
             <div className="space-y-2">
