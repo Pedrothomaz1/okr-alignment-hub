@@ -68,6 +68,7 @@ export default function InitiativeForm({
   useEffect(() => {
     if (initiative) {
       setDate(new Date(initiative.date));
+      setCanal(initiative.canal || "");
       setUnit(initiative.unit);
       setDreLine(initiative.dre_line);
       setAction(initiative.action);
