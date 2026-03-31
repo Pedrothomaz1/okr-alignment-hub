@@ -1,34 +1,82 @@
 
 
-## Plano — OKR Org Chart Responsivo + Títulos legíveis + Linhas visíveis + Badge Lovable
+## Proposta: Sistema de Permissões Granular (RBAC + Permissões por Recurso)
 
-### Problemas identificados
+### Contexto Atual
 
-1. **Títulos cortados** — Os cards usam `truncate` (uma linha) nos títulos de objetivos, cortando nomes longos como "Estruturar a nossa fábrica pa..."
-2. **Não responsivo** — Layout fixo com `min-w-max` e larguras fixas (`w-72`, `w-60`, `w-56`); em telas menores tudo fica comprimido
-3. **Linhas da árvore quase invisíveis** — `bg-border` é muito sutil; as linhas verticais têm apenas `w-px` (1px) e a horizontal `h-px`
-4. **Badge "Edit with Lovable"** — Está visível no site publicado; precisa ser ocultado
+O projeto já possui 4 papéis (`admin`, `okr_master`, `manager`, `member`) e tabelas `permissions` e `role_permissions` no banco, mas elas não estão sendo usadas no frontend. A proposta é ativar e expandir esse sistema já existente.
 
----
+### Modelo Proposto (Boas Práticas de Mercado)
 
-### Correções
+A abordagem recomendada é **RBAC com permissões granulares por recurso e ação**, similar ao que produtos como Jira, Linear e Notion utilizam:
 
-#### 1. `OKROrgChart.tsx` — Responsividade + legibilidade + linhas
+```text
+┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  user_roles  │────▶│ role_permissions  │────▶│   permissions   │
+│  (user,role) │     │ (role,permission) │     │ (key,description│
+└─────────────┘     └──────────────────┘     └─────────────────┘
+```
 
-- **Títulos**: trocar `truncate` por `line-clamp-2` nos cards de objetivo para mostrar até 2 linhas
-- **Larguras**: aumentar levemente os cards e usar `min-w` em vez de `w-` fixo para flexibilidade
-- **Linhas conectoras**: aumentar espessura de `w-px` para `w-0.5` (2px) nas verticais e `h-0.5` nas horizontais; usar cor mais visível (`bg-border/80` ou `bg-muted-foreground/30`)
-- **Container**: adicionar scroll horizontal suave com indicador visual; em mobile, permitir scroll touch
-- **KR cards em leaf nodes**: quando muitos KRs, fazer wrap em grid responsivo em vez de linha horizontal infinita
+**Permissões propostas (agrupadas por módulo):**
 
-#### 2. Badge Lovable — Ocultar via API
+| Módulo | Permissão (key) | Admin | OKR Master | Manager | Member |
+|---|---|---|---|---|---|
+| **Ciclos** | `cycles.create` | ✅ | ✅ | ❌ | ❌ |
+| | `cycles.edit` | ✅ | ✅ | ❌ | ❌ |
+| | `cycles.delete` | ✅ | ❌ | ❌ | ❌ |
+| | `cycles.approve` | ✅ | ❌ | ❌ | ❌ |
+| **Objetivos** | `objectives.create` | ✅ | ✅ | ✅ | ✅ |
+| | `objectives.edit_any` | ✅ | ✅ | ❌ | ❌ |
+| | `objectives.delete` | ✅ | ❌ | ❌ | ❌ |
+| **Key Results** | `kr.create` | ✅ | ✅ | ✅ | ✅ |
+| | `kr.checkin_any` | ✅ | ✅ | ❌ | ❌ |
+| | `kr.delete` | ✅ | ❌ | ❌ | ❌ |
+| **Iniciativas** | `initiatives.create` | ✅ | ✅ | ❌ | ❌ |
+| | `initiatives.edit_any` | ✅ | ✅ | ❌ | ❌ |
+| | `initiatives.delete` | ✅ | ❌ | ❌ | ❌ |
+| **Usuários** | `users.invite` | ✅ | ❌ | ❌ | ❌ |
+| | `users.manage_roles` | ✅ | ❌ | ❌ | ❌ |
+| | `users.edit_profile_any` | ✅ | ❌ | ❌ | ❌ |
+| | `users.view_sensitive` | ✅ | ❌ | ❌ | ❌ |
+| **Relatórios** | `reports.view` | ✅ | ✅ | ✅ | ❌ |
+| | `reports.export` | ✅ | ✅ | ❌ | ❌ |
+| **Admin** | `admin.audit_logs` | ✅ | ❌ | ❌ | ❌ |
+| | `admin.change_requests` | ✅ | ❌ | ❌ | ❌ |
+| | `admin.settings` | ✅ | ❌ | ❌ | ❌ |
+| **Engajamento** | `ppp.view_team` | ✅ | ❌ | ✅ | ❌ |
+| | `pulse.view_team` | ✅ | ❌ | ✅ | ❌ |
+| | `kudos.delete_any` | ✅ | ❌ | ❌ | ❌ |
 
-- Usar `set_badge_visibility({ hide_badge: true })` para esconder o badge "Edit with Lovable" do site publicado
+**Nota:** Membros e managers sempre podem editar/fazer check-in nos seus próprios itens (ownership). As permissões `*_any` se referem a itens de outros usuários.
 
----
+### Plano de Implementação
 
-### Arquivos alterados
+**1. Seed das permissões e role_permissions**
+- Inserir as ~23 permissões na tabela `permissions` (já existe)
+- Inserir os mapeamentos na tabela `role_permissions` (já existe)
+- Usar a ferramenta de insert (não migration, pois são dados)
 
-1. **`src/components/okr/OKROrgChart.tsx`** — responsividade, line-clamp, linhas mais visíveis
-2. **Badge visibility** — chamada de API para ocultar
+**2. Criar hook `usePermissions`**
+- Busca as permissões do usuário logado via join `user_roles → role_permissions → permissions`
+- Expõe `can("cycles.create")` como API simples
+- Cache com React Query
+
+**3. Criar componente `<Can>`**
+- Componente declarativo: `<Can do="initiatives.delete">...</Can>`
+- Esconde elementos da UI se o usuário não tiver permissão
+
+**4. Atualizar o frontend**
+- Substituir verificações `isAdmin` / `hasRole` espalhadas pelo código por `can("permission.key")`
+- Atualizar sidebar, botões de ação, formulários e rotas protegidas
+
+**5. Criar tela de gestão de permissões (Admin)**
+- Matriz visual role × permission com toggles
+- Permite que o admin customize quais permissões cada papel tem
+
+### Detalhes Técnicos
+
+- As tabelas `permissions` e `role_permissions` já existem com RLS adequado
+- Função DB `has_role` continua sendo usada nas policies RLS (camada de segurança no banco)
+- O frontend adiciona uma camada de UX sobre isso, escondendo ações que o usuário não pode fazer
+- Nenhuma mudança de schema necessária — apenas dados e código frontend
 
