@@ -291,7 +291,7 @@ export default function InitiativesList() {
                         <InitiativeActions
                           init={init}
                           canManage={canManage}
-                          isAdmin={isAdmin}
+                          isAdmin={canDelete}
                           isOwner={init.owner_id === user?.id}
                           expired={expired}
                           onEdit={() => { setEditing(init); setFormOpen(true); }}

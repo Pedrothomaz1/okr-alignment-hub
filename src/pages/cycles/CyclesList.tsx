@@ -39,8 +39,8 @@ const statusLabel: Record<string, string> = {
 export default function CyclesList() {
   const { cycles, isLoading, deleteCycle } = useCycles();
   const { user } = useAuth();
-  const { hasRole } = useRoles(user?.id);
-  const canManage = hasRole("admin") || hasRole("okr_master");
+  const { can } = usePermissions();
+  const canManage = can("cycles.create") || can("cycles.edit");
   const { toast } = useToast();
 
   const [formOpen, setFormOpen] = useState(false);

@@ -55,9 +55,10 @@ const adminItems = [
 
 export function AppSidebar() {
   const { user, signOut } = useAuth();
-  const { isAdmin, hasRole } = useRoles(user?.id);
+  const { isAdmin } = useRoles(user?.id);
+  const { can } = usePermissions();
   const navigate = useNavigate();
-  const isLeader = hasRole("manager") || hasRole("okr_master") || isAdmin;
+  const isLeader = can("reports.view") || can("ppp.view_team");
 
   const { data: profileData } = useQuery({
     queryKey: ["sidebar-avatar", user?.id],
