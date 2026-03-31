@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 export interface Initiative {
   id: string;
   date: string;
+  canal: string;
   unit: string;
   dre_line: string;
   action: string;

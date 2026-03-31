@@ -45,6 +45,7 @@ export default function InitiativeForm({
   const { data: profiles } = useProfiles();
 
   const [date, setDate] = useState<Date>(new Date());
+  const [canal, setCanal] = useState("");
   const [unit, setUnit] = useState("");
   const [dreLine, setDreLine] = useState("");
   const [action, setAction] = useState("");
