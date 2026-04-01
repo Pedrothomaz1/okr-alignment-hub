@@ -7,11 +7,8 @@ import { Calendar, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MyKeyResults } from "@/components/dashboard/MyKeyResults";
 import { MyTeam } from "@/components/dashboard/MyTeam";
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/okr/ProgressBar";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 export default function Dashboard() {
   const { user } = useAuth();
