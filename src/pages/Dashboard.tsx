@@ -78,55 +78,41 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Two-column layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column — 2/3 */}
-        <div className="lg:col-span-2 space-y-6">
-          <MyKeyResults />
-          <MyTeam />
+      {/* Main content */}
+      <div className="space-y-6">
+        <MyKeyResults />
+        <MyTeam />
 
-          {/* Active Cycles */}
-          <Card className="card-elevated">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Ciclos Ativos</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {isLoading ? (
-                <Skeleton className="h-16" />
-              ) : stats?.cyclesSummary && stats.cyclesSummary.length > 0 ? (
-                stats.cyclesSummary.map((cycle) => (
-                  <Link
-                    key={cycle.id}
-                    to={`/cycles/${cycle.id}`}
-                    className="block card-interactive p-3"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium truncate">{cycle.name}</p>
-                      <span className="text-[10px] text-muted-foreground">{cycle.objectiveCount} obj.</span>
-                    </div>
-                    <ProgressBar value={cycle.averageProgress} showLabel />
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {new Date(cycle.start_date).toLocaleDateString("pt-BR")} — {new Date(cycle.end_date).toLocaleDateString("pt-BR")}
-                    </p>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-xs text-muted-foreground text-center py-4">Nenhum ciclo ativo.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right column — 1/3 */}
-        <div className="space-y-6">
-          {/* Date header */}
-          <div className="card-elevated p-4">
-            <p className="text-xs text-muted-foreground">Hoje</p>
-            <p className="text-sm font-semibold">{format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
-          </div>
-
-          <ActivityFeed />
-        </div>
+        {/* Active Cycles */}
+        <Card className="card-elevated">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">Ciclos Ativos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {isLoading ? (
+              <Skeleton className="h-16" />
+            ) : stats?.cyclesSummary && stats.cyclesSummary.length > 0 ? (
+              stats.cyclesSummary.map((cycle) => (
+                <Link
+                  key={cycle.id}
+                  to={`/cycles/${cycle.id}`}
+                  className="block card-interactive p-3"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-medium truncate">{cycle.name}</p>
+                    <span className="text-[10px] text-muted-foreground">{cycle.objectiveCount} obj.</span>
+                  </div>
+                  <ProgressBar value={cycle.averageProgress} showLabel />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {new Date(cycle.start_date).toLocaleDateString("pt-BR")} — {new Date(cycle.end_date).toLocaleDateString("pt-BR")}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-4">Nenhum ciclo ativo.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick Actions */}
