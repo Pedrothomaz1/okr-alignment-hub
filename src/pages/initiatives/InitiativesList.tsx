@@ -21,7 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/useInitiatives";
-import { formatValue, computeStatus, STATUS_DISPLAY } from "@/lib/initiative-format";
+import { formatValue, computeStatus, daysLate, STATUS_DISPLAY } from "@/lib/initiative-format";
 import InitiativeForm from "./InitiativeForm";
 import InlineProgress from "@/components/initiatives/InlineProgress";
 import InitiativeActions from "@/components/initiatives/InitiativeActions";
@@ -174,11 +174,6 @@ export default function InitiativesList() {
     setDeleteTarget(null);
   };
 
-  const isDeadlineExpired = (deadline: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return new Date(deadline + "T00:00:00") < today;
-  };
 
   return (
     <TooltipProvider>
@@ -238,7 +233,8 @@ export default function InitiativesList() {
               <SelectItem value="all">Todos os status</SelectItem>
               <SelectItem value="in_progress">Em andamento</SelectItem>
               <SelectItem value="completed">Concluída</SelectItem>
-              <SelectItem value="expired">Expirada</SelectItem>
+              <SelectItem value="completed_late">Concluída com atraso</SelectItem>
+              <SelectItem value="late">Atrasada</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -272,7 +268,6 @@ export default function InitiativesList() {
                   const current = init.current_value || 0;
                   const status = computeStatus(current, target, init.deadline, mu);
                   const display = STATUS_DISPLAY[status];
-                  const expired = isDeadlineExpired(init.deadline);
 
                   return (
                     <TableRow key={init.id}>
@@ -291,19 +286,28 @@ export default function InitiativesList() {
                       <TableCell>
                         <InlineProgress
                           init={init}
-                          canEdit={(canManage || init.owner_id === user?.id) && !expired}
+                          canEdit={(canManage || init.owner_id === user?.id) && status !== "completed" && status !== "completed_late"}
                           onUpdate={updateInitiative}
                         />
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={status === "completed" ? "secondary" : status === "expired" ? "destructive" : "default"}
-                          className={cn(
-                            status === "completed" && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        <div className="space-y-1">
+                          <Badge
+                            variant={status === "completed" ? "secondary" : status === "late" ? "destructive" : "default"}
+                            className={cn(
+                              status === "completed" && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+                              status === "completed_late" && "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+                              status === "late" && "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                            )}
+                          >
+                            {display.label}
+                          </Badge>
+                          {status === "completed_late" && (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                              Entregue com {daysLate(init.deadline)} {daysLate(init.deadline) === 1 ? "dia" : "dias"} de atraso
+                            </p>
                           )}
-                        >
-                          {display.label}
-                        </Badge>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <InitiativeActions
@@ -311,7 +315,7 @@ export default function InitiativesList() {
                           canManage={canManage}
                           isAdmin={canDelete}
                           isOwner={init.owner_id === user?.id}
-                          expired={expired}
+                          expired={false}
                           onEdit={() => { setEditing(init); setFormOpen(true); }}
                           onDelete={() => setDeleteTarget(init.id)}
                         />
