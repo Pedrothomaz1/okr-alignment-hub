@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Enums } from "@/integrations/supabase/types";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, RefreshCw, Send } from "lucide-react";
 
 type AppRole = Enums<"app_role">;
 const ROLES = Constants.public.Enums.app_role;
@@ -40,6 +40,7 @@ export default function UsersRoles() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteRole, setInviteRole] = useState<AppRole>("member");
+  const [resendingAll, setResendingAll] = useState(false);
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
@@ -98,7 +99,6 @@ export default function UsersRoles() {
         body: { email: inviteEmail, full_name: inviteName, role: inviteRole },
       });
       if (error) {
-        // Extract the actual error message from the edge function response
         let message = "Erro ao convidar usuário";
         try {
           const context = (error as any).context;
@@ -106,9 +106,7 @@ export default function UsersRoles() {
             const body = await context.json();
             if (body?.error) message = body.error;
           }
-        } catch {
-          // fallback to generic message
-        }
+        } catch { /* fallback */ }
         throw new Error(message);
       }
       if (data?.error) throw new Error(data.error);
@@ -128,6 +126,54 @@ export default function UsersRoles() {
     },
   });
 
+  const resendInvite = useMutation({
+    mutationFn: async (email: string) => {
+      const { data, error } = await supabase.functions.invoke("invite-user", {
+        body: { email, resend: true },
+      });
+      if (error) {
+        let message = "Erro ao reenviar convite";
+        try {
+          const context = (error as any).context;
+          if (context instanceof Response) {
+            const body = await context.json();
+            if (body?.error) message = body.error;
+          }
+        } catch { /* fallback */ }
+        throw new Error(message);
+      }
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      toast({ title: "Convite reenviado com sucesso!" });
+    },
+    onError: (err: Error) => {
+      toast({ variant: "destructive", title: "Erro ao reenviar", description: err.message });
+    },
+  });
+
+  const handleResendAll = async () => {
+    if (!usersQuery.data) return;
+    setResendingAll(true);
+    let success = 0;
+    let failed = 0;
+    for (const user of usersQuery.data) {
+      if (!user.email) continue;
+      try {
+        await resendInvite.mutateAsync(user.email);
+        success++;
+      } catch {
+        failed++;
+      }
+    }
+    setResendingAll(false);
+    toast({
+      title: "Reenvio concluído",
+      description: `${success} convite(s) reenviado(s)${failed > 0 ? `, ${failed} falha(s)` : ""}.`,
+    });
+  };
+
   const getUserRoles = (userId: string) =>
     rolesQuery.data?.filter((r) => r.user_id === userId).map((r) => r.role) ?? [];
 
@@ -141,10 +187,16 @@ export default function UsersRoles() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Usuários & Papéis</h1>
-        <Button onClick={() => setInviteOpen(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Convidar Usuário
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleResendAll} disabled={resendingAll || !usersQuery.data?.length}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${resendingAll ? "animate-spin" : ""}`} />
+            {resendingAll ? "Reenviando..." : "Reenviar Todos os Convites"}
+          </Button>
+          <Button onClick={() => setInviteOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Convidar Usuário
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
@@ -192,9 +244,20 @@ export default function UsersRoles() {
                   </div>
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Button size="sm" variant="outline" onClick={() => { setAssignDialog({ userId: user.id, email: user.email ?? "" }); setSelectedRole("member"); }}>
-                    Add Role
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title="Reenviar convite"
+                      onClick={() => user.email && resendInvite.mutate(user.email)}
+                      disabled={resendInvite.isPending}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => { setAssignDialog({ userId: user.id, email: user.email ?? "" }); setSelectedRole("member"); }}>
+                      Add Role
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
