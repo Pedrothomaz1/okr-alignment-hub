@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Save, Camera, Loader2, Lock } from "lucide-react";
+import { Save, Camera, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ChangePasswordCard from "@/components/profile/ChangePasswordCard";
 
 export default function Profile() {
   const { user } = useAuth();
