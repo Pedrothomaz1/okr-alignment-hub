@@ -271,7 +271,9 @@ interface OKROrgChartProps {
 export function OKROrgChart({ tree }: OKROrgChartProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const allIds = useMemo(() => collectIds(tree), [tree]);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(allIds));
+  // Start collapsed — only root nodes visible
+  const rootIds = useMemo(() => tree.map((n) => n.objective.id), [tree]);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(rootIds));
   const allExpanded = expandedIds.size >= allIds.length;
 
   const handleSearchChange = useCallback(
@@ -325,7 +327,7 @@ export function OKROrgChart({ tree }: OKROrgChartProps) {
       </div>
 
       <div className="overflow-auto pb-4 max-h-[calc(100vh-260px)] touch-pan-x touch-pan-y">
-        <div className="flex gap-4 md:gap-6 justify-center min-w-max py-2 px-2">
+        <div className="flex gap-4 md:gap-6 justify-center py-2 px-2 flex-wrap">
           {tree.map((node) => (
             <OrgNode
               key={node.objective.id}
