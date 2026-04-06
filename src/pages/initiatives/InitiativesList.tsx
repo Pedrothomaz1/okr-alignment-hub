@@ -47,6 +47,7 @@ export default function InitiativesList() {
   const [filterUnit, setFilterUnit] = useState<string>("all");
   const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey>("date");
@@ -79,9 +80,14 @@ export default function InitiativesList() {
       if (filterUnit !== "all" && i.unit !== filterUnit) return false;
       if (filterCanal !== "all" && i.canal !== filterCanal) return false;
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
+      if (filterStatus !== "all") {
+        const mu = i.measurement_unit || "R$";
+        const status = computeStatus(i.current_value || 0, i.target_value || 0, i.deadline, mu);
+        if (status !== filterStatus) return false;
+      }
       return true;
     });
-  }, [initiatives, filterUnit, filterCanal, filterOwner]);
+  }, [initiatives, filterUnit, filterCanal, filterOwner, filterStatus]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -221,6 +227,18 @@ export default function InitiativesList() {
               {uniqueOwners.map(([id, name]) => (
                 <SelectItem key={id} value={id}>{name}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrar por status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="in_progress">Em andamento</SelectItem>
+              <SelectItem value="completed">Concluída</SelectItem>
+              <SelectItem value="expired">Expirada</SelectItem>
             </SelectContent>
           </Select>
         </div>
