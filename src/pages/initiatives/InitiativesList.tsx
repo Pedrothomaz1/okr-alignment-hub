@@ -229,6 +229,18 @@ export default function InitiativesList() {
               ))}
             </SelectContent>
           </Select>
+
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrar por status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="in_progress">Em andamento</SelectItem>
+              <SelectItem value="completed">Concluída</SelectItem>
+              <SelectItem value="expired">Expirada</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isLoading ? (
