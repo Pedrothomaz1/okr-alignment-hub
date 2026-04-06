@@ -179,7 +179,7 @@ function OrgNode({
   const isHighlighted = directMatch(node, searchQuery);
   const childCount = node.children.length;
   const krCount = node.keyResults.length;
-  const cardWidth = depth === 0 ? "w-[240px]" : "w-[200px]";
+  
 
   return (
     <div className="flex flex-col items-center">
