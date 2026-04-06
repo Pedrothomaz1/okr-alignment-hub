@@ -208,9 +208,9 @@ function OrgNode({
       {isExpanded && hasKRs && (
         <>
           <VLine height="h-4" />
-          <div className={`${cardWidth} space-y-0.5`}>
+          <div className="flex flex-wrap gap-2 justify-center">
             {node.keyResults.map((kr) => (
-              <KRChip key={kr.id} kr={kr} />
+              <KRCard key={kr.id} kr={kr} />
             ))}
           </div>
         </>
