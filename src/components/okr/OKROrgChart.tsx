@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Target, Key, ChevronDown, ChevronRight, Search, User } from "lucide-react";
+import { Target, Key, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -127,11 +127,6 @@ function ObjectiveCard({
 
 /* ─── KR Compact Row ─── */
 function KRRow({ kr }: { kr: any }) {
-  const progress =
-    kr.target_value !== kr.start_value
-      ? Math.round(((kr.current_value - kr.start_value) / (kr.target_value - kr.start_value)) * 100)
-      : 0;
-
   return (
     <Link
       to={`/objectives/${kr.objective_id}#kr-${kr.id}`}
