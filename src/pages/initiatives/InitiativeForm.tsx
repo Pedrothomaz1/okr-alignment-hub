@@ -125,34 +125,48 @@ export default function InitiativeForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Data</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(date, "dd/MM/yyyy")}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
+                {isEditing && !isAdmin ? (
+                  <Button variant="outline" className="w-full justify-start text-left font-normal" disabled>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(date, "dd/MM/yyyy")}
+                  </Button>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(date, "dd/MM/yyyy")}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} className="p-3 pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label>Prazo</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")} disabled={isEditing && !isAdmin}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(deadline, "dd/MM/yyyy")}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={deadline} onSelect={(d) => d && setDeadline(d)} className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
+                {isEditing && !isAdmin ? (
+                  <Button variant="outline" className="w-full justify-start text-left font-normal" disabled>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(deadline, "dd/MM/yyyy")}
+                  </Button>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(deadline, "dd/MM/yyyy")}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={deadline} onSelect={(d) => d && setDeadline(d)} className="p-3 pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                )}
                 {isEditing && !isAdmin && (
-                  <p className="text-xs text-muted-foreground">Somente administradores podem alterar o prazo.</p>
+                  <p className="text-xs text-muted-foreground">Somente administradores podem alterar datas.</p>
                 )}
               </div>
             </div>
