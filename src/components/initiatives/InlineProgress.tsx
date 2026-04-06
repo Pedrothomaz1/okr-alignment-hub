@@ -76,7 +76,8 @@ export default function InlineProgress({ init, canEdit, onUpdate }: InlineProgre
         className={cn(
           "h-2",
           status === "completed" && "[&>[data-state]]:bg-green-600",
-          status === "expired" && "[&>[data-state]]:bg-destructive",
+          status === "completed_late" && "[&>[data-state]]:bg-amber-600",
+          status === "late" && "[&>[data-state]]:bg-destructive",
           status === "in_progress" && "[&>[data-state]]:bg-blue-600"
         )}
       />

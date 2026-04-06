@@ -174,11 +174,6 @@ export default function InitiativesList() {
     setDeleteTarget(null);
   };
 
-  const isDeadlineExpired = (deadline: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return new Date(deadline + "T00:00:00") < today;
-  };
 
   return (
     <TooltipProvider>
@@ -273,7 +268,6 @@ export default function InitiativesList() {
                   const current = init.current_value || 0;
                   const status = computeStatus(current, target, init.deadline, mu);
                   const display = STATUS_DISPLAY[status];
-                  const expired = isDeadlineExpired(init.deadline);
 
                   return (
                     <TableRow key={init.id}>

@@ -19,6 +19,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { useProfiles } from "@/hooks/useProfiles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { MEASUREMENT_UNITS } from "@/lib/initiative-format";
 import type { Initiative, InitiativeInsert } from "@/hooks/useInitiatives";
 
@@ -43,6 +44,8 @@ export default function InitiativeForm({
   open, onOpenChange, onSubmit, initiative, currentUserId, isSubmitting,
 }: InitiativeFormProps) {
   const { data: profiles } = useProfiles();
+  const { can } = usePermissions();
+  const isAdmin = can("initiatives.delete"); // admin-level permission
 
   const [date, setDate] = useState<Date>(new Date());
   const [canal, setCanal] = useState("");
@@ -56,14 +59,7 @@ export default function InitiativeForm({
   const [currentValue, setCurrentValue] = useState<string>("");
   const [boolValue, setBoolValue] = useState(false);
 
-  const isExpired = (() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return deadline < today;
-  })();
-
   const isEditing = !!initiative;
-  const disabled = isExpired && isEditing;
 
   useEffect(() => {
     if (initiative) {
@@ -124,15 +120,8 @@ export default function InitiativeForm({
           <DialogTitle>{isEditing ? "Editar Iniciativa" : "Nova Iniciativa"}</DialogTitle>
         </DialogHeader>
 
-        {disabled && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>Prazo expirado — edição bloqueada.</AlertDescription>
-          </Alert>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <fieldset disabled={disabled} className="space-y-4">
+          <fieldset className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Data</Label>
@@ -153,7 +142,7 @@ export default function InitiativeForm({
                 <Label>Prazo</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal")} disabled={isEditing && !isAdmin}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {format(deadline, "dd/MM/yyyy")}
                     </Button>
@@ -162,6 +151,9 @@ export default function InitiativeForm({
                     <Calendar mode="single" selected={deadline} onSelect={(d) => d && setDeadline(d)} className="p-3 pointer-events-auto" />
                   </PopoverContent>
                 </Popover>
+                {isEditing && !isAdmin && (
+                  <p className="text-xs text-muted-foreground">Somente administradores podem alterar o prazo.</p>
+                )}
               </div>
             </div>
 
@@ -254,7 +246,7 @@ export default function InitiativeForm({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={!isValid || isSubmitting || disabled}>
+            <Button type="submit" disabled={!isValid || isSubmitting}>
               {isSubmitting ? "Salvando..." : isEditing ? "Salvar" : "Criar"}
             </Button>
           </DialogFooter>
