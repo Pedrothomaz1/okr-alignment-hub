@@ -198,6 +198,8 @@ export default function Profile() {
           </Button>
         </CardContent>
       </Card>
+
+      <ChangePasswordCard />
     </div>
   );
 }
