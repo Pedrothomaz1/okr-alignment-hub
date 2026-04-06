@@ -271,7 +271,9 @@ interface OKROrgChartProps {
 export function OKROrgChart({ tree }: OKROrgChartProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const allIds = useMemo(() => collectIds(tree), [tree]);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(allIds));
+  // Start collapsed — only root nodes visible
+  const rootIds = useMemo(() => tree.map((n) => n.objective.id), [tree]);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(rootIds));
   const allExpanded = expandedIds.size >= allIds.length;
 
   const handleSearchChange = useCallback(
