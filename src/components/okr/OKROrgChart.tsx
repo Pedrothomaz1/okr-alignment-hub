@@ -122,21 +122,34 @@ function ObjectiveCard({
   );
 }
 
-/* ─── KR Compact Chip ─── */
-function KRChip({ kr }: { kr: any }) {
+/* ─── KR Card (same style as Objective) ─── */
+function KRCard({ kr }: { kr: any }) {
+  const progress = kr.target_value > 0 ? Math.round((kr.current_value / kr.target_value) * 100) : 0;
+
   return (
     <Link
       to={`/objectives/${kr.objective_id}#kr-${kr.id}`}
-      className="flex items-center gap-1 rounded border border-dashed border-border/60 bg-muted/20 px-1.5 py-1 text-[9px] transition-all hover:bg-muted/40 hover:border-primary/30 group"
+      className="block rounded-lg border-l-4 border-l-muted-foreground/40 bg-card shadow-sm transition-all hover:shadow-md hover:border-primary/60 w-[200px] p-2.5"
     >
-      <Key className="h-2.5 w-2.5 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
-      <span className="font-medium leading-tight truncate flex-1 min-w-0 max-w-[110px]">{kr.title}</span>
-      <span className="font-mono text-muted-foreground shrink-0 text-[8px]">
-        {kr.current_value}/{kr.target_value}
-      </span>
-      <Badge variant={statusVariant[kr.status] || "outline"} className="text-[7px] px-1 py-0 h-3.5 shrink-0">
-        {statusLabel[kr.status] || kr.status}
-      </Badge>
+      <div className="flex items-start gap-1.5 mb-1">
+        <div className="shrink-0 rounded bg-muted-foreground/10 flex items-center justify-center h-5 w-5">
+          <Key className="h-3 w-3 text-muted-foreground" />
+        </div>
+        <span className="font-bold leading-snug line-clamp-3 flex-1 text-[11px]">
+          {kr.title}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1 mb-1">
+        <Badge variant={statusVariant[kr.status] || "outline"} className="text-[8px] px-1 py-0 h-4 shrink-0">
+          {statusLabel[kr.status] || kr.status}
+        </Badge>
+        <span className="font-mono text-muted-foreground text-[9px] ml-auto">
+          {kr.current_value}/{kr.target_value}
+        </span>
+      </div>
+
+      <ProgressBar value={progress} status={kr.status} showLabel />
     </Link>
   );
 }
@@ -166,7 +179,7 @@ function OrgNode({
   const isHighlighted = directMatch(node, searchQuery);
   const childCount = node.children.length;
   const krCount = node.keyResults.length;
-  const cardWidth = depth === 0 ? "w-[240px]" : "w-[200px]";
+  
 
   return (
     <div className="flex flex-col items-center">
@@ -195,9 +208,9 @@ function OrgNode({
       {isExpanded && hasKRs && (
         <>
           <VLine height="h-4" />
-          <div className={`${cardWidth} space-y-0.5`}>
+          <div className="flex flex-wrap gap-2 justify-center">
             {node.keyResults.map((kr) => (
-              <KRChip key={kr.id} kr={kr} />
+              <KRCard key={kr.id} kr={kr} />
             ))}
           </div>
         </>
