@@ -101,11 +101,14 @@ function ObjectiveCard({
         </div>
       )}
 
-      <div className="flex items-center gap-1 mb-1.5">
-        <Badge variant={statusVariant[obj.status] || "outline"} className="text-[8px] px-1 py-0 h-4">
+      <div className="flex items-center gap-1 mb-1">
+        <Badge variant={statusVariant[obj.status] || "outline"} className="text-[8px] px-1 py-0 h-4 shrink-0">
           {statusLabel[obj.status] || obj.status}
         </Badge>
-        <Avatar className="h-4 w-4">
+      </div>
+
+      <div className="flex items-center gap-1 mb-1.5">
+        <Avatar className="h-4 w-4 shrink-0">
           {obj.owner_avatar && <AvatarImage src={obj.owner_avatar} alt={obj.owner_name} />}
           <AvatarFallback className="text-[7px]">
             {(obj.owner_name || "?").charAt(0).toUpperCase()}
