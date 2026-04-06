@@ -327,7 +327,7 @@ export function OKROrgChart({ tree }: OKROrgChartProps) {
       </div>
 
       <div className="overflow-auto pb-4 max-h-[calc(100vh-260px)] touch-pan-x touch-pan-y">
-        <div className="flex gap-4 md:gap-6 justify-center min-w-max py-2 px-2">
+        <div className="flex gap-4 md:gap-6 justify-center py-2 px-2 flex-wrap"  >
           {tree.map((node) => (
             <OrgNode
               key={node.objective.id}
