@@ -92,14 +92,19 @@ export default function InitiativeForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const isBool = measurementUnit === "bool";
+
+    // Non-admins cannot change dates when editing
+    const safeDate = isEditing && !isAdmin && initiative ? initiative.date : format(date, "yyyy-MM-dd");
+    const safeDeadline = isEditing && !isAdmin && initiative ? initiative.deadline : format(deadline, "yyyy-MM-dd");
+
     await onSubmit({
-      date: format(date, "yyyy-MM-dd"),
+      date: safeDate,
       canal,
       unit,
       dre_line: dreLine,
       action,
       owner_id: ownerId,
-      deadline: format(deadline, "yyyy-MM-dd"),
+      deadline: safeDeadline,
       status: "pending",
       expected_impact: null,
       measurement_unit: measurementUnit,
