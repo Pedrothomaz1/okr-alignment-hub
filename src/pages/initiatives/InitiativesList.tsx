@@ -47,6 +47,7 @@ export default function InitiativesList() {
   const [filterUnit, setFilterUnit] = useState<string>("all");
   const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey>("date");
