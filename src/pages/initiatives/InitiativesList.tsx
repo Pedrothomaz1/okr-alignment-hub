@@ -80,9 +80,14 @@ export default function InitiativesList() {
       if (filterUnit !== "all" && i.unit !== filterUnit) return false;
       if (filterCanal !== "all" && i.canal !== filterCanal) return false;
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
+      if (filterStatus !== "all") {
+        const mu = i.measurement_unit || "R$";
+        const status = computeStatus(i.current_value || 0, i.target_value || 0, i.deadline, mu);
+        if (status !== filterStatus) return false;
+      }
       return true;
     });
-  }, [initiatives, filterUnit, filterCanal, filterOwner]);
+  }, [initiatives, filterUnit, filterCanal, filterOwner, filterStatus]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
