@@ -44,6 +44,9 @@ const engagementItems = [
 const settingsItems = [
   { title: "Meu Perfil", url: "/settings/profile", icon: User },
   { title: "Autenticação 2FA", url: "/settings/2fa", icon: Shield },
+];
+
+const adminSettingsItems = [
   { title: "Integrações", url: "/settings/integrations", icon: Link2 },
 ];
 
