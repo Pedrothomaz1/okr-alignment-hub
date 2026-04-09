@@ -59,7 +59,7 @@ export function AppSidebar() {
   const { isAdmin } = useRoles(user?.id);
   const { can } = usePermissions();
   const navigate = useNavigate();
-  const isLeader = can("reports.view") || can("ppp.view_team");
+  
 
   const { data: profileData } = useQuery({
     queryKey: ["sidebar-avatar", user?.id],
@@ -141,37 +141,41 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isLeader && (
+        {(can("ppp.view_team") || can("reports.view")) && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-sidebar-foreground/60 text-2xs uppercase tracking-widest">
               Gestão
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/leader"
-                      className="transition-smooth hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
-                    >
-                      <UsersRound className="h-4 w-4" />
-                      <span>Minha Equipe</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/reports"
-                      className="transition-smooth hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
-                    >
-                      <FileBarChart className="h-4 w-4" />
-                      <span>Relatórios</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {can("ppp.view_team") && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/leader"
+                        className="transition-smooth hover:bg-sidebar-accent"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                      >
+                        <UsersRound className="h-4 w-4" />
+                        <span>Minha Equipe</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {can("reports.view") && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/reports"
+                        className="transition-smooth hover:bg-sidebar-accent"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                      >
+                        <FileBarChart className="h-4 w-4" />
+                        <span>Relatórios</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

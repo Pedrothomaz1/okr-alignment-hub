@@ -1,11 +1,10 @@
 import { useLeaderDashboard } from "@/hooks/useLeaderDashboard";
-import { useAuth } from "@/hooks/useAuth";
-import { useRoles } from "@/hooks/useRoles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { UsersRound, CheckCircle, Circle, Star } from "lucide-react";
+import { Can } from "@/components/auth/Can";
 import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,26 +18,13 @@ function heatmapBg(value: number, tokenColor: string, max = 100) {
 
 function pulseHeatmapBg(score: number | null) {
   if (score === null) return {};
-  // 1-2 = low (destructive), 3 = neutral, 4-5 = good (success)
   if (score <= 2) return { background: `hsl(var(--destructive) / 0.12)` };
   if (score >= 4) return { background: `hsl(var(--success) / 0.12)` };
   return {};
 }
 
 export default function LeaderDashboard() {
-  const { user } = useAuth();
-  const { hasRole } = useRoles(user?.id);
   const { data: team, isLoading } = useLeaderDashboard();
-
-  const isLeader = hasRole("manager") || hasRole("okr_master") || hasRole("admin");
-
-  if (!isLeader) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-sm text-muted-foreground">Acesso restrito a gestores e administradores.</p>
-      </div>
-    );
-  }
 
   const teamSize = team?.length ?? 0;
   const checkinCompliance = teamSize > 0
@@ -72,7 +58,7 @@ export default function LeaderDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Visão consolidada da sua equipe</p>
         </div>
-        <ExportReportDialog />
+        <Can do="reports.export"><ExportReportDialog /></Can>
       </div>
 
       {isLoading ? (

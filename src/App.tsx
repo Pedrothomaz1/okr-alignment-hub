@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
+import { PermissionRoute } from "@/components/auth/PermissionRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -96,8 +97,8 @@ const App = () => {
                 <Route path="/weekly" element={<WeeklyPPP />} />
                 <Route path="/pulse" element={<PulseSurvey />} />
                 <Route path="/kudos" element={<KudosPage />} />
-                <Route path="/leader" element={<LeaderDashboard />} />
-                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/leader" element={<PermissionRoute permission="ppp.view_team"><LeaderDashboard /></PermissionRoute>} />
+                <Route path="/reports" element={<PermissionRoute permission="reports.view"><ReportsPage /></PermissionRoute>} />
                 <Route path="/settings/integrations" element={<IntegrationsPage />} />
                 <Route path="/initiatives" element={<InitiativesList />} />
                 <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />

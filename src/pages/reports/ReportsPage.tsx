@@ -1,5 +1,6 @@
 import { FileBarChart } from "lucide-react";
 import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
+import { Can } from "@/components/auth/Can";
 
 export default function ReportsPage() {
   return (
@@ -14,9 +15,11 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-4">
-        <ExportReportDialog />
-      </div>
+      <Can do="reports.export">
+        <div className="flex items-center gap-4">
+          <ExportReportDialog />
+        </div>
+      </Can>
     </div>
   );
 }
