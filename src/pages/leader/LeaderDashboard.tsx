@@ -1,5 +1,4 @@
 import { useLeaderDashboard } from "@/hooks/useLeaderDashboard";
-import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,14 +18,12 @@ function heatmapBg(value: number, tokenColor: string, max = 100) {
 
 function pulseHeatmapBg(score: number | null) {
   if (score === null) return {};
-  // 1-2 = low (destructive), 3 = neutral, 4-5 = good (success)
   if (score <= 2) return { background: `hsl(var(--destructive) / 0.12)` };
   if (score >= 4) return { background: `hsl(var(--success) / 0.12)` };
   return {};
 }
 
 export default function LeaderDashboard() {
-  const { data: team, isLoading } = useLeaderDashboard();
   const { data: team, isLoading } = useLeaderDashboard();
 
   const teamSize = team?.length ?? 0;
