@@ -44,6 +44,9 @@ const engagementItems = [
 const settingsItems = [
   { title: "Meu Perfil", url: "/settings/profile", icon: User },
   { title: "Autenticação 2FA", url: "/settings/2fa", icon: Shield },
+];
+
+const adminSettingsItems = [
   { title: "Integrações", url: "/settings/integrations", icon: Link2 },
 ];
 
@@ -216,6 +219,12 @@ export function AppSidebar() {
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
+                    {adminSettingsItems.map((item) => (
+                      <DropdownMenuItem key={item.url} onClick={() => navigate(item.url)}>
+                        <item.icon className="h-4 w-4 mr-2" />
+                        {item.title}
+                      </DropdownMenuItem>
+                    ))}
                     {adminItems.map((item) => (
                       <DropdownMenuItem key={item.url} onClick={() => navigate(item.url)}>
                         <item.icon className="h-4 w-4 mr-2" />
