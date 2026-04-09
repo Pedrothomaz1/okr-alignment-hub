@@ -58,7 +58,7 @@ export default function LeaderDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Visão consolidada da sua equipe</p>
         </div>
-        <ExportReportDialog />
+        <Can do="reports.export"><ExportReportDialog /></Can>
       </div>
 
       {isLoading ? (
