@@ -59,7 +59,7 @@ export function AppSidebar() {
   const { isAdmin } = useRoles(user?.id);
   const { can } = usePermissions();
   const navigate = useNavigate();
-  const isLeader = can("reports.view") || can("ppp.view_team");
+  
 
   const { data: profileData } = useQuery({
     queryKey: ["sidebar-avatar", user?.id],
