@@ -1,11 +1,11 @@
 import { useLeaderDashboard } from "@/hooks/useLeaderDashboard";
-import { useAuth } from "@/hooks/useAuth";
-import { useRoles } from "@/hooks/useRoles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProgressBar } from "@/components/okr/ProgressBar";
 import { UsersRound, CheckCircle, Circle, Star } from "lucide-react";
+import { Can } from "@/components/auth/Can";
 import { ExportReportDialog } from "@/components/reports/ExportReportDialog";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,19 +26,8 @@ function pulseHeatmapBg(score: number | null) {
 }
 
 export default function LeaderDashboard() {
-  const { user } = useAuth();
-  const { hasRole } = useRoles(user?.id);
+  const { can } = usePermissions();
   const { data: team, isLoading } = useLeaderDashboard();
-
-  const isLeader = hasRole("manager") || hasRole("okr_master") || hasRole("admin");
-
-  if (!isLeader) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-sm text-muted-foreground">Acesso restrito a gestores e administradores.</p>
-      </div>
-    );
-  }
 
   const teamSize = team?.length ?? 0;
   const checkinCompliance = teamSize > 0
