@@ -219,6 +219,12 @@ export function AppSidebar() {
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
+                    {adminSettingsItems.map((item) => (
+                      <DropdownMenuItem key={item.url} onClick={() => navigate(item.url)}>
+                        <item.icon className="h-4 w-4 mr-2" />
+                        {item.title}
+                      </DropdownMenuItem>
+                    ))}
                     {adminItems.map((item) => (
                       <DropdownMenuItem key={item.url} onClick={() => navigate(item.url)}>
                         <item.icon className="h-4 w-4 mr-2" />
