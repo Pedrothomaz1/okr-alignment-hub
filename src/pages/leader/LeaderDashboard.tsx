@@ -26,7 +26,7 @@ function pulseHeatmapBg(score: number | null) {
 }
 
 export default function LeaderDashboard() {
-  const { can } = usePermissions();
+  const { data: team, isLoading } = useLeaderDashboard();
   const { data: team, isLoading } = useLeaderDashboard();
 
   const teamSize = team?.length ?? 0;
