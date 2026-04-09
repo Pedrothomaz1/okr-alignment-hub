@@ -99,7 +99,7 @@ const App = () => {
                 <Route path="/kudos" element={<KudosPage />} />
                 <Route path="/leader" element={<PermissionRoute permission="ppp.view_team"><LeaderDashboard /></PermissionRoute>} />
                 <Route path="/reports" element={<PermissionRoute permission="reports.view"><ReportsPage /></PermissionRoute>} />
-                <Route path="/settings/integrations" element={<IntegrationsPage />} />
+                <Route path="/settings/integrations" element={<AdminRoute><IntegrationsPage /></AdminRoute>} />
                 <Route path="/initiatives" element={<InitiativesList />} />
                 <Route path="/admin/users" element={<AdminRoute><UsersRoles /></AdminRoute>} />
                 <Route path="/admin/users/:id" element={<AdminRoute><UserDetail /></AdminRoute>} />
