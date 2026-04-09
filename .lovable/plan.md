@@ -1,82 +1,45 @@
 
 
-## Proposta: Sistema de Permissões Granular (RBAC + Permissões por Recurso)
+## Diagnóstico: O que falta fazer
 
-### Contexto Atual
+O sistema de permissões (RBAC) já tem infraestrutura montada — tabelas `permissions` e `role_permissions` existem, o hook `usePermissions` funciona, e 5 páginas já usam `can()`. **Porém, os mapeamentos de permissões estão incompletos**: quase tudo está atribuído apenas ao `admin`. Segundo o plano aprovado, faltam **11 atribuições de role_permissions**.
 
-O projeto já possui 4 papéis (`admin`, `okr_master`, `manager`, `member`) e tabelas `permissions` e `role_permissions` no banco, mas elas não estão sendo usadas no frontend. A proposta é ativar e expandir esse sistema já existente.
+### 1. Corrigir mapeamentos de permissões (dados no banco)
 
-### Modelo Proposto (Boas Práticas de Mercado)
+Permissões que precisam ser adicionadas conforme o plano:
 
-A abordagem recomendada é **RBAC com permissões granulares por recurso e ação**, similar ao que produtos como Jira, Linear e Notion utilizam:
+| Permissão | Role faltando |
+|---|---|
+| `initiatives.create` | `okr_master` |
+| `initiatives.edit_any` | `okr_master` |
+| `reports.view` | `okr_master`, `manager` |
+| `reports.export` | `okr_master` |
+| `ppp.view_team` | `manager` |
+| `pulse.view_team` | `manager` |
 
-```text
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  user_roles  │────▶│ role_permissions  │────▶│   permissions   │
-│  (user,role) │     │ (role,permission) │     │ (key,description│
-└─────────────┘     └──────────────────┘     └─────────────────┘
-```
+**Como**: Uma migration SQL com INSERTs na tabela `role_permissions`.
 
-**Permissões propostas (agrupadas por módulo):**
+### 2. Aplicar `<Can>` e `can()` em mais páginas
 
-| Módulo | Permissão (key) | Admin | OKR Master | Manager | Member |
-|---|---|---|---|---|---|
-| **Ciclos** | `cycles.create` | ✅ | ✅ | ❌ | ❌ |
-| | `cycles.edit` | ✅ | ✅ | ❌ | ❌ |
-| | `cycles.delete` | ✅ | ❌ | ❌ | ❌ |
-| | `cycles.approve` | ✅ | ❌ | ❌ | ❌ |
-| **Objetivos** | `objectives.create` | ✅ | ✅ | ✅ | ✅ |
-| | `objectives.edit_any` | ✅ | ✅ | ❌ | ❌ |
-| | `objectives.delete` | ✅ | ❌ | ❌ | ❌ |
-| **Key Results** | `kr.create` | ✅ | ✅ | ✅ | ✅ |
-| | `kr.checkin_any` | ✅ | ✅ | ❌ | ❌ |
-| | `kr.delete` | ✅ | ❌ | ❌ | ❌ |
-| **Iniciativas** | `initiatives.create` | ✅ | ✅ | ❌ | ❌ |
-| | `initiatives.edit_any` | ✅ | ✅ | ❌ | ❌ |
-| | `initiatives.delete` | ✅ | ❌ | ❌ | ❌ |
-| **Usuários** | `users.invite` | ✅ | ❌ | ❌ | ❌ |
-| | `users.manage_roles` | ✅ | ❌ | ❌ | ❌ |
-| | `users.edit_profile_any` | ✅ | ❌ | ❌ | ❌ |
-| | `users.view_sensitive` | ✅ | ❌ | ❌ | ❌ |
-| **Relatórios** | `reports.view` | ✅ | ✅ | ✅ | ❌ |
-| | `reports.export` | ✅ | ✅ | ❌ | ❌ |
-| **Admin** | `admin.audit_logs` | ✅ | ❌ | ❌ | ❌ |
-| | `admin.change_requests` | ✅ | ❌ | ❌ | ❌ |
-| | `admin.settings` | ✅ | ❌ | ❌ | ❌ |
-| **Engajamento** | `ppp.view_team` | ✅ | ❌ | ✅ | ❌ |
-| | `pulse.view_team` | ✅ | ❌ | ✅ | ❌ |
-| | `kudos.delete_any` | ✅ | ❌ | ❌ | ❌ |
+O componente `<Can>` existe mas **não é usado em nenhum lugar**. Apenas `can()` direto é usado em 5 arquivos. Falta proteger:
 
-**Nota:** Membros e managers sempre podem editar/fazer check-in nos seus próprios itens (ownership). As permissões `*_any` se referem a itens de outros usuários.
+- **Sidebar**: Links de admin, relatórios (já parcial)
+- **Dashboard Leader**: Acesso baseado em `can("reports.view")`
+- **Admin pages** (AuditLogs, ChangeRequests, UsersRoles): Usar `<Can>` para esconder botões/ações
+- **KudosPage**: Botão de deletar kudos de outros com `can("kudos.delete_any")`
+- **WeeklyPPP / PulseSurvey**: Visualização de time com `can("ppp.view_team")` / `can("pulse.view_team")`
 
-### Plano de Implementação
+### 3. Proteger rotas com permissões
 
-**1. Seed das permissões e role_permissions**
-- Inserir as ~23 permissões na tabela `permissions` (já existe)
-- Inserir os mapeamentos na tabela `role_permissions` (já existe)
-- Usar a ferramenta de insert (não migration, pois são dados)
+Atualmente `AdminRoute` verifica apenas role `admin`. Seria ideal criar um `PermissionRoute` que verifica uma permissão específica, para rotas como `/reports` e `/leader`.
 
-**2. Criar hook `usePermissions`**
-- Busca as permissões do usuário logado via join `user_roles → role_permissions → permissions`
-- Expõe `can("cycles.create")` como API simples
-- Cache com React Query
+### Resumo de escopo
 
-**3. Criar componente `<Can>`**
-- Componente declarativo: `<Can do="initiatives.delete">...</Can>`
-- Esconde elementos da UI se o usuário não tiver permissão
+| Tarefa | Tipo | Esforço |
+|---|---|---|
+| Inserir 11 role_permissions faltantes | Migration SQL | Pequeno |
+| Usar `<Can>` / `can()` em ~8 páginas adicionais | Frontend | Médio |
+| Criar `PermissionRoute` genérico | Frontend | Pequeno |
 
-**4. Atualizar o frontend**
-- Substituir verificações `isAdmin` / `hasRole` espalhadas pelo código por `can("permission.key")`
-- Atualizar sidebar, botões de ação, formulários e rotas protegidas
-
-**5. Criar tela de gestão de permissões (Admin)**
-- Matriz visual role × permission com toggles
-- Permite que o admin customize quais permissões cada papel tem
-
-### Detalhes Técnicos
-
-- As tabelas `permissions` e `role_permissions` já existem com RLS adequado
-- Função DB `has_role` continua sendo usada nas policies RLS (camada de segurança no banco)
-- O frontend adiciona uma camada de UX sobre isso, escondendo ações que o usuário não pode fazer
-- Nenhuma mudança de schema necessária — apenas dados e código frontend
+Nenhuma mudança de schema — apenas dados e código frontend.
 
