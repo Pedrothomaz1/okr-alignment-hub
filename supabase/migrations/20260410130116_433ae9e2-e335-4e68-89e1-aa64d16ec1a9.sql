@@ -1,0 +1,5 @@
+
+DELETE FROM kr_checkins WHERE key_result_id = 'bbbbbbbb-0000-0000-0000-000000000001';
+DELETE FROM key_results WHERE id = 'bbbbbbbb-0000-0000-0000-000000000001';
+DELETE FROM objectives WHERE id = 'aaaaaaaa-0000-0000-0000-000000000002';
+DELETE FROM objectives WHERE id = 'aaaaaaaa-0000-0000-0000-000000000001';
