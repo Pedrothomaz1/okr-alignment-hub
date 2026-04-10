@@ -1140,6 +1140,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      recalc_objective_progress: {
+        Args: { _objective_id: string }
+        Returns: undefined
+      }
       update_own_profile: {
         Args: {
           _avatar_url?: string
