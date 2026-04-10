@@ -1,45 +1,93 @@
 
 
-## Diagnóstico: O que falta fazer
+## Propagação Hierárquica de Progresso de Objetivos
 
-O sistema de permissões (RBAC) já tem infraestrutura montada — tabelas `permissions` e `role_permissions` existem, o hook `usePermissions` funciona, e 5 páginas já usam `can()`. **Porém, os mapeamentos de permissões estão incompletos**: quase tudo está atribuído apenas ao `admin`. Segundo o plano aprovado, faltam **11 atribuições de role_permissions**.
+### Problema Atual
+O trigger `update_objective_progress` calcula o progresso de um objetivo apenas pela média ponderada dos seus KRs diretos. Objetivos pai não refletem o progresso dos objetivos filhos.
 
-### 1. Corrigir mapeamentos de permissões (dados no banco)
+### Solução
 
-Permissões que precisam ser adicionadas conforme o plano:
+**1. Criar função recursiva no banco de dados**
 
-| Permissão | Role faltando |
-|---|---|
-| `initiatives.create` | `okr_master` |
-| `initiatives.edit_any` | `okr_master` |
-| `reports.view` | `okr_master`, `manager` |
-| `reports.export` | `okr_master` |
-| `ppp.view_team` | `manager` |
-| `pulse.view_team` | `manager` |
+Uma nova função `calculate_objective_progress_recursive` que:
+- Calcula a média ponderada dos KRs diretos do objetivo
+- Busca todos os objetivos filhos (`parent_objective_id = objetivo atual`)
+- Combina o progresso dos KRs com o progresso dos filhos
+- Atualiza o objetivo e **propaga para cima** até a raiz da árvore
 
-**Como**: Uma migration SQL com INSERTs na tabela `role_permissions`.
+**2. Atualizar o trigger existente**
 
-### 2. Aplicar `<Can>` e `can()` em mais páginas
+Modificar o trigger `update_objective_progress` para, após calcular o progresso do objetivo com base nos KRs, disparar a recalculação do objetivo pai (se existir), propagando a mudança até o topo da hierarquia.
 
-O componente `<Can>` existe mas **não é usado em nenhum lugar**. Apenas `can()` direto é usado em 5 arquivos. Falta proteger:
+**3. Criar trigger adicional para mudanças de parent_objective_id**
 
-- **Sidebar**: Links de admin, relatórios (já parcial)
-- **Dashboard Leader**: Acesso baseado em `can("reports.view")`
-- **Admin pages** (AuditLogs, ChangeRequests, UsersRoles): Usar `<Can>` para esconder botões/ações
-- **KudosPage**: Botão de deletar kudos de outros com `can("kudos.delete_any")`
-- **WeeklyPPP / PulseSurvey**: Visualização de time com `can("ppp.view_team")` / `can("pulse.view_team")`
+Quando um objetivo muda de pai (ou ganha/perde um pai), os progressos dos pais antigo e novo precisam ser recalculados.
 
-### 3. Proteger rotas com permissões
+### Lógica de cálculo
 
-Atualmente `AdminRoute` verifica apenas role `admin`. Seria ideal criar um `PermissionRoute` que verifica uma permissão específica, para rotas como `/reports` e `/leader`.
+Para cada objetivo:
+- **Se tem apenas KRs**: progresso = média ponderada dos KRs (já funciona)
+- **Se tem apenas filhos**: progresso = média simples do progresso dos filhos
+- **Se tem KRs + filhos**: progresso = média ponderada onde KRs contribuem com seus pesos e cada filho contribui com peso 1 (ou configurável)
 
-### Resumo de escopo
+### Migração SQL
 
-| Tarefa | Tipo | Esforço |
-|---|---|---|
-| Inserir 11 role_permissions faltantes | Migration SQL | Pequeno |
-| Usar `<Can>` / `can()` em ~8 páginas adicionais | Frontend | Médio |
-| Criar `PermissionRoute` genérico | Frontend | Pequeno |
+```sql
+-- Função recursiva que recalcula progresso de um objetivo e propaga para o pai
+CREATE OR REPLACE FUNCTION public.recalc_objective_progress(_objective_id UUID)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  _kr_weighted_sum NUMERIC := 0;
+  _kr_weight_total NUMERIC := 0;
+  _child_progress_sum NUMERIC := 0;
+  _child_count INTEGER := 0;
+  _final_progress INTEGER := 0;
+  _parent_id UUID;
+BEGIN
+  -- KRs diretos
+  SELECT COALESCE(SUM(
+    CASE WHEN target_value - start_value = 0 THEN 0
+    ELSE LEAST(100, GREATEST(0, ((current_value - start_value)::numeric / (target_value - start_value)) * 100)) * weight
+    END
+  ), 0),
+  COALESCE(SUM(weight), 0)
+  INTO _kr_weighted_sum, _kr_weight_total
+  FROM public.key_results WHERE objective_id = _objective_id;
 
-Nenhuma mudança de schema — apenas dados e código frontend.
+  -- Filhos diretos
+  SELECT COUNT(*), COALESCE(SUM(progress), 0)
+  INTO _child_count, _child_progress_sum
+  FROM public.objectives WHERE parent_objective_id = _objective_id;
+
+  -- Combinar: KRs (com peso) + filhos (peso 1 cada)
+  IF _kr_weight_total > 0 AND _child_count > 0 THEN
+    _final_progress := ROUND((_kr_weighted_sum + _child_progress_sum) / (_kr_weight_total + _child_count))::INTEGER;
+  ELSIF _kr_weight_total > 0 THEN
+    _final_progress := ROUND(_kr_weighted_sum / _kr_weight_total)::INTEGER;
+  ELSIF _child_count > 0 THEN
+    _final_progress := ROUND(_child_progress_sum / _child_count)::INTEGER;
+  ELSE
+    _final_progress := 0;
+  END IF;
+
+  UPDATE public.objectives SET progress = _final_progress WHERE id = _objective_id;
+
+  -- Propagar para o pai
+  SELECT parent_objective_id INTO _parent_id FROM public.objectives WHERE id = _objective_id;
+  IF _parent_id IS NOT NULL THEN
+    PERFORM public.recalc_objective_progress(_parent_id);
+  END IF;
+END;
+$$;
+```
+
+Substituir o trigger `update_objective_progress` para chamar `recalc_objective_progress` em vez de fazer o cálculo isolado, e adicionar trigger em `objectives` para quando `progress` ou `parent_objective_id` mudar, propagar para o pai.
+
+### Arquivos afetados
+- **Migração SQL**: novo arquivo em `supabase/migrations/` com a função e triggers atualizados
+- **Nenhuma mudança no frontend** — o campo `progress` já é lido e exibido corretamente
 
