@@ -1,0 +1,1 @@
+UPDATE public.initiatives SET deadline = CURRENT_DATE WHERE id IN ('46b26834-ef51-4e52-b328-9fb61f7e85ac','4d186af9-9fba-4eb7-b37d-119b1061e639','e6824dfb-4fb2-4ed8-a763-96290a84e41b','49812575-c135-40b3-8cf7-f6e970bf73a6');
