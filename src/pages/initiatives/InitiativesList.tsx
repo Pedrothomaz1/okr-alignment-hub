@@ -11,6 +11,8 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -47,7 +49,7 @@ export default function InitiativesList() {
   const [filterUnit, setFilterUnit] = useState<string>("all");
   const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
 
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey>("date");
@@ -80,10 +82,10 @@ export default function InitiativesList() {
       if (filterUnit !== "all" && i.unit !== filterUnit) return false;
       if (filterCanal !== "all" && i.canal !== filterCanal) return false;
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
-      if (filterStatus !== "all") {
+      if (filterStatus.length > 0) {
         const mu = i.measurement_unit || "R$";
         const status = computeStatus(i.current_value || 0, i.target_value || 0, i.deadline, mu);
-        if (status !== filterStatus) return false;
+        if (!filterStatus.includes(status)) return false;
       }
       return true;
     });
@@ -225,18 +227,56 @@ export default function InitiativesList() {
             </SelectContent>
           </Select>
 
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
-              <SelectItem value="in_progress">Em andamento</SelectItem>
-              <SelectItem value="completed">Concluída</SelectItem>
-              <SelectItem value="completed_late">Concluída com atraso</SelectItem>
-              <SelectItem value="late">Atrasada</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[200px] justify-between font-normal">
+                <span className="truncate">
+                  {filterStatus.length === 0
+                    ? "Todos os status"
+                    : filterStatus.length === 1
+                    ? STATUS_DISPLAY[filterStatus[0] as keyof typeof STATUS_DISPLAY]?.label
+                    : `${filterStatus.length} status selecionados`}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[220px] p-2" align="start">
+              <div className="space-y-1">
+                {[
+                  { value: "in_progress", label: "Em andamento" },
+                  { value: "completed", label: "Concluída" },
+                  { value: "completed_late", label: "Concluída com atraso" },
+                  { value: "late", label: "Atrasada" },
+                ].map((opt) => {
+                  const checked = filterStatus.includes(opt.value);
+                  return (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer text-sm"
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(c) => {
+                          setFilterStatus((prev) =>
+                            c ? [...prev, opt.value] : prev.filter((v) => v !== opt.value)
+                          );
+                        }}
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  );
+                })}
+                {filterStatus.length > 0 && (
+                  <button
+                    type="button"
+                    className="w-full text-xs text-muted-foreground hover:text-foreground pt-1 mt-1 border-t"
+                    onClick={() => setFilterStatus([])}
+                  >
+                    Limpar seleção
+                  </button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {isLoading ? (
