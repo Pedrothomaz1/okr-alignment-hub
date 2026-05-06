@@ -185,7 +185,9 @@ export default function AlignmentView() {
               {isLoading ? (
                 <p className="text-sm text-muted-foreground">Carregando...</p>
               ) : (
-                <OKRTreeView tree={filteredTree} defaultExpanded={expanded} />
+                <div className="max-h-[600px] overflow-auto pr-2">
+                  <OKRTreeView tree={filteredTree} defaultExpanded={expanded} />
+                </div>
               )}
             </CardContent>
           </Card>
