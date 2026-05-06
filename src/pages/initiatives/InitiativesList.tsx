@@ -46,8 +46,6 @@ export default function InitiativesList() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Filters
-  const [filterUnit, setFilterUnit] = useState<string>("all");
-  const [filterCanal, setFilterCanal] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
 
@@ -56,16 +54,6 @@ export default function InitiativesList() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const profileMap = new Map(profiles?.map((p) => [p.id, p.full_name]) ?? []);
-
-  const uniqueUnits = useMemo(() => {
-    const units = new Set(initiatives.map((i) => i.unit));
-    return Array.from(units).sort();
-  }, [initiatives]);
-
-  const uniqueCanals = useMemo(() => {
-    const canals = new Set(initiatives.map((i) => i.canal).filter(Boolean));
-    return Array.from(canals).sort();
-  }, [initiatives]);
 
   const uniqueOwners = useMemo(() => {
     const owners = new Map<string, string>();
@@ -79,8 +67,6 @@ export default function InitiativesList() {
 
   const filtered = useMemo(() => {
     return initiatives.filter((i) => {
-      if (filterUnit !== "all" && i.unit !== filterUnit) return false;
-      if (filterCanal !== "all" && i.canal !== filterCanal) return false;
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
       if (filterStatus.length > 0) {
         const mu = i.measurement_unit || "R$";
@@ -89,7 +75,7 @@ export default function InitiativesList() {
       }
       return true;
     });
-  }, [initiatives, filterUnit, filterCanal, filterOwner, filterStatus]);
+  }, [initiatives, filterOwner, filterStatus]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -191,30 +177,6 @@ export default function InitiativesList() {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
-          <Select value={filterUnit} onValueChange={setFilterUnit}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrar por unidade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as unidades</SelectItem>
-              {uniqueUnits.map((u) => (
-                <SelectItem key={u} value={u}>{u}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filterCanal} onValueChange={setFilterCanal}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrar por canal" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os canais</SelectItem>
-              {uniqueCanals.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <Select value={filterOwner} onValueChange={setFilterOwner}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filtrar por responsável" />
