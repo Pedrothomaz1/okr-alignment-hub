@@ -50,8 +50,9 @@ export function computeStatus(
 
   const isLate = deadline < todayKey();
 
-  if (isLate) return "late";
+  if (done && isLate) return "completed_late";
   if (done) return "completed";
+  if (isLate) return "late";
 
   return "in_progress";
 }
