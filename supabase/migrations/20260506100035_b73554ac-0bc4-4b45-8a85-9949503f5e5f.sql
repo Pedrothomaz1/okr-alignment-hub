@@ -1,0 +1,1 @@
+UPDATE public.initiatives SET deadline = '2026-05-05' WHERE id IN ('e6db62d0-3ec8-444f-b63b-d5cfb6e035bc','524f0d3c-c3d2-4604-8ce9-3707d027cfc1','0e50af2c-4290-448b-b815-71a9c25b78d9','74f4ad5a-0fb5-43ba-8190-4d09c17845c9','440b2d9d-548c-426d-b602-848241a7184c','5b81d60b-d01e-4d09-b2d6-3fbc29302d1b');
