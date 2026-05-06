@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useInitiatives, type Initiative, type InitiativeInsert } from "@/hooks/useInitiatives";
-import { formatValue, computeStatus, daysLate, STATUS_DISPLAY } from "@/lib/initiative-format";
+import { formatValue, computeStatus, daysLate, STATUS_DISPLAY, parseLocalDate } from "@/lib/initiative-format";
 import InitiativeForm from "./InitiativeForm";
 import InlineProgress from "@/components/initiatives/InlineProgress";
 import InitiativeActions from "@/components/initiatives/InitiativeActions";
@@ -273,7 +273,7 @@ export default function InitiativesList() {
 
                   return (
                     <TableRow key={init.id}>
-                      <TableCell className="whitespace-nowrap">{format(new Date(init.date + "T00:00:00"), "MMM/yy", { locale: ptBR })}</TableCell>
+                      <TableCell className="whitespace-nowrap">{format(parseLocalDate(init.date), "MMM/yy", { locale: ptBR })}</TableCell>
                       <TableCell>{init.canal || "—"}</TableCell>
                       <TableCell>{init.unit}</TableCell>
                       <TableCell>{init.dre_line}</TableCell>
@@ -281,7 +281,7 @@ export default function InitiativesList() {
                         <span className="block whitespace-normal break-words">{init.action}</span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">{profileMap.get(init.owner_id) ?? "—"}</TableCell>
-                      <TableCell className="whitespace-nowrap">{format(new Date(init.deadline), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                      <TableCell className="whitespace-nowrap">{format(parseLocalDate(init.deadline), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                       <TableCell className="whitespace-nowrap">
                         {mu === "bool" ? "—" : formatValue(target, mu)}
                       </TableCell>

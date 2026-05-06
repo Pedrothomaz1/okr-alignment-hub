@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { useProfiles } from "@/hooks/useProfiles";
 import { usePermissions } from "@/hooks/usePermissions";
-import { MEASUREMENT_UNITS } from "@/lib/initiative-format";
+import { MEASUREMENT_UNITS, parseLocalDate } from "@/lib/initiative-format";
 import type { Initiative, InitiativeInsert } from "@/hooks/useInitiatives";
 
 const DRE_LINES = [
@@ -63,13 +63,13 @@ export default function InitiativeForm({
 
   useEffect(() => {
     if (initiative) {
-      setDate(new Date(initiative.date));
+      setDate(parseLocalDate(initiative.date));
       setCanal(initiative.canal || "");
       setUnit(initiative.unit);
       setDreLine(initiative.dre_line);
       setAction(initiative.action);
       setOwnerId(initiative.owner_id);
-      setDeadline(new Date(initiative.deadline));
+      setDeadline(parseLocalDate(initiative.deadline));
       setMeasurementUnit(initiative.measurement_unit || "R$");
       setTargetValue(String(initiative.target_value || ""));
       setCurrentValue(String(initiative.current_value || ""));

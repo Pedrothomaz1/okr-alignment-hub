@@ -25,6 +25,11 @@ export function formatValue(value: number, unit: string): string {
 
 export type ComputedStatus = "completed" | "completed_late" | "late" | "in_progress";
 
+export function parseLocalDate(date: string): Date {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 function todayKey(): string {
   const today = new Date();
   const year = today.getFullYear();
@@ -53,8 +58,8 @@ export function computeStatus(
 
 /** Calculate days late (positive = days after deadline) */
 export function daysLate(deadline: string): number {
-  const today = new Date(`${todayKey()}T00:00:00`);
-  const dl = new Date(deadline + "T00:00:00");
+  const today = parseLocalDate(todayKey());
+  const dl = parseLocalDate(deadline);
   const diff = today.getTime() - dl.getTime();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
