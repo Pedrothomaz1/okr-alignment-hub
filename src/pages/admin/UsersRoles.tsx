@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Enums } from "@/integrations/supabase/types";
 import { Search, UserPlus, RefreshCw, Send } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useBusinessUnits } from "@/hooks/useBusinessUnits";
 
 type AppRole = Enums<"app_role">;
 const ROLES = Constants.public.Enums.app_role;
@@ -40,7 +42,10 @@ export default function UsersRoles() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteRole, setInviteRole] = useState<AppRole>("member");
+  const [inviteBUs, setInviteBUs] = useState<string[]>([]);
   const [resendingAll, setResendingAll] = useState(false);
+
+  const { businessUnits } = useBusinessUnits();
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
@@ -96,7 +101,7 @@ export default function UsersRoles() {
   const inviteUser = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke("invite-user", {
-        body: { email: inviteEmail, full_name: inviteName, role: inviteRole },
+        body: { email: inviteEmail, full_name: inviteName, role: inviteRole, business_unit_ids: inviteBUs },
       });
       if (error) {
         let message = "Erro ao convidar usuário";
@@ -120,6 +125,7 @@ export default function UsersRoles() {
       setInviteEmail("");
       setInviteName("");
       setInviteRole("member");
+      setInviteBUs([]);
     },
     onError: (err: Error) => {
       toast({ variant: "destructive", title: "Erro ao convidar", description: err.message });
@@ -317,6 +323,31 @@ export default function UsersRoles() {
                   {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Business Units</Label>
+              {businessUnits.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Nenhuma BU cadastrada. O usuário verá apenas itens corporativos.</p>
+              ) : (
+                <div className="border rounded-md max-h-40 overflow-y-auto p-2 space-y-1">
+                  {businessUnits.map((bu) => {
+                    const checked = inviteBUs.includes(bu.id);
+                    return (
+                      <label key={bu.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted cursor-pointer">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(c) =>
+                            setInviteBUs((prev) => (c ? [...prev, bu.id] : prev.filter((id) => id !== bu.id)))
+                          }
+                        />
+                        <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: bu.color || "#0ea5a4" }} />
+                        <span className="text-sm">{bu.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">Sem nenhuma BU selecionada, o usuário verá apenas itens corporativos.</p>
             </div>
           </div>
           <DialogFooter>
