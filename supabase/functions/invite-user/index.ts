@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, full_name, role, resend } = await req.json();
+    const { email, full_name, role, resend, business_unit_ids } = await req.json();
 
     if (!email || typeof email !== "string") {
       return new Response(JSON.stringify({ error: "Email é obrigatório" }), {
@@ -145,12 +145,24 @@ Deno.serve(async (req) => {
       await adminClient.from("user_roles").insert({ user_id: newUserId, role });
     }
 
+    if (Array.isArray(business_unit_ids) && business_unit_ids.length > 0) {
+      const rows = business_unit_ids
+        .filter((id: unknown) => typeof id === "string" && id)
+        .map((id: string) => ({ user_id: newUserId, business_unit_id: id }));
+      if (rows.length > 0) {
+        const { error: buError } = await adminClient
+          .from("user_business_units")
+          .insert(rows);
+        if (buError) console.error("BU link error:", buError.message);
+      }
+    }
+
     await adminClient.from("audit_logs").insert({
       actor_id: callerId,
       entity_type: "user",
       entity_id: newUserId,
       action: "INVITE",
-      metadata: { email: normalizedEmail, role: role || "member", full_name },
+      metadata: { email: normalizedEmail, role: role || "member", full_name, business_unit_ids: business_unit_ids ?? [] },
     });
 
     return new Response(
