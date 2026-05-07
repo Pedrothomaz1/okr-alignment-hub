@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { BUSelectField } from "@/components/common/BUFilter";
 
 const cycleSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -26,6 +27,7 @@ const cycleSchema = z.object({
   end_date: z.string().min(1, "Data de fim é obrigatória"),
   status: z.string().default("draft"),
   lock_after_start: z.boolean().default(false),
+  business_unit_id: z.string().nullable().optional(),
 }).refine((d) => d.end_date > d.start_date, {
   message: "Data de fim deve ser posterior à de início",
   path: ["end_date"],
@@ -47,7 +49,7 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
 
   const form = useForm<CycleFormValues>({
     resolver: zodResolver(cycleSchema),
-    defaultValues: { name: "", description: "", start_date: "", end_date: "", status: "draft", lock_after_start: false },
+    defaultValues: { name: "", description: "", start_date: "", end_date: "", status: "draft", lock_after_start: false, business_unit_id: null },
   });
 
   useEffect(() => {
@@ -60,22 +62,23 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
         end_date: editing.end_date,
         status: editing.status,
         lock_after_start: !!(meta?.lock_after_start),
+        business_unit_id: editing.business_unit_id ?? null,
       });
     } else {
-      form.reset({ name: "", description: "", start_date: "", end_date: "", status: "draft", lock_after_start: false });
+      form.reset({ name: "", description: "", start_date: "", end_date: "", status: "draft", lock_after_start: false, business_unit_id: null });
     }
   }, [editing, open]);
 
   const onSubmit = async (values: CycleFormValues) => {
     try {
-      const { lock_after_start, ...rest } = values;
+      const { lock_after_start, business_unit_id, ...rest } = values;
       const metadata = { lock_after_start };
 
       if (editing) {
-        await updateCycle.mutateAsync({ id: editing.id, ...rest, metadata });
+        await updateCycle.mutateAsync({ id: editing.id, ...rest, metadata, business_unit_id });
         toast({ title: "Ciclo atualizado" });
       } else {
-        await createCycle.mutateAsync({ name: rest.name, start_date: rest.start_date, end_date: rest.end_date, description: rest.description, status: rest.status, metadata });
+        await createCycle.mutateAsync({ name: rest.name, start_date: rest.start_date, end_date: rest.end_date, description: rest.description, status: rest.status, metadata, business_unit_id });
         toast({ title: "Ciclo criado" });
       }
       onOpenChange(false);
@@ -154,6 +157,15 @@ export function CycleForm({ open, onOpenChange, cycleId }: CycleFormProps) {
                 <Label className="text-sm font-normal cursor-pointer">
                   Travar edições após ativação
                 </Label>
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="business_unit_id" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business Unit</FormLabel>
+                <FormControl>
+                  <BUSelectField value={field.value ?? null} onValueChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
               </FormItem>
             )} />
             <div className="flex justify-end gap-2 pt-2">
