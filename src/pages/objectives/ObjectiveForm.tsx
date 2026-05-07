@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProfiles } from "@/hooks/useProfiles";
 import type { Objective } from "@/hooks/useObjectives";
+import { BUSelectField } from "@/components/common/BUFilter";
 
 const schema = z.object({
   title: z.string().min(1, "Título obrigatório"),
@@ -17,6 +18,7 @@ const schema = z.object({
   objective_type: z.string().default("quarterly"),
   owner_id: z.string().optional(),
   parent_objective_id: z.string().optional(),
+  business_unit_id: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -54,6 +56,7 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
       objective_type: defaultValues?.objective_type || "quarterly",
       owner_id: defaultValues?.owner_id || "",
       parent_objective_id: defaultValues?.parent_objective_id || "",
+      business_unit_id: defaultValues?.business_unit_id ?? null,
     },
   });
 
@@ -121,6 +124,13 @@ export function ObjectiveForm({ open, onOpenChange, onSubmit, defaultValues, isP
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label>Business Unit</Label>
+            <BUSelectField
+              value={watch("business_unit_id") ?? null}
+              onValueChange={(v) => setValue("business_unit_id", v)}
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
