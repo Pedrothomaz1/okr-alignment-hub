@@ -20,6 +20,8 @@ import { Label } from "@/components/ui/label";
 import { useCycles } from "@/hooks/useCycles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { BUFilter } from "@/components/common/BUFilter";
+import { BUBadge } from "@/components/common/BUBadge";
 
 interface ExportReportDialogProps {
   cycleId?: string;
@@ -31,6 +33,13 @@ export function ExportReportDialog({ cycleId }: ExportReportDialogProps) {
   const [format, setFormat] = useState<"csv" | "html">("csv");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [buFilter, setBuFilter] = useState<string>("all");
+
+  const filteredCycles = cycles.filter((c) => {
+    if (buFilter === "all") return true;
+    if (buFilter === "none") return !c.business_unit_id;
+    return c.business_unit_id === buFilter;
+  });
 
   const handleExport = async () => {
     if (!selectedCycle) {
@@ -91,15 +100,22 @@ export function ExportReportDialog({ cycleId }: ExportReportDialogProps) {
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
+            <Label>Business Unit</Label>
+            <BUFilter value={buFilter} onValueChange={(v) => { setBuFilter(v); setSelectedCycle(""); }} className="w-full" />
+          </div>
+          <div className="space-y-2">
             <Label>Ciclo</Label>
             <Select value={selectedCycle} onValueChange={setSelectedCycle}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um ciclo" />
               </SelectTrigger>
               <SelectContent>
-                {cycles.map((c) => (
+                {filteredCycles.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    {c.name}
+                    <div className="flex items-center gap-2">
+                      <span>{c.name}</span>
+                      <BUBadge businessUnitId={c.business_unit_id} />
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
