@@ -15,6 +15,7 @@ export interface Objective {
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  business_unit_id?: string | null;
   owner_name?: string;
   owner_avatar?: string | null;
   kr_count?: number;
@@ -47,7 +48,7 @@ export function useObjectives(cycleId: string | undefined) {
   });
 
   const createObjective = useMutation({
-    mutationFn: async (obj: { title: string; description?: string; cycle_id: string; owner_id?: string; status?: string; objective_type?: string; parent_objective_id?: string | null }) => {
+    mutationFn: async (obj: { title: string; description?: string; cycle_id: string; owner_id?: string; status?: string; objective_type?: string; parent_objective_id?: string | null; business_unit_id?: string | null }) => {
       if (!user) throw new Error("Not authenticated");
       const payload = {
         ...obj,
@@ -66,7 +67,7 @@ export function useObjectives(cycleId: string | undefined) {
   });
 
   const updateObjective = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; status?: string; objective_type?: string; owner_id?: string; parent_objective_id?: string | null }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; status?: string; objective_type?: string; owner_id?: string; parent_objective_id?: string | null; business_unit_id?: string | null }) => {
       const { data, error } = await supabase
         .from("objectives")
         .update(updates)

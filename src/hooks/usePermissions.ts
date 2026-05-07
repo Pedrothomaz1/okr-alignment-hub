@@ -10,7 +10,8 @@ export type PermissionKey =
   | "users.invite" | "users.manage_roles" | "users.edit_profile_any" | "users.view_sensitive"
   | "reports.view" | "reports.export"
   | "admin.audit_logs" | "admin.change_requests" | "admin.settings"
-  | "ppp.view_team" | "pulse.view_team" | "kudos.delete_any";
+  | "ppp.view_team" | "pulse.view_team" | "kudos.delete_any"
+  | "business_units.manage" | "business_units.assign";
 
 export function usePermissions() {
   const { user } = useAuth();

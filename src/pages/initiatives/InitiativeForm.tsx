@@ -22,6 +22,7 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { usePermissions } from "@/hooks/usePermissions";
 import { MEASUREMENT_UNITS, parseLocalDate } from "@/lib/initiative-format";
 import type { Initiative, InitiativeInsert } from "@/hooks/useInitiatives";
+import { BUSelectField } from "@/components/common/BUFilter";
 
 const DRE_LINES = [
   "Receita Bruta", "Deduções", "Receita Líquida", "CPV / CMV", "Custos",
@@ -58,6 +59,7 @@ export default function InitiativeForm({
   const [targetValue, setTargetValue] = useState<string>("");
   const [currentValue, setCurrentValue] = useState<string>("");
   const [boolValue, setBoolValue] = useState(false);
+  const [businessUnitId, setBusinessUnitId] = useState<string | null>(null);
 
   const isEditing = !!initiative;
 
@@ -74,6 +76,7 @@ export default function InitiativeForm({
       setTargetValue(String(initiative.target_value || ""));
       setCurrentValue(String(initiative.current_value || ""));
       setBoolValue((initiative.current_value || 0) >= 1);
+      setBusinessUnitId(initiative.business_unit_id ?? null);
     } else {
       setDate(new Date());
       setCanal("");
@@ -86,6 +89,7 @@ export default function InitiativeForm({
       setTargetValue("");
       setCurrentValue("");
       setBoolValue(false);
+      setBusinessUnitId(null);
     }
   }, [initiative, open]);
 
@@ -111,6 +115,7 @@ export default function InitiativeForm({
       target_value: isBool ? 1 : Number(targetValue) || 0,
       current_value: isBool ? (boolValue ? 1 : 0) : Number(currentValue) || 0,
       created_by: initiative?.created_by ?? currentUserId,
+      business_unit_id: businessUnitId,
     });
     onOpenChange(false);
   };
@@ -214,6 +219,11 @@ export default function InitiativeForm({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Business Unit</Label>
+              <BUSelectField value={businessUnitId} onValueChange={setBusinessUnitId} />
             </div>
 
             <div className="space-y-2">

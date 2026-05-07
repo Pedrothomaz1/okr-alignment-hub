@@ -82,6 +82,39 @@ export type Database = {
         }
         Relationships: []
       }
+      business_units: {
+        Row: {
+          archived: boolean
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          archived?: boolean
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          archived?: boolean
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       change_requests: {
         Row: {
           created_at: string
@@ -234,6 +267,7 @@ export type Database = {
       }
       cycles: {
         Row: {
+          business_unit_id: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -247,6 +281,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          business_unit_id?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -260,6 +295,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          business_unit_id?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -273,6 +309,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cycles_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cycles_created_by_fkey"
             columns: ["created_by"]
@@ -334,6 +377,7 @@ export type Database = {
       initiatives: {
         Row: {
           action: string
+          business_unit_id: string | null
           canal: string
           created_at: string
           created_by: string
@@ -352,6 +396,7 @@ export type Database = {
         }
         Insert: {
           action: string
+          business_unit_id?: string | null
           canal?: string
           created_at?: string
           created_by: string
@@ -370,6 +415,7 @@ export type Database = {
         }
         Update: {
           action?: string
+          business_unit_id?: string | null
           canal?: string
           created_at?: string
           created_by?: string
@@ -386,7 +432,15 @@ export type Database = {
           unit?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "initiatives_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       key_results: {
         Row: {
@@ -638,6 +692,7 @@ export type Database = {
       }
       objectives: {
         Row: {
+          business_unit_id: string | null
           created_at: string
           cycle_id: string
           description: string | null
@@ -652,6 +707,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          business_unit_id?: string | null
           created_at?: string
           cycle_id: string
           description?: string | null
@@ -666,6 +722,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          business_unit_id?: string | null
           created_at?: string
           cycle_id?: string
           description?: string | null
@@ -680,6 +737,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "objectives_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "objectives_cycle_id_fkey"
             columns: ["cycle_id"]
@@ -962,6 +1026,35 @@ export type Database = {
           },
         ]
       }
+      user_business_units: {
+        Row: {
+          business_unit_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          business_unit_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          business_unit_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_business_units_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1105,6 +1198,7 @@ export type Database = {
       get_objective_ancestors: {
         Args: { _objective_id: string }
         Returns: {
+          business_unit_id: string | null
           created_at: string
           cycle_id: string
           description: string | null
@@ -1156,6 +1250,14 @@ export type Database = {
           _receive_feedback_emails?: boolean
         }
         Returns: undefined
+      }
+      user_can_see_bu: {
+        Args: { _bu_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_shares_bu: {
+        Args: { _target_user_id: string; _viewer_id: string }
+        Returns: boolean
       }
     }
     Enums: {

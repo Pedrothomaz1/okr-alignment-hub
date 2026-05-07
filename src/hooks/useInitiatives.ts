@@ -19,6 +19,7 @@ export interface Initiative {
   created_by: string;
   created_at: string;
   updated_at: string;
+  business_unit_id: string | null;
 }
 
 export type InitiativeInsert = Omit<Initiative, "id" | "created_at" | "updated_at">;
