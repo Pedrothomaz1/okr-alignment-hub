@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,8 +44,44 @@ export default function UsersRoles() {
   const [inviteRole, setInviteRole] = useState<AppRole>("member");
   const [inviteBUs, setInviteBUs] = useState<string[]>([]);
   const [resendingAll, setResendingAll] = useState(false);
+  const [existingUserId, setExistingUserId] = useState<string | null>(null);
+  const [loadingExisting, setLoadingExisting] = useState(false);
 
   const { businessUnits } = useBusinessUnits();
+
+  // Look up existing user by email and pre-fill BUs/name when found
+  useEffect(() => {
+    if (!inviteOpen) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setExistingUserId(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingExisting(true);
+    const t = setTimeout(async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("email", email)
+        .maybeSingle();
+      if (cancelled) return;
+      if (profile?.id) {
+        setExistingUserId(profile.id);
+        if (profile.full_name && !inviteName) setInviteName(profile.full_name);
+        const { data: links } = await supabase
+          .from("user_business_units")
+          .select("business_unit_id")
+          .eq("user_id", profile.id);
+        if (cancelled) return;
+        setInviteBUs((links ?? []).map((l: any) => l.business_unit_id));
+      } else {
+        setExistingUserId(null);
+      }
+      setLoadingExisting(false);
+    }, 400);
+    return () => { cancelled = true; clearTimeout(t); setLoadingExisting(false); };
+  }, [inviteEmail, inviteOpen]);
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
@@ -126,6 +162,7 @@ export default function UsersRoles() {
       setInviteName("");
       setInviteRole("member");
       setInviteBUs([]);
+      setExistingUserId(null);
     },
     onError: (err: Error) => {
       toast({ variant: "destructive", title: "Erro ao convidar", description: err.message });
