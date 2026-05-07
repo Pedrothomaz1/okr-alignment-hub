@@ -27,6 +27,8 @@ import { formatValue, computeStatus, daysLate, STATUS_DISPLAY, parseLocalDate } 
 import InitiativeForm from "./InitiativeForm";
 import InlineProgress from "@/components/initiatives/InlineProgress";
 import InitiativeActions from "@/components/initiatives/InitiativeActions";
+import { BUFilter } from "@/components/common/BUFilter";
+import { BUBadge } from "@/components/common/BUBadge";
 
 type SortKey = "date" | "canal" | "unit" | "dre_line" | "action" | "owner" | "deadline" | "target_value" | "status";
 type SortDir = "asc" | "desc";
@@ -48,6 +50,7 @@ export default function InitiativesList() {
   // Filters
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterBU, setFilterBU] = useState<string>("all");
 
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey>("date");
@@ -68,6 +71,10 @@ export default function InitiativesList() {
   const filtered = useMemo(() => {
     return initiatives.filter((i) => {
       if (filterOwner !== "all" && i.owner_id !== filterOwner) return false;
+      if (filterBU !== "all") {
+        if (filterBU === "none" && i.business_unit_id) return false;
+        if (filterBU !== "none" && i.business_unit_id !== filterBU) return false;
+      }
       if (filterStatus.length > 0) {
         const mu = i.measurement_unit || "R$";
         const status = computeStatus(i.current_value || 0, i.target_value || 0, i.deadline, mu);
@@ -75,7 +82,7 @@ export default function InitiativesList() {
       }
       return true;
     });
-  }, [initiatives, filterOwner, filterStatus]);
+  }, [initiatives, filterOwner, filterStatus, filterBU]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -177,6 +184,7 @@ export default function InitiativesList() {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
+          <BUFilter value={filterBU} onValueChange={setFilterBU} />
           <Select value={filterOwner} onValueChange={setFilterOwner}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filtrar por responsável" />
