@@ -1,15 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
+    let prevUserId: string | null | undefined = undefined;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        const newUserId = session?.user?.id ?? null;
+        if (prevUserId !== undefined && prevUserId !== newUserId) {
+          // User changed (login/logout/switch) — clear all cached queries
+          queryClient.clear();
+        }
+        prevUserId = newUserId;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -17,13 +26,14 @@ export function useAuth() {
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      prevUserId = session?.user?.id ?? null;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [queryClient]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     const { data, error } = await supabase.auth.signUp({
