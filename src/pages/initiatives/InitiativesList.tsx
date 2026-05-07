@@ -287,6 +287,7 @@ export default function InitiativesList() {
                       <TableCell>{init.dre_line}</TableCell>
                       <TableCell className="min-w-[250px]">
                         <span className="block whitespace-normal break-words">{init.action}</span>
+                        <div className="mt-1"><BUBadge businessUnitId={init.business_unit_id} /></div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">{profileMap.get(init.owner_id) ?? "—"}</TableCell>
                       <TableCell className="whitespace-nowrap">{format(parseLocalDate(init.deadline), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
