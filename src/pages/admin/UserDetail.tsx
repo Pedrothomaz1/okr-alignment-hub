@@ -137,6 +137,7 @@ export default function UserDetail() {
     updateProfile.mutate({
       ...rest,
       manager_id: rest.manager_id || null,
+      birth_date: rest.birth_date ? rest.birth_date : null,
       receive_feedback_emails,
       eligible_for_bonus,
       config_panel_access,
