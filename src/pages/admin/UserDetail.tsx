@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Save, Camera, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UserBusinessUnitsCard } from "@/components/admin/UserBusinessUnitsCard";
 
 function formatCpf(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -209,6 +210,9 @@ export default function UserDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Business Units */}
+          <UserBusinessUnitsCard userId={id} />
         </div>
 
         {/* Right column */}
