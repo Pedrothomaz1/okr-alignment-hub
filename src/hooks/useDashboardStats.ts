@@ -15,6 +15,7 @@ export interface DashboardStats {
     end_date: string;
     objectiveCount: number;
     averageProgress: number;
+    business_unit_id?: string | null;
   }[];
 }
 
