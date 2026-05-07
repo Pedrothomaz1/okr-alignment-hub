@@ -330,7 +330,7 @@ export default function UsersRoles() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Convidar Novo Usuário</DialogTitle>
+            <DialogTitle>{existingUserId ? "Reenviar Convite e Atualizar BUs" : "Convidar Novo Usuário"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -342,6 +342,10 @@ export default function UsersRoles() {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
+              {loadingExisting && <p className="text-xs text-muted-foreground">Verificando...</p>}
+              {existingUserId && !loadingExisting && (
+                <p className="text-xs text-primary">Usuário existente — BUs vinculadas pré-selecionadas.</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="invite-name">Nome completo</Label>
