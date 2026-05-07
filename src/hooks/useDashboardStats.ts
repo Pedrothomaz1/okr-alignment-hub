@@ -15,18 +15,22 @@ export interface DashboardStats {
     end_date: string;
     objectiveCount: number;
     averageProgress: number;
+    business_unit_id?: string | null;
   }[];
 }
 
-export function useDashboardStats() {
+export function useDashboardStats(buFilter: string = "all") {
   return useQuery({
-    queryKey: ["dashboard-stats"],
+    queryKey: ["dashboard-stats", buFilter],
     queryFn: async (): Promise<DashboardStats> => {
       // Fetch active cycles
-      const { data: cycles, error: cyclesError } = await supabase
+      let cyclesQ = supabase
         .from("cycles")
-        .select("id, name, start_date, end_date, status")
+        .select("id, name, start_date, end_date, status, business_unit_id")
         .eq("status", "active");
+      if (buFilter === "none") cyclesQ = cyclesQ.is("business_unit_id", null);
+      else if (buFilter !== "all") cyclesQ = cyclesQ.eq("business_unit_id", buFilter);
+      const { data: cycles, error: cyclesError } = await cyclesQ;
       if (cyclesError) throw cyclesError;
 
       if (!cycles || cycles.length === 0) {
@@ -44,10 +48,13 @@ export function useDashboardStats() {
       const cycleIds = cycles.map((c) => c.id);
 
       // Fetch objectives for active cycles
-      const { data: objectives, error: objError } = await supabase
+      let objQ = supabase
         .from("objectives")
-        .select("id, title, progress, status, cycle_id")
+        .select("id, title, progress, status, cycle_id, business_unit_id")
         .in("cycle_id", cycleIds);
+      if (buFilter === "none") objQ = objQ.is("business_unit_id", null);
+      else if (buFilter !== "all") objQ = objQ.eq("business_unit_id", buFilter);
+      const { data: objectives, error: objError } = await objQ;
       if (objError) throw objError;
 
       const objectiveIds = (objectives || []).map((o) => o.id);
@@ -90,6 +97,7 @@ export function useDashboardStats() {
           end_date: c.end_date,
           objectiveCount: cycleObjs.length,
           averageProgress: avg,
+          business_unit_id: (c as any).business_unit_id ?? null,
         };
       });
 

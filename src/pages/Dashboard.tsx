@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
@@ -9,11 +10,14 @@ import { MyKeyResults } from "@/components/dashboard/MyKeyResults";
 import { MyTeam } from "@/components/dashboard/MyTeam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/okr/ProgressBar";
+import { BUFilter } from "@/components/common/BUFilter";
+import { BUBadge } from "@/components/common/BUBadge";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { roles } = useRoles(user?.id);
-  const { data: stats, isLoading } = useDashboardStats();
+  const [buFilter, setBuFilter] = useState<string>("all");
+  const { data: stats, isLoading } = useDashboardStats(buFilter);
 
   const roleBadgeClass = (role: string) => {
     switch (role) {
@@ -34,7 +38,8 @@ export default function Dashboard() {
             Bem-vindo, {user?.user_metadata?.full_name || user?.email}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <BUFilter value={buFilter} onValueChange={setBuFilter} />
           {roles.map((role) => (
             <span key={role} className={roleBadgeClass(role)}>{role}</span>
           ))}
@@ -96,7 +101,10 @@ export default function Dashboard() {
                   className="block card-interactive p-3"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-medium truncate">{cycle.name}</p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="text-xs font-medium truncate">{cycle.name}</p>
+                      <BUBadge businessUnitId={cycle.business_unit_id} />
+                    </div>
                     <span className="text-[10px] text-muted-foreground">{cycle.objectiveCount} obj.</span>
                   </div>
                   <ProgressBar value={cycle.averageProgress} showLabel />
