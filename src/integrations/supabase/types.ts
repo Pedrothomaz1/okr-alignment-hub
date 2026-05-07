@@ -1255,6 +1255,10 @@ export type Database = {
         Args: { _bu_id: string; _user_id: string }
         Returns: boolean
       }
+      user_in_bu: {
+        Args: { _bu_id: string; _user_id: string }
+        Returns: boolean
+      }
       user_shares_bu: {
         Args: { _target_user_id: string; _viewer_id: string }
         Returns: boolean
