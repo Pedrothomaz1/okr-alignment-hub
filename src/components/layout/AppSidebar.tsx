@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2, Target, ShieldCheck } from "lucide-react";
+import { Home, CalendarDays, Users, FileText, Shield, LogOut, User, GitBranch, FileQuestion, ChevronsUpDown, ClipboardList, Heart, Award, UsersRound, FileBarChart, Link2, Target, ShieldCheck, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/components/NavLink";
@@ -52,6 +52,7 @@ const adminSettingsItems = [
 
 const adminItems = [
   { title: "Usuários & Papéis", url: "/admin/users", icon: Users },
+  { title: "Business Units", url: "/admin/business-units", icon: Building2 },
   { title: "Permissões", url: "/admin/permissions", icon: ShieldCheck },
   { title: "Logs de Auditoria", url: "/admin/audit", icon: FileText },
   { title: "Change Requests", url: "/admin/change-requests", icon: FileQuestion },
